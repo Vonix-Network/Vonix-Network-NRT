@@ -18,6 +18,44 @@ interface UserProfile {
   followingCount: number;
   postCount: number;
   isFollowing: boolean;
+  // Enhanced profile data
+  reputation?: number;
+  avatar_url?: string;
+  last_seen_at?: string;
+  role?: string;
+  // Profile details
+  custom_banner?: string;
+  avatar_border?: string;
+  title?: string;
+  // Activity stats
+  stats?: {
+    topics_created: number;
+    posts_created: number;
+    likes_received: number;
+    likes_given: number;
+    best_answers: number;
+    days_active: number;
+    last_post_at: string;
+    join_date: string;
+  };
+  // Badges and achievements
+  badges?: Array<{
+    badge_type: string;
+    badge_name: string;
+    badge_description: string;
+    badge_icon: string;
+    badge_color: string;
+    earned_at: string;
+  }>;
+  achievements?: Array<{
+    achievement_key: string;
+    achievement_name: string;
+    achievement_description: string;
+    achievement_icon: string;
+    achievement_rarity: string;
+    points: number;
+    unlocked_at: string;
+  }>;
 }
 
 interface Post {
@@ -46,7 +84,14 @@ const UserProfilePage: React.FC = () => {
 
   const loadProfile = useCallback(async () => {
     try {
-      const response = await api.get(`/social/profile/${userId}`);
+      // Try enhanced profile API first, fallback to social API
+      let response;
+      try {
+        response = await api.get(`/user-profiles/${userId}`);
+      } catch (enhancedError) {
+        // Fallback to old social API
+        response = await api.get(`/social/profile/${userId}`);
+      }
       setProfile(response.data);
       setEditForm({
         bio: response.data.bio || '',
@@ -150,6 +195,15 @@ const UserProfilePage: React.FC = () => {
     return date.toLocaleDateString();
   };
 
+  const getReputationTier = (reputation: number) => {
+    if (reputation >= 5000) return { tier: 'Legend', icon: '💎', color: '#8b5cf6' };
+    if (reputation >= 2500) return { tier: 'Expert', icon: '🏆', color: '#f59e0b' };
+    if (reputation >= 1000) return { tier: 'Veteran', icon: '🥇', color: '#eab308' };
+    if (reputation >= 500) return { tier: 'Respected', icon: '🥈', color: '#6b7280' };
+    if (reputation >= 100) return { tier: 'Rising Star', icon: '🥉', color: '#cd7f32' };
+    return { tier: 'Newcomer', icon: '🌱', color: '#10b981' };
+  };
+
   const parsePostContent = (content: string) => {
     // Parse [img=url] syntax and convert to actual images
     const parts: React.ReactNode[] = [];
@@ -222,9 +276,21 @@ const UserProfilePage: React.FC = () => {
           </div>
 
           <div className="profile-info">
-            <h1 className="profile-name">{profile.minecraft_username || profile.username}</h1>
+            <div className="profile-name-section">
+              <h1 className="profile-name">{profile.minecraft_username || profile.username}</h1>
+              {profile.reputation !== undefined && profile.reputation > 0 && (
+                <div className="reputation-badge">
+                  <span className="reputation-icon">⭐</span>
+                  <span className="reputation-score">{profile.reputation}</span>
+                  <span className="reputation-tier">{getReputationTier(profile.reputation).tier}</span>
+                </div>
+              )}
+            </div>
             {profile.minecraft_username && (
               <p className="profile-handle">@{profile.username}</p>
+            )}
+            {profile.title && (
+              <p className="profile-title">{profile.title}</p>
             )}
             {profile.bio && <p className="profile-bio">{profile.bio}</p>}
             <div className="profile-meta">
@@ -267,8 +333,12 @@ const UserProfilePage: React.FC = () => {
 
         <div className="profile-stats">
           <div className="stat-item">
-            <span className="stat-value">{profile.postCount}</span>
+            <span className="stat-value">{profile.stats?.posts_created || profile.postCount}</span>
             <span className="stat-label">Posts</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">{profile.stats?.topics_created || 0}</span>
+            <span className="stat-label">Topics</span>
           </div>
           <div className="stat-item">
             <span className="stat-value">{profile.followerCount}</span>
@@ -278,7 +348,60 @@ const UserProfilePage: React.FC = () => {
             <span className="stat-value">{profile.followingCount}</span>
             <span className="stat-label">Following</span>
           </div>
+          {profile.stats?.likes_received !== undefined && (
+            <div className="stat-item">
+              <span className="stat-value">{profile.stats.likes_received}</span>
+              <span className="stat-label">Likes</span>
+            </div>
+          )}
+          {profile.stats?.best_answers !== undefined && profile.stats.best_answers > 0 && (
+            <div className="stat-item">
+              <span className="stat-value">{profile.stats.best_answers}</span>
+              <span className="stat-label">Best Answers</span>
+            </div>
+          )}
         </div>
+
+        {/* Badges Section */}
+        {profile.badges && profile.badges.length > 0 && (
+          <div className="profile-badges">
+            <h3>Badges</h3>
+            <div className="badges-grid">
+              {profile.badges.map((badge, index) => (
+                <div key={index} className="badge-item" style={{ borderColor: badge.badge_color }}>
+                  <span className="badge-icon">{badge.badge_icon}</span>
+                  <div className="badge-info">
+                    <span className="badge-name">{badge.badge_name}</span>
+                    <span className="badge-description">{badge.badge_description}</span>
+                    <span className="badge-earned">Earned {formatTime(badge.earned_at)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Achievements Section */}
+        {profile.achievements && profile.achievements.length > 0 && (
+          <div className="profile-achievements">
+            <h3>Achievements</h3>
+            <div className="achievements-grid">
+              {profile.achievements.map((achievement, index) => (
+                <div key={index} className={`achievement-item rarity-${achievement.achievement_rarity}`}>
+                  <span className="achievement-icon">{achievement.achievement_icon}</span>
+                  <div className="achievement-info">
+                    <span className="achievement-name">{achievement.achievement_name}</span>
+                    <span className="achievement-description">{achievement.achievement_description}</span>
+                    <div className="achievement-meta">
+                      <span className="achievement-points">+{achievement.points} points</span>
+                      <span className="achievement-unlocked">Unlocked {formatTime(achievement.unlocked_at)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="profile-tabs">
           <button
