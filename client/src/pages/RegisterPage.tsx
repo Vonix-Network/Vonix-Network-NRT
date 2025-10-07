@@ -13,7 +13,7 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [minecraftUsername, setMinecraftUsername] = useState('');
-  const [minecraftUuid, setMinecraftUuid] = useState('');
+  const [, setMinecraftUuid] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(false);

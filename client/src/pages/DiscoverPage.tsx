@@ -27,6 +27,7 @@ const DiscoverPage: React.FC = () => {
       return;
     }
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, navigate]);
 
   const loadUsers = async () => {

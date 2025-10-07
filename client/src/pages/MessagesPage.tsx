@@ -58,6 +58,7 @@ const MessagesPage: React.FC = () => {
     if (userId) {
       loadConversationWithUser(parseInt(userId));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ const MessagesPage: React.FC = () => {
     } else {
       setSearchResults([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const scrollToBottom = () => {

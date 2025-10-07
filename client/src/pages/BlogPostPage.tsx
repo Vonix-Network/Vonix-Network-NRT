@@ -21,6 +21,7 @@ const BlogPostPage: React.FC = () => {
 
   useEffect(() => {
     loadPost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const loadPost = async () => {

@@ -22,10 +22,12 @@ export const WS_URL =
 export const DISCORD_INVITE_URL =
   process.env.REACT_APP_DISCORD_INVITE_URL || 'https://discord.gg/5GcKfZJ64U';
 
-export default {
+const appConfig = {
   BRAND_NAME,
   SITE_TAGLINE,
   API_URL,
   WS_URL,
   DISCORD_INVITE_URL,
 };
+
+export default appConfig;

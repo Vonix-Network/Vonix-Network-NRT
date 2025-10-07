@@ -30,6 +30,7 @@ const ServerDetailPage: React.FC = () => {
     loadServer();
     const interval = setInterval(loadServer, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadServer = async () => {

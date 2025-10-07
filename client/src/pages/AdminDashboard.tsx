@@ -1601,6 +1601,7 @@ const ManagePermissions: React.FC = () => {
     if (selectedForum) {
       loadPermissions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedForum]);
 
   const loadPermissions = async () => {

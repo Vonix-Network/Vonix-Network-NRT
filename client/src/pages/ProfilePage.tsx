@@ -46,6 +46,7 @@ const ProfilePage: React.FC = () => {
       setResolvedUuid(null);
     }
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.minecraft_uuid, user?.minecraft_username]);
 
   if (!user) {
