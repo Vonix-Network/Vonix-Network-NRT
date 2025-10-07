@@ -1,8 +1,8 @@
 # 🚀 Vonix Network v1.1.1 Release Notes
 
-**Release Date:** October 7, 2025  
+**Release Date:** January 7, 2025  
 **Status:** Production Ready  
-**Compatibility:** Fully backward compatible with v1.0.0
+**Compatibility:** Fully backward compatible with v1.1.0
 
 ---
 
@@ -23,7 +23,7 @@ Complete email integration with admin dashboard configuration, automated notific
 **Configuration:** Navigate to `/admin/email` to set up email services.
 
 #### 🏆 Reputation & Achievement System
-Gamified user engagement system with automatic point awards, tier rankings, and achievement unlocking.
+Gamified user engagement system with automatic point awards, tier rankings, and public leaderboards.
 
 **Reputation Tiers:**
 - 🌱 Newcomer (0-99 points)
@@ -42,7 +42,7 @@ Gamified user engagement system with automatic point awards, tier rankings, and 
 **Features:**
 - Visual reputation badges on user profiles
 - Achievement system with badges (common, rare, epic, legendary)
-- Reputation leaderboards in admin analytics
+- **🏆 Public Reputation Leaderboard** - Top users ranked by reputation with podium display
 - Complete history logging of all reputation changes
 - Automatic achievement unlocking at reputation milestones
 
@@ -126,8 +126,18 @@ Professional mobile navigation for admin dashboard with slide-in sidebar.
 
 ---
 
-## 🐛 Bug Fixes
+## 🐛 Bug Fixes & Performance Improvements
 
+### v1.1.1 Hotfixes
+- **🔧 Forum Moderation Routes:** Fixed missing `verifyToken` import causing server startup errors
+- **📊 Forum Count Accuracy:** Fixed negative topic/post counts when deleting content via admin dashboard
+- **⚡ Cache Invalidation:** New posts and topics now appear immediately (no server reload required)
+- **🕒 Last Post Timestamps:** Fixed "Just now" display issue - now shows accurate timestamps
+- **🔗 Leaderboard Links:** Fixed user profile links in reputation leaderboard (now correctly routes to `/users/:id`)
+- **🗑️ Optimistic UI Updates:** Comment and post deletions now provide instant visual feedback with error rollback
+- **🎯 Database Integrity:** Added `MAX(0, ...)` protection to prevent negative counts in all deletion operations
+
+### Previous v1.1.0 Fixes
 - **Mobile Navigation:** Fixed conflict between main nav and admin nav hamburger menus
 - **Forum Admin Routes:** Corrected API path from `/api/forum/admin` to `/api/forum-admin`
 - **Database Migration:** Fixed SQLite UNIQUE constraint issue by using separate index

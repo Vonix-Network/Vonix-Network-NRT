@@ -13,7 +13,8 @@ router.get('/:userId', (req, res) => {
   try {
     // Get user basic info
     const user = db.prepare(`
-      SELECT id, username, email, avatar_url, reputation, post_count, 
+      SELECT id, username, email, minecraft_username, minecraft_uuid,
+             avatar_url, reputation, post_count, 
              created_at, last_seen_at, role
       FROM users 
       WHERE id = ?
@@ -61,14 +62,32 @@ router.get('/:userId', (req, res) => {
     const followerCount = db.prepare('SELECT COUNT(*) as count FROM follows WHERE following_id = ?').get(userId).count;
     const followingCount = db.prepare('SELECT COUNT(*) as count FROM follows WHERE follower_id = ?').get(userId).count;
 
+    // Flatten the response to match frontend expectations
     res.json({
-      user: {
-        ...user,
-        email: user.email || null, // Only show email if exists
-        follower_count: followerCount,
-        following_count: followingCount
-      },
-      profile: profile || {},
+      id: user.id,
+      username: user.username,
+      minecraft_username: user.minecraft_username || user.username,
+      minecraft_uuid: user.minecraft_uuid,
+      email: user.email || null,
+      avatar_url: user.avatar_url,
+      reputation: user.reputation || 0,
+      postCount: user.post_count || 0,
+      created_at: user.created_at,
+      last_seen_at: user.last_seen_at,
+      role: user.role,
+      // Profile details
+      bio: profile?.bio,
+      location: profile?.location,
+      website: profile?.website,
+      banner_image: profile?.banner_image,
+      custom_banner: profile?.custom_banner,
+      avatar_border: profile?.avatar_border,
+      title: profile?.title,
+      // Counts
+      followerCount: followerCount,
+      followingCount: followingCount,
+      isFollowing: false, // TODO: Check if current user follows this user
+      // Activity stats
       stats: stats || {
         topics_created: 0,
         posts_created: 0,
@@ -79,8 +98,8 @@ router.get('/:userId', (req, res) => {
         last_post_at: null,
         join_date: user.created_at
       },
-      badges,
-      achievements
+      badges: badges || [],
+      achievements: achievements || []
     });
   } catch (error) {
     logger.error('Error fetching user profile:', error);

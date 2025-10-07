@@ -17,7 +17,7 @@ and this project adheres to [semantic Versioning](https://semver.org/spec/v2.0.0
 - File uploads (avatars, forum attachments)
 - OAuth integration (Discord, Google, GitHub)
 
-## [1.1.1] - 2025-10-07
+## [1.1.1] - 2025-01-07
 
 ### Added
 
@@ -35,7 +35,7 @@ and this project adheres to [semantic Versioning](https://semver.org/spec/v2.0.0
 - **Activity Statistics**: Comprehensive tracking of topics created, posts, likes received/given, and best answers
 - **Reputation System**: Automatic point-based reputation system with 6 tiers (Newcomer, Rising Star, Respected, Veteran, Expert, Legend)
 - **Reputation Awards**: Automatic reputation points for creating topics (+5), posts (+2), and likes (+3)
-- **Reputation Leaderboards**: Backend API for top users by reputation with activity tracking
+- **🏆 Public Reputation Leaderboard**: Interactive leaderboard page with top 3 podium display and full rankings table
 - **Reputation Badges**: Visual badges displaying reputation tier with icons and colors
 - **Reputation History**: Complete logging of all reputation changes with reasons
 - **Activity Timeline**: View user's recent posts and topics
@@ -91,6 +91,17 @@ and this project adheres to [semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `.env.example` with email configuration options
 
 ### Fixed
+
+#### v1.1.1 Hotfixes (January 2025)
+- **🔧 Forum Moderation Routes**: Fixed missing `verifyToken` import causing server startup errors in forum-moderation.js
+- **📊 Forum Count Accuracy**: Fixed negative topic/post counts when deleting content via admin dashboard using `MAX(0, ...)` protection
+- **⚡ Cache Invalidation**: New posts and topics now appear immediately without server reload - added automatic cache clearing on content creation/deletion
+- **🕒 Last Post Timestamps**: Fixed "Just now" display issue - now shows accurate timestamps by refreshing stale last post data
+- **🔗 Leaderboard Profile Links**: Fixed user profile links in reputation leaderboard to correctly route to `/users/:id` instead of `/profile/:id`
+- **🗑️ Optimistic UI Updates**: Comment and post deletions now provide instant visual feedback with automatic rollback on errors
+- **🎯 Database Integrity**: Added comprehensive protection against negative counts in all forum deletion operations
+
+#### v1.1.0 Original Fixes
 - **Mobile Navigation Conflict**: Admin hamburger menu now uses unique class names and works independently from main navbar
 - **Forum Admin Routes**: Changed route registration from `/api/forum/admin` to `/api/forum-admin` to match frontend
 - **Database Migration**: Email column now uses separate unique index instead of inline UNIQUE constraint (SQLite compatibility)

@@ -18,11 +18,12 @@ All requested roadmap features have been successfully implemented:
   - Custom profile banners
   - Achievement badges system
   - Activity statistics (topics created, posts, likes, best answers)
-  - Reputation system
+  - Reputation system with 6 tiers (Newcomer to Legend)
+  - **🏆 Public Reputation Leaderboard** with top 3 podium display
   - User activity timeline
-- **API:** `/api/user-profiles/:userId`
+- **API:** `/api/user-profiles/:userId`, `/api/reputation/leaderboard`
 - **Database:** New tables for badges, achievements, and stats
-- **Files:** `server/routes/user-profiles.js`, `server/database/migrations.js`
+- **Files:** `server/routes/user-profiles.js`, `server/routes/reputation-leaderboard.js`, `client/src/pages/ReputationLeaderboard.tsx`
 
 ### 3. 💬 Enhanced Forum Features
 - **Features:**
@@ -93,6 +94,9 @@ The database migrations will run automatically on startup, creating:
 - Email Settings: `/admin/email`
 - Analytics Dashboard: `/admin/analytics`
 
+**Public Features:**
+- Reputation Leaderboard: `/leaderboard` (accessible from forum page)
+
 **Admin Sidebar** now includes:
 - 📧 Email Settings
 - 📊 Analytics
@@ -126,6 +130,10 @@ The database migrations will run automatically on startup, creating:
 - `GET /api/admin/analytics/top-users?limit=10` - Top users
 - `GET /api/admin/analytics/popular-forums` - Popular forums
 - `GET /api/admin/analytics/recent-activity` - Recent activity feed
+
+### Reputation System
+- `GET /api/reputation/leaderboard?limit=50&offset=0` - Public leaderboard with pagination
+- `GET /api/reputation/user/:userId` - User's reputation details and rank
 
 ## 🗄️ Database Changes
 
@@ -269,12 +277,24 @@ For detailed information, see:
 - **README.md** - General project documentation
 - **API_DOCUMENTATION.md** - Complete API reference
 
+## 🔧 v1.1.1 Hotfixes (January 2025)
+
+**Performance & Bug Fixes:**
+- ⚡ **Instant UI Updates**: Posts and topics now appear immediately without server reload
+- 🔧 **Fixed Server Startup**: Resolved missing import errors in forum moderation routes
+- 📊 **Accurate Counts**: Fixed negative topic/post counts with database integrity protection
+- 🕒 **Proper Timestamps**: Last post times now show actual dates instead of "Just now"
+- 🔗 **Working Links**: Leaderboard user links now correctly navigate to profiles
+- 🗑️ **Optimistic Deletions**: Comment/post deletions provide instant feedback with error recovery
+
 ## 🎉 Summary
 
 Successfully implemented **all requested roadmap features**:
 - ✅ Email system with SMTP configuration
 - ✅ Advanced user profiles with badges and achievements  
+- ✅ **🏆 Public Reputation Leaderboard** with interactive podium display
 - ✅ Enhanced forum features (subscriptions, search, email notifications)
 - ✅ Comprehensive analytics dashboard with graphs and insights
+- ✅ **Performance optimizations** for instant UI responsiveness
 
 The system is now production-ready with these enhancements!

@@ -27,7 +27,7 @@
 
 ### 🆕 New in v1.1.1
 - **📧 Email System**: Full SMTP configuration with admin dashboard, test emails, and notification templates
-- **🏆 Reputation System**: Automatic point awards, 6-tier ranking (Newcomer to Legend), reputation leaderboards
+- **🏆 Reputation System**: Automatic point awards, 6-tier ranking (Newcomer to Legend), **public reputation leaderboard**
 - **🎖️ Badges & Achievements**: Earn badges for milestones, display achievement collections on profiles
 - **📊 Enhanced User Profiles**: Activity stats, post counts, likes received/given, best answers, custom titles
 - **🔔 Forum Subscriptions**: Subscribe to topics and forums with email notifications for new replies
@@ -35,7 +35,8 @@
 - **📈 Admin Analytics Dashboard**: Real-time graphs, user activity trends, forum statistics, top contributors
 - **📱 Mobile Navigation**: Professional hamburger menu with slide-in sidebar for admin dashboard
 - **🔧 Database Migrations**: Automatic schema updates on server start (SQLite compatible)
-- **✅ Bug Fixes**: Mobile navigation conflicts, forum admin routes, unique email constraints
+- **⚡ Performance Improvements**: Instant UI updates, optimistic deletions, cache invalidation, accurate timestamps
+- **✅ Bug Fixes**: Forum moderation routes, negative counts, leaderboard links, last post timestamps
 
 ### Technical Highlights
 - **⚡ Real-time Updates** - WebSocket connections for instant communication

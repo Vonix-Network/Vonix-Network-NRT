@@ -9,13 +9,14 @@
 ================================================================================
 
 ✅ Email System - Complete SMTP configuration with admin dashboard
-✅ Reputation System - Automatic points, 6 tiers, leaderboards
+✅ Reputation System - Automatic points, 6 tiers, PUBLIC LEADERBOARD
 ✅ Enhanced Profiles - Badges, achievements, activity stats
 ✅ Forum Subscriptions - Email notifications for topics/forums
 ✅ Advanced Search - Filters, sorting, full-text search
 ✅ Admin Analytics - Graphs, trends, top users
 ✅ Mobile Navigation - Professional hamburger menu
-✅ Bug Fixes - Mobile nav, forum routes, SQLite compatibility
+✅ Performance Fixes - Instant UI updates, cache invalidation, accurate timestamps
+✅ Bug Fixes - Forum moderation routes, negative counts, leaderboard links
 
 ================================================================================
 📁 FILES CLEANED UP
@@ -118,7 +119,7 @@ Breaking Changes:        0 (fully backward compatible)
    - Automatic point awards for forum activity
    - 6-tier ranking system (Newcomer to Legend)
    - Visual reputation badges on profiles
-   - Reputation leaderboards
+   - 🏆 PUBLIC REPUTATION LEADERBOARD with top 3 podium display
    - Achievement system with badges
 
 📊 Enhanced User Profiles
@@ -149,6 +150,14 @@ Breaking Changes:        0 (fully backward compatible)
    - Slide-in sidebar navigation
    - Touch-optimized interactions
    - Independent admin navigation
+
+⚡ Performance Improvements (v1.1.1 Hotfixes)
+   - Instant UI updates for posts/topics (no reload needed)
+   - Optimistic deletions with error recovery
+   - Automatic cache invalidation
+   - Fixed negative forum counts
+   - Accurate last post timestamps
+   - Working leaderboard profile links
 
 ================================================================================
 🔧 POST-RELEASE NOTES
