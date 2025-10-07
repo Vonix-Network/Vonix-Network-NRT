@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../database/init');
-const { verifyToken, isAdmin } = require('../middleware/auth');
+const { authenticateToken, verifyToken } = require('../middleware/auth');
+const { clearCache } = require('../middleware/cache');
+const logger = require('../utils/logger');
 
-// Middleware to check if user is moderator or admin
+// Check if user is moderator or admin
 function isModerator(req, res, next) {
   const db = getDatabase();
   
@@ -161,11 +163,11 @@ router.delete('/topic/:id', verifyToken, isModerator, async (req, res) => {
     // Delete topic (cascade will delete posts)
     db.prepare('DELETE FROM forum_topics WHERE id = ?').run(topicId);
     
-    // Update forum stats
+    // Update forum stats (ensure counts don't go below 0)
     db.prepare(`
       UPDATE forums 
-      SET topics_count = topics_count - 1,
-          posts_count = posts_count - (? + 1)
+      SET topics_count = MAX(0, topics_count - 1),
+          posts_count = MAX(0, posts_count - (? + 1))
       WHERE id = ?
     `).run(topic.replies, topic.forum_id);
     
@@ -175,6 +177,9 @@ router.delete('/topic/:id', verifyToken, isModerator, async (req, res) => {
       VALUES (?, 'delete', 'topic', ?, ?, ?)
     `).run(req.user.id, topicId, reason || null, `Deleted topic: ${topic.title}`);
     
+    // Clear cache so deletion reflects immediately
+    clearCache('/api/forum'); // Clear forum list
+    clearCache(`/api/forum/forum/${topic.forum_id}`); // Clear specific forum
     
     res.json({ success: true, message: 'Topic deleted' });
   } catch (error) {

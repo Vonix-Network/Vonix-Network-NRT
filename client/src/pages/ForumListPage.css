@@ -11,8 +11,20 @@
 }
 
 .forum-header {
-  text-align: center;
   margin-bottom: 3rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
 }
 
 .forum-header h1 {
@@ -24,6 +36,31 @@
 .forum-header p {
   color: var(--text-secondary);
   font-size: 1.1rem;
+}
+
+.leaderboard-btn {
+  white-space: nowrap;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .leaderboard-btn {
+    width: 100%;
+  }
 }
 
 .forum-category {

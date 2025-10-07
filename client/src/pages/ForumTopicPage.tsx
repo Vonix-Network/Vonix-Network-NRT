@@ -137,15 +137,26 @@ const ForumTopicPage: React.FC = () => {
   const handleDeletePost = async (postId: number) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
+    // Save original state for rollback
+    const originalPosts = [...posts];
+    const originalTopic = topic ? { ...topic } : null;
+
     try {
-      await api.delete(`/forum/post/${postId}`);
-      if (slug) {
-        const resp = await api.get(`/forum/topic/${slug}?page=1`);
-        setTopic(resp.data.topic);
-        setPosts(resp.data.posts);
-        setPoll(resp.data.poll);
+      // Optimistically update UI immediately
+      setPosts(posts.filter(p => p.id !== postId));
+      if (topic) {
+        setTopic({
+          ...topic,
+          replies: Math.max(0, topic.replies - 1)
+        });
       }
+
+      // Then send delete request to backend
+      await api.delete(`/forum/post/${postId}`);
     } catch (err: any) {
+      // Revert optimistic update on error
+      setPosts(originalPosts);
+      if (originalTopic) setTopic(originalTopic);
       alert(err.response?.data?.error || 'Failed to delete post');
     }
   };

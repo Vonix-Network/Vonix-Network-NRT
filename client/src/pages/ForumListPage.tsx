@@ -88,8 +88,15 @@ const ForumListPage: React.FC = () => {
     <div className="forum-list-page">
       <div className="container">
         <div className="forum-header">
-          <h1>Community Forums</h1>
-          <p>Join the discussion and connect with our community</p>
+          <div className="header-content">
+            <div className="header-text">
+              <h1>Community Forums</h1>
+              <p>Join the discussion and connect with our community</p>
+            </div>
+            <Link to="/leaderboard" className="btn btn-primary leaderboard-btn">
+              🏆 Reputation Leaderboard
+            </Link>
+          </div>
         </div>
 
         {categories.map(category => (

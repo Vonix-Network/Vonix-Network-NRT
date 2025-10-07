@@ -112,18 +112,27 @@ const SocialPage: React.FC = () => {
   const deleteComment = async (postId: number, commentId: number) => {
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
+    // Optimistically update UI immediately
+    const originalComments = { ...comments };
+    const originalPosts = [...posts];
+    
     try {
-      await api.delete(`/social/comments/${commentId}`);
+      // Update UI immediately for better UX
       setComments({
         ...comments,
         [postId]: comments[postId].filter(c => c.id !== commentId)
       });
-      // Update comment count on post
       setPosts(posts.map(p => 
-        p.id === postId ? { ...p, comment_count: p.comment_count - 1 } : p
+        p.id === postId ? { ...p, comment_count: Math.max(0, p.comment_count - 1) } : p
       ));
+
+      // Then send delete request to backend
+      await api.delete(`/social/comments/${commentId}`);
     } catch (error: any) {
       console.error('Error deleting comment:', error);
+      // Revert optimistic update on error
+      setComments(originalComments);
+      setPosts(originalPosts);
       alert(error.response?.data?.error || 'Failed to delete comment');
     }
   };

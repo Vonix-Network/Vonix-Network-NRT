@@ -23,6 +23,7 @@ import ForumListPage from './pages/ForumListPage';
 import ForumViewPage from './pages/ForumViewPage';
 import ForumTopicPage from './pages/ForumTopicPage';
 import ForumNewTopicPage from './pages/ForumNewTopicPage';
+import ReputationLeaderboard from './pages/ReputationLeaderboard';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FeatureProvider } from './context/FeatureContext';
@@ -126,6 +127,7 @@ function AppContent() {
           </PrivateRoute>
         } />}
         {flags.forum && <Route path="/forum/topic/:slug" element={<ForumTopicPage />} />}
+        {flags.forum && <Route path="/leaderboard" element={<ReputationLeaderboard />} />}
         <Route
           path="/messages"
           element={

@@ -3,7 +3,7 @@ const router = express.Router();
 const { getDatabase } = require('../database/init');
 const { authenticateToken, optionalAuth, verifyToken } = require('../middleware/auth');
 const { awardReputation } = require('../services/reputation');
-const { cacheMiddleware } = require('../middleware/cache');
+const { cacheMiddleware, clearCache } = require('../middleware/cache');
 const { parseBBCode } = require('../utils/bbcode');
 const { validateTopicCreation, validatePostContent, validateId, validateSearch } = require('../middleware/validation');
 const logger = require('../utils/logger');
@@ -64,7 +64,8 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
         u.username as last_post_username,
         u.minecraft_uuid as last_post_user_uuid,
         t.title as last_post_topic_title,
-        t.slug as last_post_topic_slug
+        t.slug as last_post_topic_slug,
+        f.last_post_time
       FROM forums f
       LEFT JOIN users u ON f.last_post_user_id = u.id
       LEFT JOIN forum_topics t ON f.last_post_topic_id = t.id
@@ -283,9 +284,6 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
     const postResult = db
       .prepare('INSERT INTO forum_posts (topic_id, user_id, content, bbcode_content) VALUES (?, ?, ?, ?)')
       .run(topicId, userId, content, content);
-
-    // Award reputation for creating a post
-    awardReputation(userId, 'POST_CREATED', "Posted in topic", postId);
     const postId = postResult.lastInsertRowid;
 
     db.prepare(`
@@ -306,7 +304,9 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
     `).run(postId, topicId, userId, forumId);
 
     // Award reputation for creating a topic
-    awardReputation(userId, 'TOPIC_CREATED', "Created topic: ${title}", topicId);
+    awardReputation(userId, 'TOPIC_CREATED', `Created topic: ${title}`, topicId);
+    // Award reputation for creating a post
+    awardReputation(userId, 'POST_CREATED', `Posted in topic: ${title}`, postId);
 
     if (poll && poll.question && poll.options && poll.options.length >= 2) {
       const pollResult = db
@@ -320,6 +320,10 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
 
     db.prepare('INSERT INTO forum_search_index (post_id, topic_id, user_id, content_text) VALUES (?, ?, ?, ?)')
       .run(postId, topicId, userId, content);
+
+    // Clear cache so new topic appears immediately
+    clearCache('/api/forum'); // Clear forum list
+    clearCache(`/api/forum/forum/${forumId}`); // Clear specific forum
 
     res.status(201).json({ success: true, topicId, slug, message: 'Topic created successfully' });
   } catch (error) {
@@ -382,6 +386,11 @@ router.post('/topic/:id/reply', verifyToken, validatePostContent, async (req, re
        VALUES (?, 'reply', ?, ?, ?, ?)`
     );
     subscribers.forEach(s => notifyStmt.run(s.user_id, topicId, postId, req.user.id, `New reply in: ${topic.title}`));
+
+    // Clear cache so new reply appears immediately
+    clearCache('/api/forum'); // Clear forum list
+    clearCache(`/api/forum/forum/${topic.forum_id}`); // Clear specific forum
+    clearCache(`/api/forum/topic/${topic.slug}`); // Clear topic page
 
     res.status(201).json({ success: true, postId, message: 'Reply posted successfully' });
   } catch (error) {
@@ -488,6 +497,10 @@ router.delete('/post/:id', verifyToken, async (req, res) => {
       `).run(post.forum_id);
     }
 
+    // Clear cache so changes appear immediately
+    clearCache('/api/forum'); // Clear forum list
+    clearCache(`/api/forum/forum/${post.forum_id}`); // Clear specific forum
+
     res.json({ success: true, message: 'Post deleted successfully' });
   } catch (error) {
     logger.error('Error deleting post:', error);
@@ -511,10 +524,10 @@ router.delete('/topic/:id', verifyToken, async (req, res) => {
 
     db.prepare(`
       UPDATE forums 
-      SET topics_count = topics_count - 1,
-          posts_count = CASE WHEN posts_count >= ? THEN posts_count - ? ELSE 0 END
+      SET topics_count = MAX(0, topics_count - 1),
+          posts_count = MAX(0, posts_count - ?)
       WHERE id = ?
-    `).run(postCount.count, postCount.count, topic.forum_id);
+    `).run(postCount.count, topic.forum_id);
 
     const lastPost = db
       .prepare(`
@@ -539,6 +552,10 @@ router.delete('/topic/:id', verifyToken, async (req, res) => {
         WHERE id = ?
       `).run(topic.forum_id);
     }
+
+    // Clear cache so deletion reflects immediately
+    clearCache('/api/forum'); // Clear forum list
+    clearCache(`/api/forum/forum/${topic.forum_id}`); // Clear specific forum
 
     res.json({ success: true, message: 'Topic deleted successfully' });
   } catch (error) {
