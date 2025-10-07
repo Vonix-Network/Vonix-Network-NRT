@@ -1,0 +1,235 @@
+.register-page {
+  min-height: calc(100vh - 80px);
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-container {
+  max-width: 1100px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 500px 1fr;
+  gap: 3rem;
+}
+
+.register-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.register-subtitle {
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0 0 2rem 0;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.code-input {
+  text-transform: uppercase;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-family: 'Courier New', monospace;
+}
+
+.checking-code {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.minecraft-user-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  border: 1px solid var(--accent-primary);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.minecraft-head {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.minecraft-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.minecraft-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.register-footer a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+.register-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.register-info > div {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.register-info h3, .register-info h4 {
+  font-size: 1.5rem;
+  margin: 0 0 1.5rem 0;
+  font-weight: 700;
+}
+
+.register-info h4 {
+  font-size: 1.25rem;
+}
+
+.register-info ol {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+}
+
+.register-info ol li {
+  counter-increment: step;
+  padding: 1rem 0;
+  padding-left: 3rem;
+  position: relative;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.register-info ol li:last-child {
+  border-bottom: none;
+}
+
+.register-info ol li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.register-info code {
+  background: var(--bg-card);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.register-benefits ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.register-benefits li {
+  padding: 0.75rem 0;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.register-benefits li::before {
+  content: attr(data-emoji);
+  position: absolute;
+  left: 0;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 968px) {
+  .register-container {
+    grid-template-columns: 1fr;
+  }
+
+  .register-card {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .register-page {
+    padding: 2rem 1rem;
+  }
+
+  .register-card {
+    padding: 1.5rem;
+  }
+
+  .register-info > div {
+    padding: 1.5rem;
+  }
+}

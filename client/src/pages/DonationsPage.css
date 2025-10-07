@@ -1,0 +1,273 @@
+.donations-page {
+  min-height: calc(100vh - 80px);
+  padding: 3rem 1rem;
+  overflow-x: hidden; /* prevent accidental horizontal scroll */
+}
+
+.donations-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.donations-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.donations-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+
+.donations-subtitle {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.donation-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.donation-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.donation-card-title {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.donation-note {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.crypto-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.crypto-item {
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.crypto-address {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  flex: 1;
+  min-width: 200px;
+  word-break: break-all;      /* wrap long addresses */
+  overflow-wrap: anywhere;    /* allow wrapping anywhere to avoid overflow */
+}
+
+.crypto-address.clickable:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: var(--bg-hover);
+  transform: scale(1.1);
+}
+
+.crypto-note {
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.donation-list-section .donations-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Make the donations table horizontally scrollable on small screens */
+.donations-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.donations-table table {
+  min-width: 600px; /* keep columns readable while allowing scroll */
+}
+
+.donations-table th, .donations-table td {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.supporter-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mc-head {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+
+.mc-head.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+
+.supporter-name { font-weight: 700; }
+.supporter-message { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* QR Code Modal */
+.qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.qr-modal-content {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qr-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.qr-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.qr-modal-title {
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+}
+
+.qr-image {
+  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.qr-address-box {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.qr-address {
+  word-break: break-all;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: block;
+}
+
+.qr-note {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .donations-page { padding: 2rem 1rem; }
+  
+  .qr-modal-content {
+    padding: 1.5rem;
+  }
+  
+  .crypto-address {
+    min-width: 150px;
+    font-size: 0.85rem;
+  }
+}

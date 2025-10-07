@@ -1,0 +1,260 @@
+.discover-page {
+  min-height: calc(100vh - 70px);
+  background: var(--bg-primary);
+  padding: 40px 20px;
+}
+
+.discover-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.discover-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.discover-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 10px 0;
+}
+
+.discover-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.search-bar-container {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 40px auto;
+}
+
+.discover-search-input {
+  width: 100%;
+  padding: 15px 50px 15px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 50px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.discover-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.discover-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.no-users {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-users h3 {
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.no-users p {
+  color: var(--text-tertiary);
+}
+
+.discover-page .users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.discover-page .user-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px 20px 20px 20px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  overflow: hidden;
+  width: 100%;
+}
+
+.discover-page .user-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary);
+}
+
+.discover-page .user-card-avatar-link {
+  display: block;
+  margin-bottom: 15px;
+}
+
+.discover-page .user-card-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  transition: transform 0.3s ease;
+}
+
+.discover-page .user-card-avatar-link:hover .user-card-avatar {
+  transform: scale(1.05);
+}
+
+.discover-page .user-card-info {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.discover-page .user-card-name {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+}
+
+.discover-page .user-card-name:hover {
+  color: var(--primary);
+}
+
+.discover-page .user-card-handle {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.discover-page .user-card-bio {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.discover-page .user-card-stats {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  margin-top: 10px;
+}
+
+.discover-page .user-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0px;
+  padding-top: 0px;
+  box-sizing: border-box;
+}
+
+.discover-page .user-card-actions .btn {
+  width: 100%;
+  max-width: 100%;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .discover-page {
+    padding: 20px 10px;
+  }
+
+  .discover-header h1 {
+    font-size: 2rem;
+  }
+
+  .discover-subtitle {
+    font-size: 1rem;
+  }
+
+  .discover-page .users-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .discover-page .user-card {
+    padding: 20px;
+  }
+
+  .discover-page .user-card-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .discover-page .user-card-actions .btn {
+    font-size: 0.85rem;
+    padding: 0.55rem 0.9rem;
+  }
+}
