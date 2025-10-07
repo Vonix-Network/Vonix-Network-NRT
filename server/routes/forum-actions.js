@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../database/init');
-const { verifyToken } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const { awardReputation } = require('../services/reputation');
+const logger = require('../utils/logger');
+const { awardReputation } = require('../services/reputation');
 
 // POST /api/forum-actions/subscribe/topic/:id - Subscribe to topic
-router.post('/subscribe/topic/:id', verifyToken, async (req, res) => {
+router.post('/subscribe/topic/:id', authenticateToken, async (req, res) => {
   try {
     const db = getDatabase();
     const topicId = parseInt(req.params.id);

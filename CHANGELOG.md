@@ -1,9 +1,9 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to the Vonix Network Community Platform will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File uploads (avatars, forum attachments)
 - OAuth integration (Discord, Google, GitHub)
 
-## [1.1.0] - 2025-10-06
+## [1.1.1] - 2025-10-07
 
 ### Added
 
@@ -33,7 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Achievement Badges System**: Award and display badges to users for accomplishments
 - **User Achievements**: Unlockable achievements with rarity levels and point values
 - **Activity Statistics**: Comprehensive tracking of topics created, posts, likes received/given, and best answers
-- **Reputation System**: Point-based reputation system for user engagement
+- **Reputation System**: Automatic point-based reputation system with 6 tiers (Newcomer, Rising Star, Respected, Veteran, Expert, Legend)
+- **Reputation Awards**: Automatic reputation points for creating topics (+5), posts (+2), and likes (+3)
+- **Reputation Leaderboards**: Backend API for top users by reputation with activity tracking
+- **Reputation Badges**: Visual badges displaying reputation tier with icons and colors
+- **Reputation History**: Complete logging of all reputation changes with reasons
 - **Activity Timeline**: View user's recent posts and topics
 - **Profile Stats API**: RESTful API endpoints for profile data, badges, and achievements
 
@@ -54,11 +58,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Time Period Filtering**: Filter analytics data by 7, 30, 60, or 90-day periods
 
 #### Database Enhancements
-- **New Tables**: `user_badges`, `user_achievements`, `user_activity_stats`
-- **User Table Extensions**: Added email, avatar_url, reputation, post_count, last_seen_at columns
+- **New Tables**: `user_badges`, `user_achievements`, `user_activity_stats`, `user_reputation_log`
+- **User Table Extensions**: Added email (unique index), avatar_url, reputation, post_count, last_seen_at columns
 - **Profile Extensions**: Added custom_banner, avatar_border, title columns to user_profiles
 - **Forum Subscriptions Enhancement**: Added email_notifications toggle
-- **Automatic Migrations**: Database migrations run automatically on server startup
+- **Automatic Migrations**: Database migrations run automatically on server startup (SQLite compatible)
 
 #### API Endpoints
 - **Email Management**: `/api/admin/email/settings`, `/api/admin/email/test`
@@ -82,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - **IMPLEMENTATION_GUIDE.md**: Comprehensive guide for new features with API documentation
 - **ROADMAP_FEATURES_SUMMARY.md**: Quick-start guide and feature summary
-- **MOBILE_NAVIGATION_UPDATE.md**: Mobile navigation improvements documentation
+- **README.md**: Updated with v1.1.0 features, email configuration, and API endpoints
+- **CHANGELOG.md**: Complete v1.1.0 release notes
 - Updated `.env.example` with email configuration options
 
 ### Fixed

@@ -89,13 +89,12 @@ function runMigrations(db) {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
-    logger.info('✅ user_badges table ready');
 
     // Create user_activity_stats table
     db.exec(`
       CREATE TABLE IF NOT EXISTS user_activity_stats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL UNIQUE,
+        user_id INTEGER NOT NULL,
         topics_created INTEGER DEFAULT 0,
         posts_created INTEGER DEFAULT 0,
         likes_received INTEGER DEFAULT 0,
@@ -103,11 +102,25 @@ function runMigrations(db) {
         best_answers INTEGER DEFAULT 0,
         days_active INTEGER DEFAULT 0,
         last_post_at DATETIME,
-        join_date DATETIME,
+        join_date DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
-    logger.info('✅ user_activity_stats table ready');
+
+    // Create user_reputation_log table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS user_reputation_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        action TEXT NOT NULL,
+        points INTEGER NOT NULL,
+        reason TEXT,
+        related_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    logger.info('✅ user_activity_stats and reputation_log tables ready');
 
     // Create user_achievements table
     db.exec(`

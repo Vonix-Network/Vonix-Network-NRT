@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](Dockerfile)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](package.json)
+[![Version](https://img.shields.io/badge/version-1.1.1-blue)](package.json)
 
 > A comprehensive Minecraft community platform featuring real-time Discord chat integration, server management, forums, blogs, social features, and a powerful admin dashboard with feature toggles.
 
@@ -25,12 +25,17 @@
 - **💰 Donation System**: Track donation goals and packages.
 - **👥 Social Features**: User profiles and private messaging.
 
-### New in v1.1.0
-- **📧 Email System**: SMTP configuration, templates, and automated notifications
-- **🏆 Advanced Profiles**: Badges, achievements, reputation, and activity statistics
-- **🔔 Forum Subscriptions**: Subscribe to topics/forums with email notifications
-- **🔍 Advanced Search**: Search forums with filters and sorting options
-- **📊 Analytics Dashboard**: User trends, forum activity, and top contributors with graphs
+### 🆕 New in v1.1.1
+- **📧 Email System**: Full SMTP configuration with admin dashboard, test emails, and notification templates
+- **🏆 Reputation System**: Automatic point awards, 6-tier ranking (Newcomer to Legend), reputation leaderboards
+- **🎖️ Badges & Achievements**: Earn badges for milestones, display achievement collections on profiles
+- **📊 Enhanced User Profiles**: Activity stats, post counts, likes received/given, best answers, custom titles
+- **🔔 Forum Subscriptions**: Subscribe to topics and forums with email notifications for new replies
+- **🔍 Advanced Forum Search**: Full-text search with author, date, and forum filters
+- **📈 Admin Analytics Dashboard**: Real-time graphs, user activity trends, forum statistics, top contributors
+- **📱 Mobile Navigation**: Professional hamburger menu with slide-in sidebar for admin dashboard
+- **🔧 Database Migrations**: Automatic schema updates on server start (SQLite compatible)
+- **✅ Bug Fixes**: Mobile navigation conflicts, forum admin routes, unique email constraints
 
 ### Technical Highlights
 - **⚡ Real-time Updates** - WebSocket connections for instant communication
@@ -197,6 +202,13 @@ See [`.env.example`](.env.example) for all available configuration options.
 | `DISCORD_BOT_TOKEN` | Discord bot token | _(optional)_ |
 | `DISCORD_CHANNEL_ID` | Discord channel for chat | _(optional)_ |
 | `DISCORD_WEBHOOK_URL` | Discord webhook URL | _(optional)_ |
+| `EMAIL_ENABLED` | Enable email features (0 or 1) | `0` |
+| `EMAIL_HOST` | SMTP server hostname | _(optional)_ |
+| `EMAIL_PORT` | SMTP port (587 or 465) | `587` |
+| `EMAIL_SECURE` | Use SSL (1) or TLS (0) | `0` |
+| `EMAIL_USER` | SMTP username | _(optional)_ |
+| `EMAIL_PASS` | SMTP password | _(optional)_ |
+| `EMAIL_FROM` | From email address | _(optional)_ |
 | `SENTRY_DSN` | Sentry error tracking DSN | _(optional)_ |
 | `DATABASE_PATH` | SQLite database path | `./data/vonix.db` |
 | `LOG_LEVEL` | Logging level | `info` |

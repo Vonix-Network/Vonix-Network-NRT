@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../database/init');
-const { verifyToken, optionalAuth } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const { awardReputation } = require('../services/reputation');
+const { awardReputation } = require('../services/reputation');
+const { awardReputation } = require('../services/reputation');
 const { cacheMiddleware } = require('../middleware/cache');
 const { parseBBCode } = require('../utils/bbcode');
 const { validateTopicCreation, validatePostContent, validateId, validateSearch } = require('../middleware/validation');
 const logger = require('../utils/logger');
-
 // Helper function to generate slug
 function generateSlug(title) {
   return (
@@ -283,6 +285,9 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
     const postResult = db
       .prepare('INSERT INTO forum_posts (topic_id, user_id, content, bbcode_content) VALUES (?, ?, ?, ?)')
       .run(topicId, userId, content, content);
+
+    // Award reputation for creating a post
+    awardReputation(userId, 'POST_CREATED', "Posted in topic", postId);
     const postId = postResult.lastInsertRowid;
 
     db.prepare(`
@@ -301,6 +306,9 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
           last_post_time = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(postId, topicId, userId, forumId);
+
+    // Award reputation for creating a topic
+    awardReputation(userId, 'TOPIC_CREATED', "Created topic: ${title}", topicId);
 
     if (poll && poll.question && poll.options && poll.options.length >= 2) {
       const pollResult = db
