@@ -37,6 +37,11 @@ const adminDiscordRoutes = require('./routes/admin-discord');
 const featuresRoutes = require('./routes/features');
 const adminFeaturesRoutes = require('./routes/admin-features');
 const adminRegistrationRoutes = require('./routes/admin-registration');
+const adminEmailRoutes = require('./routes/admin-email');
+const userProfilesRoutes = require('./routes/user-profiles');
+const forumSubscriptionsRoutes = require('./routes/forum-subscriptions');
+const forumSearchRoutes = require('./routes/forum-search');
+const adminAnalyticsRoutes = require('./routes/admin-analytics');
 
 // Services
 const { startDiscordBot, stopDiscordBot } = require('./services/discord');
@@ -152,13 +157,18 @@ app.use('/api/social', generalLimiter, socialRoutes);
 app.use('/api/forum', generalLimiter, forumCoreRoutes);
 app.use('/api/forum/actions', authLimiter, forumActionsRoutes);
 app.use('/api/forum/moderation', authLimiter, forumModerationRoutes);
-app.use('/api/forum/admin', authLimiter, forumAdminRoutes);
+app.use('/api/forum-admin', authLimiter, forumAdminRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/admin/discord', authLimiter, adminDiscordRoutes);
 app.use('/api/features', featuresRoutes);
 app.use('/api/admin/features', authLimiter, adminFeaturesRoutes);
 app.use('/api/admin/registration', authLimiter, adminRegistrationRoutes);
+app.use('/api/admin/email', authLimiter, adminEmailRoutes);
+app.use('/api/admin/analytics', authLimiter, adminAnalyticsRoutes);
+app.use('/api/user-profiles', generalLimiter, userProfilesRoutes);
+app.use('/api/forum/subscriptions', authLimiter, forumSubscriptionsRoutes);
+app.use('/api/forum/search', generalLimiter, forumSearchRoutes);
 
 // Legacy health endpoint
 app.get('/api/status', (req, res) => {

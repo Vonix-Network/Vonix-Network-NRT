@@ -3,51 +3,14 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDiscordPage from './AdminDiscordPage';
 import AdminFeaturesPage from './AdminFeaturesPage';
 import AdminRegistrationPage from './AdminRegistrationPage';
+import AdminEmailPage from './AdminEmailPage';
+import AdminAnalyticsPage from './AdminAnalyticsPage';
 import { useAuth } from '../context/AuthContext';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import api from '../services/api';
 import './AdminDashboard.css';
 
-// Reusable Quick Actions for Admin pages (shown at bottom for mobile navigation)
-const AdminQuickActions: React.FC = () => (
-  <div className="dashboard-quick-actions admin-quick-actions-footer">
-    <h2 className="section-title">Quick Actions</h2>
-    <div className="quick-actions-grid">
-      <a href="https://mintservers.com/dashboard" className="action-card" target="_blank" rel="noopener noreferrer">
-        <div className="action-icon">
-          <img src="https://mintservers.com/brand/icon.svg" alt="MintServers" style={{ width: 28, height: 28 }} />
-        </div>
-        <div className="action-title">Open MintServers</div>
-        <div className="action-description">Provision or manage hosting</div>
-      </a>
-      <Link to="/admin" className="action-card">
-        <div className="action-icon">📊</div>
-        <div className="action-title">Overview</div>
-        <div className="action-description">Admin dashboard overview</div>
-      </Link>
-      <Link to="/admin/servers" className="action-card">
-        <div className="action-icon">🎮</div>
-        <div className="action-title">Manage Servers</div>
-        <div className="action-description">View and manage servers</div>
-      </Link>
-      <Link to="/admin/blog" className="action-card">
-        <div className="action-icon">📝</div>
-        <div className="action-title">Blog Posts</div>
-        <div className="action-description">Create and edit posts</div>
-      </Link>
-      <Link to="/admin/users" className="action-card">
-        <div className="action-icon">👥</div>
-        <div className="action-title">Users</div>
-        <div className="action-description">Manage admin accounts</div>
-      </Link>
-      <Link to="/admin/donations" className="action-card">
-        <div className="action-icon">💖</div>
-        <div className="action-title">Donations</div>
-        <div className="action-description">Review and configure</div>
-      </Link>
-    </div>
-  </div>
-);
+// Removed AdminQuickActions component - using mobile sidebar instead
 
 interface Server {
   id: number;
@@ -67,10 +30,35 @@ interface Server {
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="admin-dashboard">
-      <div className="admin-sidebar">
+      {/* Admin Mobile Menu Button */}
+      <button 
+        className="admin-mobile-menu-button" 
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle admin menu"
+      >
+        <span className="admin-hamburger-icon">
+          {mobileMenuOpen ? '✕' : '☰'}
+        </span>
+      </button>
+
+      {/* Admin Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="admin-mobile-overlay" 
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      <div className={`admin-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="admin-sidebar-header">
           <h2 className="admin-sidebar-title">⚙️ Admin Panel</h2>
         </div>
@@ -135,6 +123,18 @@ const AdminDashboard: React.FC = () => {
           >
             🧰 Site Features
           </Link>
+          <Link
+            to="/admin/email"
+            className={`admin-nav-link ${location.pathname.includes('/admin/email') ? 'active' : ''}`}
+          >
+            📧 Email Settings
+          </Link>
+          <Link
+            to="/admin/analytics"
+            className={`admin-nav-link ${location.pathname.includes('/admin/analytics') ? 'active' : ''}`}
+          >
+            📊 Analytics
+          </Link>
         </nav>
       </div>
 
@@ -150,6 +150,8 @@ const AdminDashboard: React.FC = () => {
           <Route path="/discord" element={<AdminDiscordPage />} />
           <Route path="/registration" element={<AdminRegistrationPage />} />
           <Route path="/features" element={<AdminFeaturesPage />} />
+          <Route path="/email" element={<AdminEmailPage />} />
+          <Route path="/analytics" element={<AdminAnalyticsPage />} />
         </Routes>
       </div>
     </div>
@@ -446,8 +448,6 @@ const ManageServers: React.FC = () => {
           onClose={handleFormClose}
         />
       )}
-      {/* Mobile quick actions footer */}
-      <AdminQuickActions />
     </div>
   );
 };
@@ -753,8 +753,6 @@ const ManageBlog: React.FC = () => {
           }}
         />
       )}
-      {/* Mobile quick actions footer */}
-      <AdminQuickActions />
     </div>
   );
 };
@@ -1042,8 +1040,6 @@ const ManageUsers: React.FC = () => {
           }}
         />
       )}
-      {/* Mobile quick actions footer */}
-      <AdminQuickActions />
     </div>
   );
 };
@@ -1273,8 +1269,6 @@ const ManageForums: React.FC = () => {
       {activeTab === 'categories' && <ManageCategories />}
       {activeTab === 'forums' && <ManageForumsTab />}
       {activeTab === 'permissions' && <ManagePermissions />}
-      
-      <AdminQuickActions />
     </div>
   );
 };
@@ -1935,8 +1929,6 @@ const ForumModeration: React.FC = () => {
           </tbody>
         </table>
       </div>
-
-      <AdminQuickActions />
     </div>
   );
 };
@@ -2159,8 +2151,6 @@ function ManageDonations() {
           onSave={() => { setShowModal(false); setEditingDonation(null); loadAll(); }}
         />
       )}
-      {/* Mobile quick actions footer */}
-      <AdminQuickActions />
     </div>
   );
 };

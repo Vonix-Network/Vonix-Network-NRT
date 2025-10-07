@@ -619,6 +619,10 @@ function initializeDatabase() {
     console.log('✅ Sample forum structure created');
   }
 
+  // Run migrations for new features
+  const { runMigrations } = require('./migrations');
+  runMigrations(db);
+
   db.close();
   console.log('✅ Database initialized successfully');
 }
