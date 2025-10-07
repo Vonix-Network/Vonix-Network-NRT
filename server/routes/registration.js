@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDatabase } = require('../database/init');
 const { JWT_SECRET } = require('../middleware/auth');
+const { validateRegistrationApiKey } = require('../middleware/registration-auth');
 const crypto = require('crypto');
 
 const router = express.Router();
@@ -44,7 +45,8 @@ function isValidMinecraftUsername(username) {
 }
 
 // Generate registration code (called by Minecraft mod)
-router.post('/generate-code', (req, res) => {
+// Protected by API key to prevent abuse
+router.post('/generate-code', validateRegistrationApiKey, (req, res) => {
   const { minecraft_username, minecraft_uuid } = req.body;
 
   // Validate input
@@ -298,7 +300,7 @@ router.get('/stats', (req, res) => {
     const stats = {
       total_codes: db.prepare('SELECT COUNT(*) as count FROM registration_codes').get().count,
       used_codes: db.prepare('SELECT COUNT(*) as count FROM registration_codes WHERE used = 1').get().count,
-      active_codes: db.prepare('SELECT COUNT(*) as count FROM registration_codes WHERE used = 0 AND expires_at > datetime("now")').get().count,
+      active_codes: db.prepare("SELECT COUNT(*) as count FROM registration_codes WHERE used = 0 AND expires_at > datetime('now')").get().count,
       registered_users: db.prepare('SELECT COUNT(*) as count FROM users WHERE minecraft_uuid IS NOT NULL').get().count
     };
 

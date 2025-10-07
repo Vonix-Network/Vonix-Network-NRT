@@ -36,6 +36,7 @@ const setupRoutes = require('./routes/setup');
 const adminDiscordRoutes = require('./routes/admin-discord');
 const featuresRoutes = require('./routes/features');
 const adminFeaturesRoutes = require('./routes/admin-features');
+const adminRegistrationRoutes = require('./routes/admin-registration');
 
 // Services
 const { startDiscordBot, stopDiscordBot } = require('./services/discord');
@@ -157,6 +158,7 @@ app.use('/api/setup', setupRoutes);
 app.use('/api/admin/discord', authLimiter, adminDiscordRoutes);
 app.use('/api/features', featuresRoutes);
 app.use('/api/admin/features', authLimiter, adminFeaturesRoutes);
+app.use('/api/admin/registration', authLimiter, adminRegistrationRoutes);
 
 // Legacy health endpoint
 app.get('/api/status', (req, res) => {

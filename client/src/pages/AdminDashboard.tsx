@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDiscordPage from './AdminDiscordPage';
 import AdminFeaturesPage from './AdminFeaturesPage';
+import AdminRegistrationPage from './AdminRegistrationPage';
 import { useAuth } from '../context/AuthContext';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import api from '../services/api';
@@ -123,6 +124,12 @@ const AdminDashboard: React.FC = () => {
             🤖 Discord Bot
           </Link>
           <Link
+            to="/admin/registration"
+            className={`admin-nav-link ${location.pathname.includes('/admin/registration') ? 'active' : ''}`}
+          >
+            🔐 Registration
+          </Link>
+          <Link
             to="/admin/features"
             className={`admin-nav-link ${location.pathname.includes('/admin/features') ? 'active' : ''}`}
           >
@@ -141,6 +148,7 @@ const AdminDashboard: React.FC = () => {
           <Route path="/forums" element={<ManageForums />} />
           <Route path="/moderation" element={<ForumModeration />} />
           <Route path="/discord" element={<AdminDiscordPage />} />
+          <Route path="/registration" element={<AdminRegistrationPage />} />
           <Route path="/features" element={<AdminFeaturesPage />} />
         </Routes>
       </div>

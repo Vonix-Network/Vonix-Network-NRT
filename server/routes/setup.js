@@ -1,10 +1,18 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { getDatabase } = require('../database/init');
 const { getSetting, setSetting } = require('../utils/settings');
 const { startDiscordBot, reloadDiscordBot } = require('../services/discord');
 
 const router = express.Router();
+
+/**
+ * Generate a secure 32-character API key
+ */
+function generateApiKey() {
+  return crypto.randomBytes(32).toString('hex');
+}
 
 // GET /api/setup/status - returns if setup is required
 router.get('/status', (req, res) => {
@@ -48,6 +56,13 @@ router.post('/init', async (req, res) => {
       if (discord_bot_token) setSetting('DISCORD_BOT_TOKEN', discord_bot_token);
       if (discord_channel_id) setSetting('DISCORD_CHANNEL_ID', discord_channel_id);
       if (discord_webhook_url) setSetting('DISCORD_WEBHOOK_URL', discord_webhook_url);
+
+      // Generate registration API key if not exists
+      if (!getSetting('REGISTRATION_API_KEY')) {
+        const apiKey = generateApiKey();
+        setSetting('REGISTRATION_API_KEY', apiKey);
+        console.log('🔑 Generated Registration API Key for Minecraft mod/plugin');
+      }
 
       // Clear setup flag
       setSetting('setup_required', '0');

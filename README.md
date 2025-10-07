@@ -222,6 +222,7 @@ The platform includes a built-in registration system that allows players to regi
 // Minecraft mod/plugin makes this request
 POST /api/registration/generate-code
 Content-Type: application/json
+X-API-Key: your-registration-api-key-here
 
 {
   "minecraft_username": "PlayerName",
@@ -234,24 +235,52 @@ Content-Type: application/json
   "expires_in": 600,
   "minecraft_username": "PlayerName"
 }
+
+// Error responses (401/403)
+{
+  "error": "API key required",
+  "message": "Please provide X-API-Key header"
+}
 ```
 
 #### Security Features
 
+- **🔐 API Key Protection**: Requires authentication via `X-API-Key` header (auto-generated during setup)
 - **Secure Code Generation**: Cryptographically secure 6-character codes
 - **Time-Limited**: Codes expire after 10 minutes
 - **One-Time Use**: Each code can only be used once
 - **UUID Validation**: Prevents duplicate accounts per Minecraft account
 - **Password Requirements**: Enforces minimum 6 characters with letters and numbers
+- **Rate Limiting**: Prevents abuse with configurable limits per IP
 
 #### For Mod/Plugin Developers
 
 To integrate with your Minecraft server:
 
-1. Send POST request to `/api/registration/generate-code` when player types `/register`
-2. Display the generated code to the player in-game
-3. Optionally, provide a clickable link to your website's registration page
-4. Codes are automatically cleaned up after expiration or use
+1. **Get your API key** from Admin Dashboard > Registration Settings
+2. **Store the API key** securely in your mod/plugin configuration
+3. Send POST request to `/api/registration/generate-code` when player types `/register`
+   - Include `X-API-Key` header with your API key
+4. Display the generated code to the player in-game
+5. Optionally, provide a clickable link to your website's registration page
+6. Codes are automatically cleaned up after expiration or use
+
+**Example Minecraft mod/plugin code:**
+```java
+// Java example for Minecraft Forge/Fabric
+String apiKey = config.getRegistrationApiKey();
+String apiUrl = "https://api.vonix.network/api/registration/generate-code";
+
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create(apiUrl))
+    .header("Content-Type", "application/json")
+    .header("X-API-Key", apiKey)
+    .POST(HttpRequest.BodyPublishers.ofString(
+        String.format("{\"minecraft_username\":\"%s\",\"minecraft_uuid\":\"%s\"}", 
+            playerName, playerUUID)
+    ))
+    .build();
+```
 
 **Example response to player:**
 ```
@@ -259,6 +288,12 @@ Your registration code is: ABC123
 Visit https://vonix.network/register and enter this code
 Code expires in 10 minutes
 ```
+
+**Admin Dashboard:**
+- View current API key (never exposed in logs)
+- Regenerate API key if compromised
+- View registration statistics
+- Monitor recent registrations
 
 ## 🎯 Usage
 
@@ -286,6 +321,9 @@ The API is accessible at `http://localhost:5000/api`
 - `GET /api/admin/discord/settings` - Get Discord settings (admin only).
 - `POST /api/admin/discord/settings` - Update Discord settings (admin only).
 - `POST /api/admin/discord/start|stop|reload` - Manage the Discord bot (admin only).
+- `GET /api/admin/registration/api-key` - Get registration API key (admin only).
+- `POST /api/admin/registration/regenerate-key` - Regenerate API key (admin only).
+- `GET /api/admin/registration/stats` - Get detailed registration statistics (admin only).
 
 #### Servers
 - `GET /api/servers` - List all servers
