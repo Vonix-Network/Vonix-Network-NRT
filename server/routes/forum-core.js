@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../database/init');
-const { authenticateToken } = require('../middleware/auth');
-const { awardReputation } = require('../services/reputation');
-const { awardReputation } = require('../services/reputation');
+const { authenticateToken, optionalAuth, verifyToken } = require('../middleware/auth');
 const { awardReputation } = require('../services/reputation');
 const { cacheMiddleware } = require('../middleware/cache');
 const { parseBBCode } = require('../utils/bbcode');
