@@ -25,6 +25,13 @@
 - **💰 Donation System**: Track donation goals and packages.
 - **👥 Social Features**: User profiles and private messaging.
 
+### New in v1.1.0
+- **📧 Email System**: SMTP configuration, templates, and automated notifications
+- **🏆 Advanced Profiles**: Badges, achievements, reputation, and activity statistics
+- **🔔 Forum Subscriptions**: Subscribe to topics/forums with email notifications
+- **🔍 Advanced Search**: Search forums with filters and sorting options
+- **📊 Analytics Dashboard**: User trends, forum activity, and top contributors with graphs
+
 ### Technical Highlights
 - **⚡ Real-time Updates** - WebSocket connections for instant communication
 - **🛡️ Security First** - Helmet.js, rate limiting, input validation, and XSS protection
@@ -324,6 +331,12 @@ The API is accessible at `http://localhost:5000/api`
 - `GET /api/admin/registration/api-key` - Get registration API key (admin only).
 - `POST /api/admin/registration/regenerate-key` - Regenerate API key (admin only).
 - `GET /api/admin/registration/stats` - Get detailed registration statistics (admin only).
+- `GET /api/admin/email/settings` - Get email configuration (admin only).
+- `POST /api/admin/email/settings` - Update email settings (admin only).
+- `POST /api/admin/email/test` - Send test email (admin only).
+- `GET /api/admin/analytics/overview` - Get analytics overview (admin only).
+- `GET /api/admin/analytics/user-activity` - Get user activity trends (admin only).
+- `GET /api/admin/analytics/forum-activity` - Get forum activity trends (admin only).
 
 #### Servers
 - `GET /api/servers` - List all servers
@@ -364,6 +377,21 @@ The API is accessible at `http://localhost:5000/api`
 - `POST /api/messages/:userId` - Send message to user
 - `PUT /api/messages/:messageId/read` - Mark message as read
 - `DELETE /api/messages/:messageId` - Delete message
+
+#### User Profiles (Enhanced)
+- `GET /api/user-profiles/:userId` - Get profile with stats, badges, and achievements
+- `PUT /api/user-profiles/:userId` - Update user profile
+- `POST /api/user-profiles/:userId/badges` - Award badge (admin only)
+- `POST /api/user-profiles/:userId/achievements` - Grant achievement (admin only)
+- `GET /api/user-profiles/:userId/activity` - Get user activity timeline
+
+#### Forum Subscriptions
+- `GET /api/forum/subscriptions` - Get user's subscriptions
+- `POST /api/forum/subscriptions/topic/:topicId` - Subscribe to topic
+- `DELETE /api/forum/subscriptions/topic/:topicId` - Unsubscribe from topic
+- `POST /api/forum/subscriptions/forum/:forumId` - Subscribe to forum
+- `DELETE /api/forum/subscriptions/forum/:forumId` - Unsubscribe from forum
+- `GET /api/forum/search` - Advanced forum search with filters
 
 #### Social Features
 - `GET /api/social/profile/:userId` - Get user profile
@@ -748,7 +776,7 @@ Default rate limits (configurable in `server/index.js`):
 
 ## 📊 Project Status
 
-Current Version: **2.1.0**
+Current Version: **1.1.0**
 
 ### Completed Features
 - ✅ Core features complete
@@ -762,12 +790,24 @@ Current Version: **2.1.0**
 - ✅ Feature toggles system
 - ✅ Dynamic configuration
 - ✅ Enhanced UI/UX
+- ✅ Email system with SMTP configuration (v1.1.0)
+- ✅ Advanced user profiles with badges (v1.1.0)
+- ✅ Forum subscriptions and search (v1.1.0)
+- ✅ Analytics dashboard (v1.1.0)
+
+### Recently Added (v1.1.0)
+- ✅ Email system with SMTP configuration
+- ✅ Advanced user profiles with badges and achievements
+- ✅ Enhanced forum features (subscriptions, search, email notifications)
+- ✅ Admin analytics dashboard with graphs and insights
 
 ### Planned Features
-- 🚧 Redis caching (v2.2.0)
-- 🚧 Mobile app (v3.0.0)
-- 🚧 Plugin system (v2.3.0)
-- 🚧 Multi-language support (v2.4.0)
+- 🚧 Two-Factor Authentication (v1.2.0)
+- 🚧 Redis caching (v1.2.0)
+- 🚧 File uploads (v1.2.0)
+- 🚧 Mobile app (v2.0.0)
+- 🚧 Plugin system (v2.0.0)
+- 🚧 Multi-language support (v2.0.0)
 
 ---
 

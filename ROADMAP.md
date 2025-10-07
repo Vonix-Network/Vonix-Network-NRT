@@ -19,32 +19,47 @@ This document outlines the planned features and improvements for Vonix Network.
 
 ---
 
-## Version 1.1.0 🚧 (In Planning - Q1 2025)
+## Version 1.1.0 ✅ (Released - 2025-10-06)
 
 ### Features
+- [x] **Email System Configuration**
+  - SMTP configuration interface
+  - Email templates (welcome, password reset, notifications)
+  - Test email functionality
+  - Support for multiple providers (Gmail, Outlook, SendGrid, etc.)
+
+- [x] **Advanced User Profiles**
+  - Custom profile banners ✅
+  - Achievement badges ✅
+  - Activity statistics ✅
+  - Reputation system ✅
+  - User activity timeline
+
+- [x] **Enhanced Forum Features**
+  - Thread subscriptions ✅
+  - Email notifications ✅
+  - Advanced search ✅
+  - Forum subscriptions
+  - Search with filters
+
+- [x] **Improved Dashboard**
+  - Analytics widgets ✅
+  - User activity graphs ✅
+  - Server statistics ✅
+  - Forum activity visualization
+  - Top users rankings
+  - Recent activity feed
+  - Time period filtering
+
+### In Progress
 - [ ] **Two-Factor Authentication (2FA)**
   - TOTP-based authentication
   - Backup codes
   - Recovery options
 
-- [ ] **Advanced User Profiles**
-  - Custom profile banners
-  - Achievement badges
-  - Activity statistics
-  - Reputation system
-
-- [ ] **Enhanced Forum Features**
-  - Thread subscriptions
-  - Email notifications
-  - Advanced search
-  - Markdown preview
+- [ ] **Code Enhancements**
+  - Markdown preview in forum editor
   - Code syntax highlighting
-
-- [ ] **Improved Dashboard**
-  - Analytics widgets
-  - User activity graphs
-  - Server statistics
-  - Quick actions panel
 
 ### Improvements
 - [ ] Performance optimization
@@ -61,9 +76,15 @@ This document outlines the planned features and improvements for Vonix Network.
 
 ---
 
-## Version 1.2.0 📅 (Planned - Q2 2025)
+## Version 1.2.0 📅 (Planned - Q1 2025)
 
 ### Features
+- [ ] **Two-Factor Authentication (2FA)**
+  - TOTP-based authentication
+  - Backup codes
+  - Recovery options
+  - Admin enforcement options
+
 - [ ] **Redis Integration**
   - Distributed caching
   - Session storage
@@ -82,11 +103,11 @@ This document outlines the planned features and improvements for Vonix Network.
   - Ban management
   - Audit logs
 
-- [ ] **Email System**
-  - Email verification
-  - Password reset
-  - Notification emails
+- [ ] **Extended Email Features**
+  - Email verification for new accounts
+  - Password reset via email
   - Newsletter support
+  - Email digest system
 
 - [ ] **OAuth Integration**
   - Discord OAuth
