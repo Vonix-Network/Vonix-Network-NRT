@@ -83,20 +83,31 @@ const allowedOrigins = [
   'http://api.vonix.network',
   'https://localhost:3000',
   'http://localhost:3000',
-  'http://vonix.network:3000'
+  'http://vonix.network:3000',
+  'http://localhost:3001',
+  'https://localhost:3001'
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
+      logger.info(`CORS allowed origin: ${origin}`);
       callback(null, true);
     } else {
       logger.warn(`CORS blocked origin: ${origin}`);
+      logger.warn(`Allowed origins: ${allowedOrigins.join(', ')}`);
       callback(null, false);
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
