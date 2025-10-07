@@ -17,6 +17,7 @@
 - **🎛️ Feature Toggles**: Dynamically enable or disable major site sections in real-time.
 - **🤖 Discord Bot Management**: Start, stop, and reload the Discord bot directly from the admin UI.
 - **🔐 User Authentication**: Secure, JWT-based authentication with role-based access.
+- **🎮 Minecraft Registration System**: In-game registration with secure code generation for seamless player onboarding.
 - **💬 Real-time Discord Chat**: Live chat integration on the homepage.
 - **🎮 Server Management**: Display Minecraft server status, player counts, and details.
 - **📝 Forum System**: Full-featured community forums with moderation tools.
@@ -44,6 +45,8 @@
 - [Project Structure](#-project-structure)
 - [Development](#-development)
 - [Deployment](#-deployment)
+- [Security](#-security)
+- [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -201,6 +204,62 @@ See [`.env.example`](.env.example) for all available configuration options.
 
 For detailed setup instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
+### Minecraft Registration System
+
+The platform includes a built-in registration system that allows players to register accounts directly from in-game using a Minecraft mod/plugin.
+
+#### How It Works
+
+1. **Player initiates registration in-game** - Player types a command like `/register`
+2. **Mod/Plugin requests code** - POST request to `/api/registration/generate-code` with player's username and UUID
+3. **Player receives code** - A 6-character code valid for 10 minutes is generated
+4. **Player completes registration** - Player visits the website and enters the code with their desired password
+5. **Account created** - User account is automatically linked to their Minecraft UUID
+
+#### API Integration Example
+
+```javascript
+// Minecraft mod/plugin makes this request
+POST /api/registration/generate-code
+Content-Type: application/json
+
+{
+  "minecraft_username": "PlayerName",
+  "minecraft_uuid": "12345678-1234-1234-1234-123456789abc"
+}
+
+// Response
+{
+  "code": "ABC123",
+  "expires_in": 600,
+  "minecraft_username": "PlayerName"
+}
+```
+
+#### Security Features
+
+- **Secure Code Generation**: Cryptographically secure 6-character codes
+- **Time-Limited**: Codes expire after 10 minutes
+- **One-Time Use**: Each code can only be used once
+- **UUID Validation**: Prevents duplicate accounts per Minecraft account
+- **Password Requirements**: Enforces minimum 6 characters with letters and numbers
+
+#### For Mod/Plugin Developers
+
+To integrate with your Minecraft server:
+
+1. Send POST request to `/api/registration/generate-code` when player types `/register`
+2. Display the generated code to the player in-game
+3. Optionally, provide a clickable link to your website's registration page
+4. Codes are automatically cleaned up after expiration or use
+
+**Example response to player:**
+```
+Your registration code is: ABC123
+Visit https://vonix.network/register and enter this code
+Code expires in 10 minutes
+```
+
 ## 🎯 Usage
 
 ### API Endpoints
@@ -211,6 +270,12 @@ The API is accessible at `http://localhost:5000/api`
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/refresh` - Refresh JWT token
+
+#### Minecraft Registration (In-Game)
+- `POST /api/registration/generate-code` - Generate registration code (called by Minecraft mod/plugin)
+- `POST /api/registration/register` - Complete registration with code
+- `GET /api/registration/check-code/:code` - Validate registration code
+- `GET /api/registration/stats` - Get registration statistics
 
 #### Setup & Admin
 - `GET /api/setup/status` - Check if setup is required.
@@ -227,15 +292,63 @@ The API is accessible at `http://localhost:5000/api`
 - `GET /api/servers/:id` - Get server details
 - `GET /api/servers/:id/status` - Get server status
 
+#### Users
+- `GET /api/users` - List all users (admin only)
+- `GET /api/users/me` - Get current user info
+- `GET /api/users/discover` - Get users for discovery
+- `POST /api/users` - Create new user (admin only)
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user (admin only)
+
+#### Blog
+- `GET /api/blog` - List published blog posts
+- `GET /api/blog/:id` - Get single blog post
+- `POST /api/blog` - Create blog post (admin only)
+- `PUT /api/blog/:id` - Update blog post (admin only)
+- `DELETE /api/blog/:id` - Delete blog post (admin only)
+
 #### Forum
 - `GET /api/forum/categories` - List categories
 - `GET /api/forum/posts` - List posts
+- `GET /api/forum/posts/:id` - Get single post
 - `POST /api/forum/posts` - Create post
 - `PUT /api/forum/posts/:id` - Update post
+- `DELETE /api/forum/posts/:id` - Delete post
+- `POST /api/forum/posts/:id/comments` - Add comment
+- `POST /api/forum/posts/:id/like` - Like/unlike post
+- `POST /api/forum/posts/:id/pin` - Pin post (moderator)
+- `POST /api/forum/posts/:id/lock` - Lock post (moderator)
+
+#### Private Messages
+- `GET /api/messages/search-users` - Search users for messaging
+- `GET /api/messages/conversations` - Get conversation list
+- `GET /api/messages/:userId` - Get messages with specific user
+- `POST /api/messages/:userId` - Send message to user
+- `PUT /api/messages/:messageId/read` - Mark message as read
+- `DELETE /api/messages/:messageId` - Delete message
+
+#### Social Features
+- `GET /api/social/profile/:userId` - Get user profile
+- `POST /api/social/follow/:userId` - Follow user
+- `DELETE /api/social/follow/:userId` - Unfollow user
+- `GET /api/social/followers/:userId` - Get user's followers
+- `GET /api/social/following/:userId` - Get who user follows
+
+#### Donations
+- `GET /api/donations/public` - Get public donations list
+- `GET /api/donations` - Get all donations (admin only)
+- `POST /api/donations` - Record donation (admin only)
+- `PUT /api/donations/:id` - Update donation (admin only)
+- `DELETE /api/donations/:id` - Delete donation (admin only)
 
 #### Chat
 - `GET /api/chat/messages` - Get chat history
 - WebSocket: `ws://localhost:5000/ws/chat` - Real-time chat
+
+#### Health & Monitoring
+- `GET /api/health` - Basic health check
+- `GET /api/health/detailed` - Detailed system status
+- Includes database, Discord bot, WebSocket, and cache statistics
 
 For complete API documentation, visit `http://localhost:5000/api-docs`
 
@@ -483,6 +596,99 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React** - UI library
 - **Discord.js** - Discord integration
 - **better-sqlite3** - Fast SQLite database
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### CORS Errors
+```
+Access to XMLHttpRequest blocked by CORS policy
+```
+**Solution**: 
+- Verify `CLIENT_URL` in `.env` matches your frontend domain
+- Restart the server after changing CORS settings
+- Check server logs for blocked origins
+
+#### Database Locked Error
+```
+SQLITE_BUSY: database is locked
+```
+**Solution**: 
+- SQLite uses WAL mode by default for better concurrency
+- Ensure no other processes are accessing the database
+- Check file permissions on `data/vonix.db`
+
+#### Port Already in Use
+```
+Error: listen EADDRINUSE: address already in use :::5000
+```
+**Solution**: 
+```bash
+# Find process using port 5000
+# Windows:
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+
+# Linux/Mac:
+lsof -i :5000
+kill -9 <PID>
+```
+
+#### Discord Bot Not Connecting
+**Solution**: 
+- Verify bot token in `.env` is correct
+- Check bot has required intents enabled in Discord Developer Portal
+- Ensure bot is invited to your server
+- Check server logs for specific error messages
+
+#### 500 Internal Server Error on User Creation
+**Solution**: 
+- Check if database has been initialized properly
+- Verify all required environment variables are set
+- Check server logs for specific error messages
+- Ensure `getDatabase()` is properly imported in routes
+
+#### Registration Codes Not Working
+**Solution**: 
+- Codes expire after 10 minutes
+- Each code is one-time use only
+- Check database has `registration_codes` table
+- Verify system clock is correct (codes use timestamps)
+
+### Database Information
+
+#### Tables Created on Initialization
+- `users` - User accounts with Minecraft linking
+- `servers` - Minecraft server information
+- `blog_posts` - Blog content
+- `forum_categories` - Forum structure
+- `forum_posts` - Forum posts and threads
+- `forum_comments` - Forum post comments
+- `chat_messages` - Discord chat history
+- `donations` - Donation tracking
+- `private_messages` - User-to-user messages
+- `follows` - Social following relationships
+- `registration_codes` - Minecraft registration codes
+
+#### Database Backup & Restore
+```bash
+# Backup (creates timestamped backup in backups/)
+npm run backup
+
+# Manual backup
+cp data/vonix.db backups/vonix-backup-$(date +%Y%m%d).db
+
+# Restore from backup
+cp backups/vonix-backup-YYYYMMDD.db data/vonix.db
+```
+
+### Rate Limiting
+
+Default rate limits (configurable in `server/index.js`):
+- **General API**: 200 requests per 5 minutes
+- **Authentication**: 10 login attempts per 15 minutes per IP
+- **Registration**: 5 code generations per hour per IP
 
 ## 📞 Support
 
