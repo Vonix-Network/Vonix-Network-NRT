@@ -102,7 +102,6 @@ const ReputationLeaderboard: React.FC = () => {
                 <Link to={`/users/${users[1].id}`} className="podium-card">
                   <div className="podium-avatar-container">
                     <img src={getAvatarUrl(users[1])} alt={users[1].username} className="podium-avatar" />
-                    <div className="podium-letter">{(users[1].minecraft_username || users[1].username).charAt(0).toUpperCase()}</div>
                   </div>
                   <div className="podium-info">
                     <div className="podium-username">{users[1].minecraft_username || users[1].username}</div>
@@ -119,7 +118,6 @@ const ReputationLeaderboard: React.FC = () => {
               <Link to={`/users/${users[0].id}`} className="podium-card podium-winner">
                 <div className="podium-avatar-container">
                   <img src={getAvatarUrl(users[0])} alt={users[0].username} className="podium-avatar" />
-                  <div className="podium-letter">{(users[0].minecraft_username || users[0].username).charAt(0).toUpperCase()}</div>
                   <div className="winner-crown">🏆</div>
                 </div>
                 <div className="podium-info">
@@ -137,7 +135,6 @@ const ReputationLeaderboard: React.FC = () => {
                 <Link to={`/users/${users[2].id}`} className="podium-card">
                   <div className="podium-avatar-container">
                     <img src={getAvatarUrl(users[2])} alt={users[2].username} className="podium-avatar" />
-                    <div className="podium-letter">{(users[2].minecraft_username || users[2].username).charAt(0).toUpperCase()}</div>
                   </div>
                   <div className="podium-info">
                     <div className="podium-username">{users[2].minecraft_username || users[2].username}</div>

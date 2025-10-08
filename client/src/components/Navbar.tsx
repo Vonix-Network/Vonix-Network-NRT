@@ -92,6 +92,13 @@ const Navbar: React.FC = () => {
           >
             Blog
           </Link>
+          <Link
+            to="/leaderboard"
+            className={`nav-link ${isActive('/leaderboard') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Leaderboard
+          </Link>
           {flags.forum && (
             <Link
               to="/forum"
