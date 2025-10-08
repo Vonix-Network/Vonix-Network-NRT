@@ -30,7 +30,7 @@ const HomePage: React.FC = () => {
                 rel="noopener noreferrer"
                 className="btn btn-secondary btn-lg"
               >
-                👥 View Servers
+                👥 Join Us on Discord
               </a>
             </div>
           </div>
