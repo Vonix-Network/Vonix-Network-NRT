@@ -186,20 +186,18 @@ const ForumViewPage: React.FC = () => {
                   className={`topic-item ${topic.hasUnread ? 'unread' : ''} ${topic.pinned ? 'pinned' : ''} ${topic.announcement ? 'announcement' : ''}`}
                 >
                   <div className="topic-title-col">
-                    <div className="topic-icons">
-                      {topic.announcement === 1 && <span className="badge badge-announcement">📢 Announcement</span>}
-                      {topic.pinned === 1 && !topic.announcement && <span className="badge badge-pinned">📌 Pinned</span>}
-                      {topic.locked === 1 && <span className="badge badge-locked">🔒 Locked</span>}
+                    <div className="topic-badges">
+                      {topic.announcement === 1 && <span className="badge badge-announcement">📢</span>}
+                      {topic.pinned === 1 && !topic.announcement && <span className="badge badge-pinned">📌</span>}
+                      {topic.locked === 1 && <span className="badge badge-locked">🔒</span>}
                     </div>
-                    <h3>{topic.title}</h3>
+                    <h3 className="topic-title">{topic.title}</h3>
                     <div className="topic-author">
-                      {topic.author_uuid && (
-                        <img 
-                          src={`https://crafatar.com/avatars/${topic.author_uuid}?size=20&overlay`}
-                          alt={topic.author_username}
-                          className="user-avatar-tiny"
-                        />
-                      )}
+                      <img 
+                        src={`https://mc-heads.net/head/${topic.author_username === 'admin' ? 'maid' : topic.author_username}`}
+                        alt={topic.author_username}
+                        className="user-avatar-tiny"
+                      />
                       <span>by {topic.author_username}</span>
                     </div>
                   </div>
@@ -219,13 +217,11 @@ const ForumViewPage: React.FC = () => {
                     {topic.last_post_time && topic.last_post_username ? (
                       <>
                         <div className="last-post-user">
-                          {topic.last_post_user_uuid && (
-                            <img 
-                              src={`https://crafatar.com/avatars/${topic.last_post_user_uuid}?size=24&overlay`}
-                              alt={topic.last_post_username}
-                              className="user-avatar-small"
-                            />
-                          )}
+                          <img 
+                            src={`https://mc-heads.net/head/${topic.last_post_username === 'admin' ? 'maid' : topic.last_post_username}`}
+                            alt={topic.last_post_username}
+                            className="user-avatar-small"
+                          />
                           <span>{topic.last_post_username}</span>
                         </div>
                         <div className="last-post-time">{formatDate(topic.last_post_time)}</div>

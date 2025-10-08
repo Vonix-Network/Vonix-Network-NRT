@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
   margin: 0;
   padding: 0;
@@ -5,32 +9,37 @@
 }
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a26;
-  --bg-card: #1e1e2e;
-  --bg-hover: #252535;
+  /* Minecraft-themed Dark Background Colors */
+  --bg-primary: #0f151b;
+  --bg-secondary: #151b22;
+  --bg-tertiary: #1a2129;
+  --bg-card: #242d38;
+  --bg-hover: #2a3441;
   
-  --accent-primary: #6366f1;
-  --accent-secondary: #8b5cf6;
-  --accent-tertiary: #06b6d4;
-  --accent-success: #10b981;
+  /* Gaming Green Accent (from design) */
+  --accent-primary: #00d97e;
+  --accent-secondary: #00b368;
+  --accent-tertiary: #008c52;
+  --accent-success: #00d97e;
   --accent-warning: #f59e0b;
   --accent-error: #ef4444;
   
+  /* Text Colors */
   --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
   
-  --border-color: #27273a;
+  /* Border & Shadow */
+  --border-color: #2a3441;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
   
-  --glow-primary: 0 0 20px rgba(99, 102, 241, 0.3);
-  --glow-secondary: 0 0 20px rgba(139, 92, 246, 0.3);
-  --glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
+  /* Green Glow Effects */
+  --glow-primary: 0 0 20px rgba(0, 217, 126, 0.3);
+  --glow-secondary: 0 0 20px rgba(0, 217, 126, 0.5);
+  --glow-success: 0 0 20px rgba(0, 217, 126, 0.3);
 }
 
 body {

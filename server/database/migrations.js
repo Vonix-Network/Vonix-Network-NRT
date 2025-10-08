@@ -140,11 +140,28 @@ function runMigrations(db) {
     `);
     logger.info('✅ user_achievements table ready');
 
+    // Create post_votes table for upvote/downvote system
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS post_votes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        vote_type TEXT NOT NULL CHECK (vote_type IN ('up', 'down')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES forum_posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(post_id, user_id)
+      )
+    `);
+    logger.info('✅ post_votes table ready');
+
     // Create indexes for achievements and badges
     db.exec(`
       CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
       CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
       CREATE INDEX IF NOT EXISTS idx_user_activity_user ON user_activity_stats(user_id);
+      CREATE INDEX IF NOT EXISTS idx_post_votes_post ON post_votes(post_id);
+      CREATE INDEX IF NOT EXISTS idx_post_votes_user ON post_votes(user_id);
     `);
 
     // Add email_notifications column to forum_subscriptions if it doesn't exist

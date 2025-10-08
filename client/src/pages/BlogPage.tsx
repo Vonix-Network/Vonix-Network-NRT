@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import './BlogPage.css';
 
@@ -14,6 +15,7 @@ interface BlogPost {
 }
 
 const BlogPage: React.FC = () => {
+  const { user } = useAuth();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,10 +58,17 @@ const BlogPage: React.FC = () => {
     <div className="blog-page">
       <div className="container">
         <div className="page-header animate-fadeIn">
-          <h1 className="page-title">📝 Blog</h1>
-          <p className="page-subtitle">
-            Latest news, updates, and announcements from Vonix.Network
-          </p>
+          <div>
+            <h1 className="page-title">📝 Blog</h1>
+            <p className="page-subtitle">
+              Latest news, updates, and announcements from Vonix.Network
+            </p>
+          </div>
+          {user?.role === 'admin' && (
+            <Link to="/admin/blog" className="btn btn-primary">
+              ➕ New Post
+            </Link>
+          )}
         </div>
 
         {posts.length === 0 ? (

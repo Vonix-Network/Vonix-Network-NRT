@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './AdminDashboard.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 interface Stats {
   users: {
@@ -94,7 +94,10 @@ const AdminAnalyticsPage: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">📊 Analytics Dashboard</h1>
+          <h1 className="section-title">
+            <span className="title-icon">📊</span>
+            <span className="title-text">Analytics Dashboard</span>
+          </h1>
           <p className="section-subtitle">
             Comprehensive analytics and insights about your community
           </p>

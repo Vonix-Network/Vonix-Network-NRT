@@ -25,10 +25,8 @@
 .admin-sidebar-title {
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-primary);
+  text-shadow: 0 0 15px rgba(0, 217, 126, 0.4);
   margin: 0;
 }
 
@@ -57,9 +55,10 @@
 }
 
 .admin-nav-link.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
-  color: var(--text-primary);
+  background: linear-gradient(135deg, rgba(0, 217, 126, 0.1), rgba(0, 179, 104, 0.1));
+  color: var(--accent-primary);
   border-left: 3px solid var(--accent-primary);
+  box-shadow: 0 0 10px rgba(0, 217, 126, 0.15);
 }
 
 .admin-content {
@@ -98,6 +97,10 @@
   margin-bottom: 3rem;
 }
 
+.manage-section .dashboard-stats {
+  margin-top: 2rem;
+}
+
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -121,8 +124,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, rgba(0, 217, 126, 0.1), rgba(0, 179, 104, 0.1));
   border-radius: 12px;
+  border: 1px solid rgba(0, 217, 126, 0.2);
 }
 
 .stat-content {
@@ -386,9 +390,25 @@
 
   /* Remove quick actions - using mobile sidebar instead */
 
+  /* Section header mobile adjustments */
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-title .title-icon {
+    font-size: 1.25rem;
+  }
+
   /* Prevent header action buttons from pushing width */
   .section-header .btn {
     width: 100%;
+    margin-top: 1rem;
   }
 
   /* Stack table action buttons */
@@ -417,25 +437,78 @@
   }
 }
 
-.section-header {
+.admin-dashboard .section-header,
+.manage-section .section-header,
+.dashboard-overview .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
   gap: 1rem;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
 }
 
-.section-title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0 0 0.5rem 0;
+.admin-dashboard .section-header::before,
+.manage-section .section-header::before,
+.dashboard-overview .section-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
 }
 
-.section-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
+.admin-dashboard .section-header > div,
+.manage-section .section-header > div,
+.dashboard-overview .section-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-dashboard .section-title,
+.manage-section .section-title,
+.dashboard-overview .section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
   margin: 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-dashboard .section-title .title-icon,
+.manage-section .section-title .title-icon,
+.dashboard-overview .section-title .title-icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px rgba(0, 217, 126, 0.3));
+}
+
+.admin-dashboard .section-title .title-text,
+.manage-section .section-title .title-text,
+.dashboard-overview .section-title .title-text {
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-dashboard .section-subtitle,
+.manage-section .section-subtitle,
+.dashboard-overview .section-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+  opacity: 0.9;
 }
 
 .admin-table-container {
@@ -536,14 +609,62 @@
   font-weight: 500;
 }
 
-.badge-warning {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+/* Override App.css badge styles completely for admin dashboard */
+.admin-dashboard .admin-table .badge,
+.admin-dashboard .manage-section .badge,
+.manage-section .admin-table .badge,
+td .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.25rem 3rem !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  gap: 0.75rem !important;
+  min-width: 110px !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
 }
 
-.badge-primary {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-primary);
+.admin-dashboard .admin-table .badge-success,
+.admin-dashboard .manage-section .badge-success,
+.manage-section .admin-table .badge-success,
+td .badge-success {
+  background: rgba(0, 217, 126, 0.15) !important;
+  color: var(--accent-primary) !important;
+  border-color: rgba(0, 217, 126, 0.3) !important;
+}
+
+.admin-dashboard .admin-table .badge-error,
+.admin-dashboard .manage-section .badge-error,
+.manage-section .admin-table .badge-error,
+td .badge-error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: var(--accent-error) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.admin-table .badge:hover,
+.manage-section .badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-table .status-indicator,
+.manage-section .status-indicator {
+  display: inline-block;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.admin-table .status-text,
+.manage-section .status-text {
+  display: inline-block;
+  line-height: 1;
 }
 
 .form-divider {

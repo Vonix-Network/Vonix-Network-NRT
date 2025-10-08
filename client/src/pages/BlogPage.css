@@ -4,6 +4,18 @@
   overflow-x: hidden; /* avoid accidental horizontal scroll */
 }
 
+.blog-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 2rem;
+}
+
+.blog-page .page-header > div {
+  flex: 1;
+}
+
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));

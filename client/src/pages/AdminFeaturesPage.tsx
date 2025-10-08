@@ -56,7 +56,10 @@ const AdminFeaturesPage: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">🧰 Site Features</h1>
+          <h1 className="section-title">
+            <span className="title-icon">🧰</span>
+            <span className="title-text">Site Features</span>
+          </h1>
           <p className="section-subtitle">Enable or disable sections of the site</p>
         </div>
       </div>

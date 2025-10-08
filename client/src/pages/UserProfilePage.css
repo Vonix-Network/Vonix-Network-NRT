@@ -563,11 +563,11 @@
 }
 
 .achievement-item.rarity-rare::before {
-  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
 }
 
 .achievement-item.rarity-epic::before {
-  background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(90deg, var(--accent-secondary), var(--accent-tertiary));
 }
 
 .achievement-item.rarity-legendary::before {

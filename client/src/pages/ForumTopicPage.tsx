@@ -17,6 +17,9 @@ interface Post {
   edited_at?: string;
   edited_by_username?: string;
   user_id: number;
+  upvotes: number;
+  downvotes: number;
+  user_vote?: 'up' | 'down' | null;
 }
 
 interface Poll {
@@ -194,6 +197,31 @@ const ForumTopicPage: React.FC = () => {
     }
   };
 
+  const handleVote = async (postId: number, voteType: 'up' | 'down') => {
+    if (!user) {
+      alert('Please log in to vote');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/forum/post/${postId}/vote`, { voteType });
+      
+      // Update the post in the posts array
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? {
+              ...post,
+              upvotes: response.data.upvotes,
+              downvotes: response.data.downvotes,
+              user_vote: response.data.user_vote
+            }
+          : post
+      ));
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to vote');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString();
@@ -316,50 +344,79 @@ const ForumTopicPage: React.FC = () => {
 
         <div className="posts-list">
           {posts.map((post, index) => (
-            <div key={post.id} className="post-item">
-              <div className="post-sidebar">
-                <div className="post-author">
-                  {post.minecraft_uuid ? (
+            <div key={post.id} className="post-card">
+              <div className="post-header">
+                <div className="post-author-info">
+                  <div className="author-avatar-container">
                     <img 
-                      src={`https://crafatar.com/avatars/${post.minecraft_uuid}?size=80&overlay`}
+                      src={`https://mc-heads.net/head/${post.username === 'admin' ? 'maid' : post.username}`}
                       alt={post.username}
                       className="author-avatar"
                     />
-                  ) : (
-                    <div className="author-avatar-placeholder">{post.username[0].toUpperCase()}</div>
-                  )}
-                  <h4>{post.username}</h4>
-                  <span className={`user-role role-${post.role}`}>{post.role}</span>
+                    <div className="author-badge">
+                      {post.role === 'admin' ? 'OP' : 'Member'}
+                    </div>
+                  </div>
+                  
+                  <div className="author-details">
+                    <h4 className="author-name">{post.username}</h4>
+                    <div className="author-meta">
+                      <span className="author-posts">Posts: {post.user_post_count}</span>
+                      <span className="author-joined">Joined: Oct 2025</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="author-stats">
-                  <div className="stat">Posts: {post.user_post_count}</div>
-                </div>
-              </div>
 
-              <div className="post-content">
-                <div className="post-header">
-                  <span className="post-number">#{index + 1}</span>
-                  <span className="post-date">{formatDate(post.created_at)}</span>
+                <div className="post-meta">
+                  <div className="post-info">
+                    <span className="post-number">#{index + 1}</span>
+                    <span className="post-separator">•</span>
+                    <span className="post-date">{formatDate(post.created_at)}</span>
+                  </div>
+                  
                   {user && (user.id === post.user_id || user.role === 'admin') && (
                     <div className="post-actions">
                       {editingPost === post.id ? (
                         <>
-                          <button onClick={() => handleEditPost(post.id)} className="btn-save">Save</button>
-                          <button onClick={() => setEditingPost(null)} className="btn-cancel">Cancel</button>
+                          <button onClick={() => handleEditPost(post.id)} className="action-btn save-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                              <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                              <polyline points="7,3 7,8 15,8"></polyline>
+                            </svg>
+                          </button>
+                          <button onClick={() => setEditingPost(null)} className="action-btn cancel-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
                         </>
                       ) : (
                         <>
                           <button onClick={() => {
                             setEditingPost(post.id);
                             setEditContent(post.content);
-                          }} className="btn-edit">Edit</button>
-                          <button onClick={() => handleDeletePost(post.id)} className="btn-delete">Delete</button>
+                          }} className="action-btn edit-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </button>
+                          <button onClick={() => handleDeletePost(post.id)} className="action-btn delete-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <polyline points="3,6 5,6 21,6"></polyline>
+                              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                            </svg>
+                          </button>
                         </>
                       )}
                     </div>
                   )}
                 </div>
+              </div>
 
+              <div className="post-content">
                 {editingPost === post.id ? (
                   <textarea
                     value={editContent}
@@ -376,9 +433,51 @@ const ForumTopicPage: React.FC = () => {
 
                 {post.edited_at && (
                   <div className="post-edited">
+                    <svg className="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
                     Last edited by {post.edited_by_username || 'Unknown'} on {formatDate(post.edited_at)}
                   </div>
                 )}
+              </div>
+
+              <div className="post-footer">
+                <div className="post-reactions">
+                  <button 
+                    className={`reaction-btn upvote-btn ${post.user_vote === 'up' ? 'active' : ''}`}
+                    onClick={() => handleVote(post.id, 'up')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M7 10l5-5 5 5"></path>
+                      <path d="M12 5v14"></path>
+                    </svg>
+                    <span>{post.upvotes || 0}</span>
+                  </button>
+                  <button 
+                    className={`reaction-btn downvote-btn ${post.user_vote === 'down' ? 'active' : ''}`}
+                    onClick={() => handleVote(post.id, 'down')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M17 14l-5 5-5-5"></path>
+                      <path d="M12 19V5"></path>
+                    </svg>
+                    <span>{post.downvotes || 0}</span>
+                  </button>
+                </div>
+                
+                <div className="post-engagement">
+                  <button className="engagement-btn like-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  </button>
+                  <button className="engagement-btn reply-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

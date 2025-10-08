@@ -1,13 +1,13 @@
 .forum-topic-page {
   min-height: 100vh;
-  background: var(--background-dark);
+  background: var(--bg-primary);
   padding: 2rem 0;
 }
 
 .forum-topic-page .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
 }
 
 .topic-breadcrumb {
@@ -21,7 +21,7 @@
 }
 
 .topic-breadcrumb a {
-  color: var(--primary-color);
+  color: var(--accent-primary);
   text-decoration: none;
 }
 
@@ -30,11 +30,11 @@
 }
 
 .topic-header {
-  background: var(--card-background);
+  background: var(--bg-card);
   padding: 2rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -96,6 +96,327 @@
   background: #ef4444;
   border-color: #ef4444;
   color: white;
+}
+
+/* New Post Card Design - Matching Mockup */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.post-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.post-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px rgba(0, 217, 126, 0.1);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.post-author-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.author-avatar-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.author-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+}
+
+.author-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.author-badge {
+  background: var(--accent-primary);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.author-details {
+  flex: 1;
+}
+
+.author-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+}
+
+.author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.post-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.post-number {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.post-separator {
+  color: var(--text-secondary);
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.action-btn:hover {
+  background: var(--bg-hover);
+}
+
+.save-btn:hover svg {
+  color: var(--accent-primary);
+}
+
+.cancel-btn:hover svg {
+  color: #f59e0b;
+}
+
+.edit-btn:hover svg {
+  color: var(--accent-primary);
+}
+
+.delete-btn:hover svg {
+  color: #ef4444;
+}
+
+.post-content {
+  padding: 1.5rem;
+}
+
+.post-body {
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.post-body p {
+  margin-bottom: 1rem;
+}
+
+.post-body p:last-child {
+  margin-bottom: 0;
+}
+
+.edit-textarea {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.edit-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.1);
+}
+
+.post-edited {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.edit-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.post-reactions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reaction-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.reaction-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.reaction-btn:hover {
+  background: var(--bg-hover);
+}
+
+.upvote-btn:hover {
+  color: var(--accent-primary);
+}
+
+.upvote-btn:hover svg {
+  color: var(--accent-primary);
+}
+
+.upvote-btn.active {
+  color: var(--accent-primary);
+  background: rgba(0, 217, 126, 0.1);
+}
+
+.upvote-btn.active svg {
+  color: var(--accent-primary);
+}
+
+.downvote-btn:hover {
+  color: #ef4444;
+}
+
+.downvote-btn:hover svg {
+  color: #ef4444;
+}
+
+.downvote-btn.active {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.downvote-btn.active svg {
+  color: #ef4444;
+}
+
+.post-engagement {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.engagement-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.engagement-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.engagement-btn:hover {
+  background: var(--bg-hover);
+}
+
+.like-btn:hover svg {
+  color: #ef4444;
+}
+
+.reply-btn:hover svg {
+  color: var(--accent-primary);
 }
 
 .poll-container {

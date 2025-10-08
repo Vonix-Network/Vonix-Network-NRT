@@ -255,10 +255,10 @@ const LiveChat: React.FC = () => {
     <div className="live-chat">
       <div className="chat-header">
         <div className="chat-header-content">
-          <span className="chat-icon">💬</span>
+          <span className="chat-icon">🎮</span>
           <div>
-            <h3 className="chat-title">Live Discord Chat</h3>
-            <p className="chat-subtitle">Connected to community channel</p>
+            <h3 className="chat-title">Live Community Chat</h3>
+            <p className="chat-subtitle">Connected to Discord channel</p>
           </div>
         </div>
         <div className="status-indicator online"></div>
@@ -285,7 +285,7 @@ const LiveChat: React.FC = () => {
                 alt={message.author_name}
                 className="message-avatar"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(message.author_name)}&background=6366f1&color=fff`;
+                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(message.author_name)}&background=00d97e&color=fff`;
                 }}
               />
               <div className="message-content">

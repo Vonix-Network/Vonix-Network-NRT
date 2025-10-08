@@ -73,7 +73,7 @@
 }
 
 .step-indicator.active {
-  background: #3b82f6;
+  background: var(--accent-primary);
   color: white;
   transform: scale(1.1);
 }
@@ -182,7 +182,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--accent-primary);
 }
 
 .form-input.error {
@@ -202,7 +202,7 @@
 }
 
 .form-hint a {
-  color: #3b82f6;
+  color: var(--accent-primary);
   text-decoration: none;
 }
 
@@ -249,8 +249,8 @@
 }
 
 .option-card:hover {
-  border-color: #3b82f6;
-  background: #f8faff;
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
 }
 
 .option-card input[type="radio"] {
@@ -258,12 +258,12 @@
 }
 
 .option-card input[type="radio"]:checked + .option-content {
-  border-color: #3b82f6;
+  border-color: var(--accent-primary);
 }
 
 .option-card:has(input:checked) {
-  border-color: #3b82f6;
-  background: #f8faff;
+  border-color: var(--accent-primary);
+  background: var(--bg-hover);
 }
 
 .option-content {
@@ -502,7 +502,7 @@
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: var(--accent-primary);
   color: white;
 }
 

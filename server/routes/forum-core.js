@@ -187,7 +187,10 @@ router.get('/topic/:slug', optionalAuth, cacheMiddleware(30), async (req, res) =
         u.role,
         up.bio,
         (SELECT COUNT(*) FROM forum_posts WHERE user_id = u.id) as user_post_count,
-        eu.username as edited_by_username
+        eu.username as edited_by_username,
+        (SELECT COUNT(*) FROM post_votes WHERE post_id = p.id AND vote_type = 'up') as upvotes,
+        (SELECT COUNT(*) FROM post_votes WHERE post_id = p.id AND vote_type = 'down') as downvotes,
+        (SELECT vote_type FROM post_votes WHERE post_id = p.id AND user_id = ?) as user_vote
       FROM forum_posts p
       JOIN users u ON p.user_id = u.id
       LEFT JOIN user_profiles up ON u.id = up.user_id
@@ -195,7 +198,7 @@ router.get('/topic/:slug', optionalAuth, cacheMiddleware(30), async (req, res) =
       WHERE p.topic_id = ? AND p.deleted = 0
       ORDER BY p.created_at ASC
       LIMIT ? OFFSET ?
-    `).all(topic.id, limit, offset);
+    `).all(req.user?.id || null, topic.id, limit, offset);
 
     const postsWithParsed = posts.map(p => ({ ...p, content_html: parseBBCode(p.content) }));
 
@@ -642,6 +645,104 @@ router.get('/search', cacheMiddleware(20), validateSearch, async (req, res) => {
     res.status(500).json({ error: 'Search failed' });
   }
 });
+
+// POST /api/forum/post/:postId/vote - Vote on a post
+router.post('/post/:postId/vote', authenticateToken, (req, res) => {
+  try {
+    const db = getDatabase();
+    const { postId } = req.params;
+    const { voteType } = req.body; // 'up' or 'down'
+    const userId = req.user.id;
+
+    if (!['up', 'down'].includes(voteType)) {
+      return res.status(400).json({ error: 'Invalid vote type' });
+    }
+
+    // Get the post and its author
+    const post = db.prepare(`
+      SELECT id, user_id, content 
+      FROM forum_posts 
+      WHERE id = ?
+    `).get(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Can't vote on your own posts
+    if (post.user_id === userId) {
+      return res.status(400).json({ error: 'Cannot vote on your own posts' });
+    }
+
+    db.transaction(() => {
+      // Check if user has already voted on this post
+      const existingVote = db.prepare(`
+        SELECT vote_type FROM post_votes 
+        WHERE post_id = ? AND user_id = ?
+      `).get(postId, userId);
+
+      if (existingVote) {
+        if (existingVote.vote_type === voteType) {
+          // Remove vote if clicking same button
+          db.prepare('DELETE FROM post_votes WHERE post_id = ? AND user_id = ?')
+            .run(postId, userId);
+          
+          // Update reputation (reverse the previous vote)
+          const reputationChange = existingVote.vote_type === 'up' ? -3 : 1;
+          awardReputation(post.user_id, reputationChange, `Post vote removed`);
+        } else {
+          // Change vote type
+          db.prepare(`
+            UPDATE post_votes 
+            SET vote_type = ?, created_at = CURRENT_TIMESTAMP 
+            WHERE post_id = ? AND user_id = ?
+          `).run(voteType, postId, userId);
+          
+          // Update reputation (reverse old vote and apply new vote)
+          const oldReputationChange = existingVote.vote_type === 'up' ? -3 : 1;
+          const newReputationChange = voteType === 'up' ? 3 : -1;
+          const totalChange = oldReputationChange + newReputationChange;
+          awardReputation(post.user_id, totalChange, `Post vote changed to ${voteType}vote`);
+        }
+      } else {
+        // New vote
+        db.prepare(`
+          INSERT INTO post_votes (post_id, user_id, vote_type, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `).run(postId, userId, voteType);
+        
+        // Award reputation
+        const reputationChange = voteType === 'up' ? 3 : -1;
+        awardReputation(post.user_id, reputationChange, `Post ${voteType}voted`);
+      }
+    })();
+
+    // Get updated vote counts and user's current vote
+    const voteCounts = db.prepare(`
+      SELECT 
+        SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE 0 END) as upvotes,
+        SUM(CASE WHEN vote_type = 'down' THEN 1 ELSE 0 END) as downvotes
+      FROM post_votes 
+      WHERE post_id = ?
+    `).get(postId);
+
+    const userVote = db.prepare(`
+      SELECT vote_type FROM post_votes 
+      WHERE post_id = ? AND user_id = ?
+    `).get(postId, userId);
+
+    res.json({
+      upvotes: voteCounts.upvotes || 0,
+      downvotes: voteCounts.downvotes || 0,
+      user_vote: userVote ? userVote.vote_type : null
+    });
+
+  } catch (error) {
+    logger.error('Error voting on post:', error);
+    res.status(500).json({ error: 'Failed to vote' });
+  }
+});
+
 module.exports = router;
 
 

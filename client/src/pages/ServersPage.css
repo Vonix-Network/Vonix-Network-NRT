@@ -86,6 +86,52 @@
 
 .server-status-container {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.server-status-container .badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+  justify-content: center;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.server-status-container .badge-success {
+  background: rgba(0, 217, 126, 0.1);
+  color: var(--accent-primary);
+  border-color: rgba(0, 217, 126, 0.2);
+}
+
+.server-status-container .badge-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-error);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.server-status-container .badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator {
+  display: inline-block;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.status-text {
+  display: inline-block;
+  line-height: 1;
 }
 
 .server-description {
@@ -148,6 +194,22 @@
 @media (max-width: 768px) {
   .server-header {
     flex-direction: column;
+    gap: 1rem;
+  }
+
+  .server-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .server-status-container {
+    align-self: flex-start;
+  }
+
+  .server-status-container .badge {
+    min-width: auto;
+    padding: 0.4rem 0.8rem;
   }
 
   .server-stats {

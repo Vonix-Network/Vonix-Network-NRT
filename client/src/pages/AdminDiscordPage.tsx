@@ -71,7 +71,10 @@ const AdminDiscordPage: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">🤖 Discord Bot</h1>
+          <h1 className="section-title">
+            <span className="title-icon">🤖</span>
+            <span className="title-text">Discord Bot</span>
+          </h1>
           <p className="section-subtitle">Manage Discord integration and live chat</p>
         </div>
         <div>

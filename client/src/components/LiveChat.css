@@ -10,12 +10,13 @@
 }
 
 .chat-header {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, rgba(0, 217, 126, 0.1), rgba(0, 179, 104, 0.1));
   border-bottom: 1px solid var(--border-color);
   padding: 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .chat-header-content {
@@ -26,6 +27,8 @@
 
 .chat-icon {
   font-size: 2rem;
+  color: var(--accent-primary);
+  filter: drop-shadow(0 0 8px rgba(0, 217, 126, 0.5));
 }
 
 .chat-title {
@@ -179,8 +182,8 @@
 .message-embed {
   margin-top: 8px;
   padding: 8px 12px 12px 12px;
-  border-left: 4px solid #5865F2;
-  background: rgba(47, 49, 54, 0.3);
+  border-left: 4px solid var(--accent-primary);
+  background: var(--bg-tertiary);
   border-radius: 4px;
   max-width: 432px;
   display: grid;
@@ -226,7 +229,7 @@
 }
 
 .embed-title a {
-  color: #00b0f4;
+  color: var(--accent-primary);
   text-decoration: none;
 }
 
@@ -353,8 +356,9 @@
 }
 
 .chat-send-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--accent-secondary);
   transform: translateY(-1px);
+  box-shadow: var(--glow-primary);
 }
 
 .chat-send-btn:active:not(:disabled) {

@@ -52,10 +52,11 @@ const ReputationLeaderboard: React.FC = () => {
 
   const getAvatarUrl = (user: User) => {
     if (user.avatar_url) return user.avatar_url;
-    if (user.minecraft_uuid) {
-      return `https://crafatar.com/avatars/${user.minecraft_uuid}?size=128&overlay`;
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&size=128&background=random`;
+    
+    // Use mc-heads.net API for Minecraft avatars
+    const username = user.minecraft_username || user.username;
+    const avatarUsername = username === 'admin' ? 'maid' : username;
+    return `https://mc-heads.net/head/${avatarUsername}`;
   };
 
   const getRankColor = (rank: number) => {
@@ -86,139 +87,132 @@ const ReputationLeaderboard: React.FC = () => {
   return (
     <div className="leaderboard-page">
       <div className="leaderboard-header">
-        <h1>🏆 Reputation Leaderboard</h1>
-        <p className="leaderboard-subtitle">
-          Top contributors ranked by reputation points
-        </p>
+        <h1 className="leaderboard-title">Reputation Leaderboard</h1>
+        <p className="leaderboard-subtitle">Top players ranked by community reputation</p>
       </div>
 
       <div className="leaderboard-content">
-        {/* Top 3 Podium */}
-        {page === 1 && users.length >= 3 && (
-          <div className="podium">
-            {/* 2nd Place */}
-            <div className="podium-item podium-second">
-              <Link to={`/users/${users[1].id}`} className="podium-user">
-                <div className="podium-rank">🥈</div>
-                <img src={getAvatarUrl(users[1])} alt={users[1].username} className="podium-avatar" />
-                <div className="podium-username">{users[1].minecraft_username || users[1].username}</div>
-                <div className="podium-reputation">
-                  <span className="rep-icon">{users[1].tierInfo.icon}</span>
-                  {users[1].reputation} pts
-                </div>
-                <div className="podium-tier" style={{ color: users[1].tierInfo.color }}>
-                  {users[1].tierInfo.tier}
-                </div>
-              </Link>
-            </div>
-
-            {/* 1st Place */}
-            <div className="podium-item podium-first">
-              <Link to={`/users/${users[0].id}`} className="podium-user">
-                <div className="podium-rank">👑</div>
-                <img src={getAvatarUrl(users[0])} alt={users[0].username} className="podium-avatar" />
-                <div className="podium-username">{users[0].minecraft_username || users[0].username}</div>
-                <div className="podium-reputation">
-                  <span className="rep-icon">{users[0].tierInfo.icon}</span>
-                  {users[0].reputation} pts
-                </div>
-                <div className="podium-tier" style={{ color: users[0].tierInfo.color }}>
-                  {users[0].tierInfo.tier}
-                </div>
-              </Link>
-            </div>
-
-            {/* 3rd Place */}
-            <div className="podium-item podium-third">
-              <Link to={`/users/${users[2].id}`} className="podium-user">
-                <div className="podium-rank">🥉</div>
-                <img src={getAvatarUrl(users[2])} alt={users[2].username} className="podium-avatar" />
-                <div className="podium-username">{users[2].minecraft_username || users[2].username}</div>
-                <div className="podium-reputation">
-                  <span className="rep-icon">{users[2].tierInfo.icon}</span>
-                  {users[2].reputation} pts
-                </div>
-                <div className="podium-tier" style={{ color: users[2].tierInfo.color }}>
-                  {users[2].tierInfo.tier}
-                </div>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Full Leaderboard Table */}
-        <div className="leaderboard-table">
-          <div className="table-header">
-            <div className="col-rank">Rank</div>
-            <div className="col-user">User</div>
-            <div className="col-reputation">Reputation</div>
-            <div className="col-tier">Tier</div>
-            <div className="col-stats">Stats</div>
-          </div>
-
-          {users.map((user) => (
-            <div key={user.id} className="table-row">
-              <div className="col-rank">
-                <span className="rank-badge" style={{ color: getRankColor(user.rank) }}>
-                  {getRankIcon(user.rank)}
-                </span>
-              </div>
-              
-              <div className="col-user">
-                <Link to={`/users/${user.id}`} className="user-link">
-                  <img src={getAvatarUrl(user)} alt={user.username} className="user-avatar" />
-                  <div className="user-info">
-                    <div className="username">
-                      {user.minecraft_username || user.username}
-                      {user.role === 'admin' && <span className="role-badge admin">Admin</span>}
-                    </div>
-                    {user.title && <div className="user-title">{user.title}</div>}
+        {/* Top 3 Podium - Show if we have users */}
+        {page === 1 && users.length > 0 && (
+          <div className="podium-container">
+            {/* 2nd Place - Only show if we have at least 2 users */}
+            {users.length >= 2 && (
+              <div className="podium-position podium-second">
+                <div className="podium-rank-number">2</div>
+                <Link to={`/users/${users[1].id}`} className="podium-card">
+                  <div className="podium-avatar-container">
+                    <img src={getAvatarUrl(users[1])} alt={users[1].username} className="podium-avatar" />
+                    <div className="podium-letter">{(users[1].minecraft_username || users[1].username).charAt(0).toUpperCase()}</div>
+                  </div>
+                  <div className="podium-info">
+                    <div className="podium-username">{users[1].minecraft_username || users[1].username}</div>
+                    <div className="podium-tier">{users[1].tierInfo.tier}</div>
+                    <div className="podium-points">{users[1].reputation} pts</div>
                   </div>
                 </Link>
               </div>
+            )}
 
-              <div className="col-reputation">
-                <span className="rep-value">{user.reputation}</span>
-                <span className="rep-label">points</span>
+            {/* 1st Place - Always show if we have users */}
+            <div className="podium-position podium-first">
+              <div className="podium-rank-number">1</div>
+              <Link to={`/users/${users[0].id}`} className="podium-card podium-winner">
+                <div className="podium-avatar-container">
+                  <img src={getAvatarUrl(users[0])} alt={users[0].username} className="podium-avatar" />
+                  <div className="podium-letter">{(users[0].minecraft_username || users[0].username).charAt(0).toUpperCase()}</div>
+                  <div className="winner-crown">🏆</div>
+                </div>
+                <div className="podium-info">
+                  <div className="podium-username">{users[0].minecraft_username || users[0].username}</div>
+                  <div className="podium-tier winner-tier">{users[0].tierInfo.tier}</div>
+                  <div className="podium-points winner-points">{users[0].reputation} pts</div>
+                </div>
+              </Link>
+            </div>
+
+            {/* 3rd Place - Only show if we have at least 3 users */}
+            {users.length >= 3 && (
+              <div className="podium-position podium-third">
+                <div className="podium-rank-number">3</div>
+                <Link to={`/users/${users[2].id}`} className="podium-card">
+                  <div className="podium-avatar-container">
+                    <img src={getAvatarUrl(users[2])} alt={users[2].username} className="podium-avatar" />
+                    <div className="podium-letter">{(users[2].minecraft_username || users[2].username).charAt(0).toUpperCase()}</div>
+                  </div>
+                  <div className="podium-info">
+                    <div className="podium-username">{users[2].minecraft_username || users[2].username}</div>
+                    <div className="podium-tier">{users[2].tierInfo.tier}</div>
+                    <div className="podium-points">{users[2].reputation} pts</div>
+                  </div>
+                </Link>
               </div>
+            )}
+          </div>
+        )}
 
-              <div className="col-tier">
-                <span className="tier-badge" style={{ borderColor: user.tierInfo.color }}>
-                  <span className="tier-icon">{user.tierInfo.icon}</span>
-                  <span className="tier-name" style={{ color: user.tierInfo.color }}>
+        {/* Full Rankings Table */}
+        <div className="full-rankings">
+          <h2 className="rankings-title">Full Rankings</h2>
+          
+          <div className="rankings-table">
+            <div className="rankings-header">
+              <div className="col-rank">RANK</div>
+              <div className="col-player">PLAYER</div>
+              <div className="col-tier">TIER</div>
+              <div className="col-reputation">REPUTATION</div>
+              <div className="col-posts">POSTS</div>
+            </div>
+
+            {users.map((user, index) => (
+              <div key={user.id} className="rankings-row">
+                <div className="col-rank">
+                  <span className="rank-number">#{user.rank || (index + 1)}</span>
+                </div>
+                
+                <div className="col-player">
+                  <Link to={`/users/${user.id}`} className="player-link">
+                    <div className="player-avatar">
+                      <img src={getAvatarUrl(user)} alt={user.username} />
+                      <div className="player-letter">{(user.minecraft_username || user.username).charAt(0).toUpperCase()}</div>
+                    </div>
+                    <span className="player-name">{user.minecraft_username || user.username}</span>
+                  </Link>
+                </div>
+
+                <div className="col-tier">
+                  <span className="tier-badge" style={{ backgroundColor: user.tierInfo.color }}>
                     {user.tierInfo.tier}
                   </span>
-                </span>
-              </div>
+                </div>
 
-              <div className="col-stats">
-                <div className="stats-grid">
-                  <span title="Topics Created">📝 {user.topics_created || 0}</span>
-                  <span title="Posts Created">💬 {user.posts_created || 0}</span>
-                  <span title="Likes Received">❤️ {user.likes_received || 0}</span>
-                  {user.best_answers > 0 && (
-                    <span title="Best Answers">✅ {user.best_answers}</span>
-                  )}
+                <div className="col-reputation">
+                  <span className="reputation-value">{user.reputation.toLocaleString()}</span>
+                </div>
+
+                <div className="col-posts">
+                  <span className="posts-count">{user.post_count || user.posts_created || 0}</span>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Pagination */}
-        <div className="leaderboard-pagination">
-          {page > 1 && (
-            <button onClick={() => setPage(page - 1)} className="btn btn-secondary">
-              Previous
-            </button>
-          )}
-          <span className="page-info">Page {page}</span>
-          {hasMore && (
-            <button onClick={() => setPage(page + 1)} className="btn btn-secondary">
-              Next
-            </button>
-          )}
-        </div>
+        {(page > 1 || hasMore) && (
+          <div className="leaderboard-pagination">
+            {page > 1 && (
+              <button onClick={() => setPage(page - 1)} className="btn btn-secondary">
+                Previous
+              </button>
+            )}
+            <span className="page-info">Page {page}</span>
+            {hasMore && (
+              <button onClick={() => setPage(page + 1)} className="btn btn-secondary">
+                Next
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

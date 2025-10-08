@@ -19,6 +19,43 @@ This document outlines the planned features and improvements for Vonix Network.
 
 ---
 
+## Version 1.1.2 ✅ (Released - 2025-01-08)
+
+### UI/UX Enhancements
+- [x] **Enhanced Admin Dashboard Styling**
+  - Dark gaming theme implementation ✅
+  - Gradient text effects for section titles ✅
+  - Green accent bars on admin sections ✅
+  - Professional icon integration with glow effects ✅
+  - Mobile responsive design improvements ✅
+
+- [x] **Improved Status Badges**
+  - Fixed circular badge styling issues ✅
+  - Professional rectangular badge design ✅
+  - Hover effects with animations ✅
+  - Consistent color coding (green/red) ✅
+  - Proper icon and text spacing ✅
+
+- [x] **Streamlined Blog Workflow**
+  - Admin "New Post" button on blog page ✅
+  - Role-based button visibility ✅
+  - Reduced navigation steps for content creation ✅
+  - Consistent styling with existing UI ✅
+
+- [x] **Enhanced Error Handling**
+  - Detailed blog post validation messages ✅
+  - Server error parsing and display ✅
+  - Comprehensive debug logging ✅
+  - User-friendly error descriptions ✅
+
+- [x] **Security & Maintenance**
+  - Updated .gitignore for database files ✅
+  - Improved CSS specificity management ✅
+  - Data sanitization enhancements ✅
+  - Mobile layout optimizations ✅
+
+---
+
 ## Version 1.1.0 ✅ (Released - 2025-10-06)
 
 ### Features

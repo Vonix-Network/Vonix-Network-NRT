@@ -416,7 +416,8 @@ const ManageServers: React.FC = () => {
                   <td>{server.modpack_name || '-'}</td>
                   <td>
                     <span className={`badge ${server.status === 'online' ? 'badge-success' : 'badge-error'}`}>
-                      {server.status === 'online' ? 'Online' : 'Offline'}
+                      <span className="status-indicator">{server.status === 'online' ? '🟢' : '🔴'}</span>
+                      <span className="status-text">{server.status === 'online' ? 'Online' : 'Offline'}</span>
                     </span>
                   </td>
                   <td>
@@ -472,7 +473,6 @@ const ServerForm: React.FC<ServerFormProps> = ({ server, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -660,7 +660,10 @@ const ManageBlog: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">📝 Blog Posts</h1>
+          <h1 className="section-title">
+            <span className="title-icon">📝</span>
+            <span className="title-text">Blog Posts</span>
+          </h1>
           <p className="section-subtitle">Create and manage blog posts</p>
         </div>
         <button
@@ -792,15 +795,102 @@ const BlogPostModal: React.FC<{
     setLoading(true);
     setError('');
 
+    // Client-side validation
+    if (!formData.title.trim()) {
+      setError('Title is required');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.slug.trim()) {
+      setError('Slug is required');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      setError('Content is required');
+      setLoading(false);
+      return;
+    }
+
+    // Validate slug format
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugRegex.test(formData.slug)) {
+      setError('Slug must be lowercase letters, numbers, and hyphens only (e.g., "my-blog-post")');
+      setLoading(false);
+      return;
+    }
+
+    // Prepare data for submission - ensure no undefined values
+    const submitData = {
+      title: formData.title.trim(),
+      slug: formData.slug.trim(),
+      excerpt: formData.excerpt.trim() || null,
+      content: formData.content.trim(),
+      published: Boolean(formData.published),
+      featured_image: formData.featured_image.trim() || null
+    };
+
     try {
+      console.log('=== BLOG POST DEBUG ===');
+      console.log('Sending blog post data:', submitData);
+      console.log('API endpoint:', post ? `/blog/${post.id}` : '/blog');
+      console.log('Method:', post ? 'PUT' : 'POST');
+      
+      let response;
       if (post) {
-        await api.put(`/blog/${post.id}`, formData);
+        response = await api.put(`/blog/${post.id}`, submitData);
       } else {
-        await api.post('/blog', formData);
+        response = await api.post('/blog', submitData);
       }
+      
+      console.log('Success response:', response);
       onSave();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save post');
+      console.log('=== BLOG POST ERROR DEBUG ===');
+      console.error('Full error object:', err);
+      console.error('Error response data:', err.response?.data);
+      console.error('Error response status:', err.response?.status);
+      console.error('Error response headers:', err.response?.headers);
+      console.error('Error config:', err.config);
+      
+      // Show the actual server error message
+      let errorMessage = 'Failed to save post';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+          
+          // If there are validation details, show them
+          if (err.response.data.details && Array.isArray(err.response.data.details)) {
+            const details = err.response.data.details.map((detail: any) => {
+              if (typeof detail === 'string') return detail;
+              if (detail.message) return detail.message;
+              if (detail.msg) return detail.msg;
+              return JSON.stringify(detail);
+            }).join(', ');
+            errorMessage += `: ${details}`;
+          }
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.details) {
+          if (Array.isArray(err.response.data.details)) {
+            errorMessage = err.response.data.details.join(', ');
+          } else {
+            errorMessage = err.response.data.details;
+          }
+        } else {
+          errorMessage = JSON.stringify(err.response.data);
+        }
+      } else {
+        errorMessage = `Server error (${err.response?.status || 'unknown'}): ${err.message}`;
+      }
+      
+      console.log('Final error message:', errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -958,7 +1048,10 @@ const ManageUsers: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">👥 User Management</h1>
+          <h1 className="section-title">
+            <span className="title-icon">👥</span>
+            <span className="title-text">User Management</span>
+          </h1>
           <p className="section-subtitle">Manage admin accounts</p>
         </div>
         <button
@@ -1232,7 +1325,10 @@ const ManageForums: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">💬 Forum Management</h1>
+          <h1 className="section-title">
+            <span className="title-icon">💬</span>
+            <span className="title-text">Forum Management</span>
+          </h1>
           <p className="section-subtitle">Manage categories, forums, and permissions</p>
         </div>
         <button 
@@ -1828,7 +1924,10 @@ const ForumModeration: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">🛡️ Forum Moderation</h1>
+          <h1 className="section-title">
+            <span className="title-icon">🛡️</span>
+            <span className="title-text">Forum Moderation</span>
+          </h1>
           <p className="section-subtitle">Monitor and moderate all forum topics</p>
         </div>
         <button className="btn btn-secondary" onClick={loadRecentTopics}>🔄 Refresh</button>
@@ -2019,7 +2118,10 @@ function ManageDonations() {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">💖 Donations</h1>
+          <h1 className="section-title">
+            <span className="title-icon">💖</span>
+            <span className="title-text">Donations</span>
+          </h1>
           <p className="section-subtitle">Manage donation settings and entries</p>
         </div>
         <button

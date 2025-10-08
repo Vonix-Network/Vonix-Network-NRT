@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './AdminDashboard.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const AdminEmailPage: React.FC = () => {
   const [settings, setSettings] = useState({
@@ -113,7 +113,10 @@ const AdminEmailPage: React.FC = () => {
     <div className="manage-section">
       <div className="section-header">
         <div>
-          <h1 className="section-title">📧 Email Configuration</h1>
+          <h1 className="section-title">
+            <span className="title-icon">📧</span>
+            <span className="title-text">Email Configuration</span>
+          </h1>
           <p className="section-subtitle">
             Configure SMTP settings to enable email notifications, password resets, and more.
           </p>

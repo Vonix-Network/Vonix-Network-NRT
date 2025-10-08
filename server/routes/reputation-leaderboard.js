@@ -29,14 +29,14 @@ router.get('/leaderboard', (req, res) => {
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
       LEFT JOIN user_activity_stats uas ON u.id = uas.user_id
-      WHERE u.reputation > 0
+      WHERE u.id IS NOT NULL
       ORDER BY u.reputation DESC, u.post_count DESC
       LIMIT ? OFFSET ?
     `).all(limit, offset);
 
     // Get total count
     const totalCount = db.prepare(`
-      SELECT COUNT(*) as count FROM users WHERE reputation > 0
+      SELECT COUNT(*) as count FROM users WHERE id IS NOT NULL
     `).get().count;
 
     // Get reputation tiers
