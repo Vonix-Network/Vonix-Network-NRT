@@ -145,6 +145,15 @@ const Navbar: React.FC = () => {
                   Admin
                 </Link>
               )}
+              {(user.role === 'moderator' || user.role === 'admin') && (
+                <Link
+                  to="/moderator"
+                  className={`nav-link ${isActive('/moderator') ? 'active' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  🛡️ Moderator
+                </Link>
+              )}
               <Link to="/profile" className="user-card" onClick={() => setMobileMenuOpen(false)}>
                 {(user.minecraft_uuid || resolvedUuid) ? (
                   <img 

@@ -20,6 +20,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import GroupPage from './pages/GroupPage';
 import EventPage from './pages/EventPage';
 import AdminDashboard from './pages/AdminDashboard';
+import ModeratorDashboard from './pages/ModeratorDashboard';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import ForumListPage from './pages/ForumListPage';
 import ForumViewPage from './pages/ForumViewPage';
@@ -56,6 +57,24 @@ const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) =>
   }
 
   if (user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+const ModeratorRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading-container">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (user.role !== 'admin' && user.role !== 'moderator') {
     return <Navigate to="/" />;
   }
 
@@ -188,6 +207,14 @@ function AppContent() {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
+          }
+        />
+        <Route
+          path="/moderator"
+          element={
+            <ModeratorRoute>
+              <ModeratorDashboard />
+            </ModeratorRoute>
           }
         />
         <Route path="*" element={<Navigate to="/" />} />

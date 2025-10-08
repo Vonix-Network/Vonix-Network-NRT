@@ -1,35 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../database/init');
-const { authenticateToken, verifyToken } = require('../middleware/auth');
+const { authenticateToken, verifyToken, isAdminOrModerator } = require('../middleware/auth');
 const { clearCache } = require('../middleware/cache');
 const logger = require('../utils/logger');
 
-// Check if user is moderator or admin
-function isModerator(req, res, next) {
-  const db = getDatabase();
-  
-  // Check if user is admin
-  if (req.user.role === 'admin') {
-    
-    return next();
-  }
-  
-  // Check if user is in a moderator group
-  const modGroups = db.prepare(`
-    SELECT g.* FROM user_groups g
-    JOIN user_group_memberships m ON g.id = m.group_id
-    WHERE m.user_id = ? AND (g.is_moderator = 1 OR g.can_moderate = 1)
-  `).all(req.user.id);
-  
-  
-  
-  if (modGroups.length === 0) {
-    return res.status(403).json({ error: 'Moderator access required' });
-  }
-  
-  next();
-}
+// Use the new middleware for consistency
+const isModerator = isAdminOrModerator;
 
 // POST /api/forum-mod/topic/:id/lock - Lock/unlock topic
 router.post('/topic/:id/lock', verifyToken, isModerator, async (req, res) => {

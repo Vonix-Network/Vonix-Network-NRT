@@ -289,8 +289,8 @@ router.delete('/posts/:postId', authenticateToken, (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
     
-    // Allow deletion if user owns the post OR is an admin
-    if (post.user_id !== req.user.id && req.user.role !== 'admin') {
+    // Allow deletion if user owns the post OR is an admin/moderator
+    if (post.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'moderator') {
       return res.status(403).json({ error: 'Not authorized to delete this post' });
     }
     
@@ -420,8 +420,8 @@ router.delete('/comments/:commentId', authenticateToken, (req, res) => {
       return res.status(404).json({ error: 'Comment not found' });
     }
     
-    // Allow deletion if user owns the comment OR is an admin
-    if (comment.user_id !== req.user.id && req.user.role !== 'admin') {
+    // Allow deletion if user owns the comment OR is an admin/moderator
+    if (comment.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'moderator') {
       return res.status(403).json({ error: 'Not authorized to delete this comment' });
     }
     
