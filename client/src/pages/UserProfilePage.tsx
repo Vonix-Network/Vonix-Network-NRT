@@ -18,6 +18,10 @@ interface UserProfile {
   followingCount: number;
   postCount: number;
   isFollowing: boolean;
+  is_friend?: boolean;
+  friend_request_sent?: boolean;
+  friend_request_received?: boolean;
+  mutual_friends?: number;
   // Enhanced profile data
   reputation?: number;
   avatar_url?: string;
@@ -69,7 +73,8 @@ interface Post {
   minecraft_uuid?: string;
   like_count: number;
   comment_count: number;
-  user_liked: number | null;
+  share_count?: number;
+  user_liked: boolean;
 }
 
 const UserProfilePage: React.FC = () => {
@@ -84,14 +89,8 @@ const UserProfilePage: React.FC = () => {
 
   const loadProfile = useCallback(async () => {
     try {
-      // Try enhanced profile API first, fallback to social API
-      let response;
-      try {
-        response = await api.get(`/user-profiles/${userId}`);
-      } catch (enhancedError) {
-        // Fallback to old social API
-        response = await api.get(`/social/profile/${userId}`);
-      }
+      // Always use social API as it includes follow status and friend status
+      const response = await api.get(`/social/profile/${userId}`);
       setProfile(response.data);
       setEditForm({
         bio: response.data.bio || '',
@@ -134,6 +133,44 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
+  const sendFriendRequest = async () => {
+    if (!profile) return;
+    try {
+      await api.post(`/social/friend-request`, { user_id: profile.id });
+      setProfile({
+        ...profile,
+        friend_request_sent: true
+      });
+    } catch (error: any) {
+      console.error('Error sending friend request:', error);
+      if (error.response?.status === 404) {
+        alert('Friend request feature is not yet implemented on the server. Please check back later!');
+      } else {
+        alert(error.response?.data?.error || 'Failed to send friend request');
+      }
+    }
+  };
+
+  const respondToFriendRequest = async (action: 'accept' | 'decline') => {
+    if (!profile) return;
+    try {
+      // This endpoint doesn't exist yet, but the UI will update optimistically
+      await api.post(`/social/friend-request/respond`, { user_id: profile.id, action });
+      setProfile({
+        ...profile,
+        friend_request_received: false,
+        is_friend: action === 'accept'
+      });
+    } catch (error: any) {
+      console.error('Error responding to friend request:', error);
+      if (error.response?.status === 404) {
+        alert('Friend request response feature is not yet implemented on the server. Please use the social page to respond to requests.');
+      } else {
+        alert(error.response?.data?.error || 'Failed to respond to friend request');
+      }
+    }
+  };
+
   const saveProfile = async () => {
     try {
       await api.put('/social/profile', editForm);
@@ -150,7 +187,7 @@ const UserProfilePage: React.FC = () => {
       const response = await api.post(`/social/posts/${postId}/like`);
       setPosts(posts.map(p => 
         p.id === postId
-          ? { ...p, user_liked: response.data.liked ? 1 : null, like_count: p.like_count + (response.data.liked ? 1 : -1) }
+          ? { ...p, user_liked: response.data.liked, like_count: p.like_count + (response.data.liked ? 1 : -1) }
           : p
       ));
     } catch (error) {
@@ -171,13 +208,11 @@ const UserProfilePage: React.FC = () => {
   };
 
   const getUserAvatar = (u: UserProfile | Post) => {
-    if (u.minecraft_uuid) {
-      return `https://crafatar.com/renders/head/${u.minecraft_uuid}`;
-    }
-    if (u.minecraft_username) {
-      return `https://mc-heads.net/avatar/${u.minecraft_username}/128`;
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=6366f1&color=fff&size=128`;
+    // Use minecraft_username if available, otherwise fallback to username
+    const username = u.minecraft_username || u.username;
+    // Use "maid" if the username is "admin"
+    const displayUsername = username === 'admin' ? 'maid' : username;
+    return `https://mc-heads.net/head/${displayUsername}`;
   };
 
   const formatTime = (timestamp: string) => {
@@ -317,12 +352,41 @@ const UserProfilePage: React.FC = () => {
               </button>
             ) : (
               <>
+                {profile.is_friend ? (
+                  <span className="friend-status-badge">Friends</span>
+                ) : profile.friend_request_received ? (
+                  <div className="friend-request-actions">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => respondToFriendRequest('accept')}
+                    >
+                      Accept Friend Request
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => respondToFriendRequest('decline')}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                ) : profile.friend_request_sent ? (
+                  <span className="request-sent-status">Friend Request Sent</span>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={sendFriendRequest}
+                  >
+                    Add Friend
+                  </button>
+                )}
+                
                 <button
-                  className={`btn ${profile.isFollowing ? 'btn-secondary' : 'btn-primary'}`}
+                  className={`btn ${profile.isFollowing ? 'btn-secondary' : 'btn-outline'}`}
                   onClick={toggleFollow}
                 >
                   {profile.isFollowing ? 'Unfollow' : 'Follow'}
                 </button>
+                
                 <Link to={`/messages?user_id=${profile.id}`} className="btn btn-secondary">
                   Message
                 </Link>
@@ -414,41 +478,83 @@ const UserProfilePage: React.FC = () => {
 
         <div className="profile-content">
           {activeTab === 'posts' && (
-            <div className="posts-grid">
+            <div className="posts-section">
               {posts.length === 0 ? (
                 <div className="no-posts">
-                  <p>{isOwnProfile ? "You haven't posted anything yet" : 'No posts yet'}</p>
+                  <div className="no-posts-icon">📝</div>
+                  <h3>{isOwnProfile ? "No posts yet" : `${profile?.username} hasn't posted anything yet`}</h3>
+                  <p>{isOwnProfile ? "Share your first post to get started!" : "Check back later for updates"}</p>
                 </div>
               ) : (
-                posts.map((post) => (
-                  <div key={post.id} className="profile-post-card">
-                    <div className="post-header-row">
-                      <div className="post-time">{formatTime(post.created_at)}</div>
-                      {currentUser && (post.user_id === currentUser.id || currentUser.role === 'admin') && (
-                        <button 
-                          className="profile-post-delete-btn" 
-                          onClick={() => deletePost(post.id)}
-                          title={currentUser.role === 'admin' && post.user_id !== currentUser.id ? 'Delete as Admin' : 'Delete post'}
-                        >
-                          🗑️
-                        </button>
-                      )}
-                    </div>
-                    <div className="post-content">{parsePostContent(post.content)}</div>
-                    {post.image_url && (
-                      <img src={post.image_url} alt="Post" className="post-image" />
-                    )}
-                    <div className="post-stats">
-                      <button
-                        className={`stat-btn ${post.user_liked ? 'liked' : ''}`}
-                        onClick={() => toggleLike(post.id)}
-                      >
-                        {post.user_liked ? '❤️' : '🤍'} {post.like_count}
-                      </button>
-                      <span className="stat-item">💬 {post.comment_count}</span>
-                    </div>
-                  </div>
-                ))
+                <div className="posts-feed">
+                  {posts.map((post) => (
+                    <article key={post.id} className="profile-post">
+                      <div className="post-header">
+                        <div className="post-author">
+                          <img 
+                            src={getUserAvatar(post)} 
+                            alt={post.username} 
+                            className="post-author-avatar"
+                          />
+                          <div className="post-author-info">
+                            <span className="post-author-name">
+                              {post.minecraft_username || post.username}
+                            </span>
+                            <time className="post-timestamp" dateTime={post.created_at}>
+                              {formatTime(post.created_at)}
+                            </time>
+                          </div>
+                        </div>
+                        {currentUser && (post.user_id === currentUser.id || currentUser.role === 'admin') && (
+                          <div className="post-actions">
+                            <button 
+                              className="post-delete-btn" 
+                              onClick={() => deletePost(post.id)}
+                              title={currentUser.role === 'admin' && post.user_id !== currentUser.id ? 'Delete as Admin' : 'Delete post'}
+                            >
+                              <span className="delete-icon">🗑️</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="post-body">
+                        <div className="post-content">{parsePostContent(post.content)}</div>
+                        {post.image_url && (
+                          <div className="post-media">
+                            <img src={post.image_url} alt="Post media" className="post-image" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="post-footer">
+                        <div className="post-engagement">
+                          <button
+                            className={`engagement-btn like-btn ${post.user_liked ? 'active' : ''}`}
+                            onClick={() => toggleLike(post.id)}
+                          >
+                            <span className="engagement-icon">
+                              {post.user_liked ? '❤️' : '🤍'}
+                            </span>
+                            <span className="engagement-count">{post.like_count}</span>
+                          </button>
+                          
+                          <div className="engagement-item">
+                            <span className="engagement-icon">💬</span>
+                            <span className="engagement-count">{post.comment_count}</span>
+                          </div>
+
+                          {post.share_count > 0 && (
+                            <div className="engagement-item">
+                              <span className="engagement-icon">🔄</span>
+                              <span className="engagement-count">{post.share_count}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               )}
             </div>
           )}

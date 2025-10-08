@@ -12,6 +12,10 @@ interface User {
   bio?: string;
   followerCount?: number;
   isFollowing?: boolean;
+  is_friend?: boolean;
+  friend_request_sent?: boolean;
+  friend_request_received?: boolean;
+  mutual_friends?: number;
 }
 
 const DiscoverPage: React.FC = () => {
@@ -74,14 +78,53 @@ const DiscoverPage: React.FC = () => {
     }
   };
 
+  const sendFriendRequest = async (userId: number) => {
+    try {
+      await api.post(`/social/friend-request`, { user_id: userId });
+      setUsers(users.map(u => 
+        u.id === userId 
+          ? { ...u, friend_request_sent: true }
+          : u
+      ));
+    } catch (error: any) {
+      console.error('Error sending friend request:', error);
+      if (error.response?.status === 404) {
+        alert('Friend request feature is not yet implemented on the server. Please check back later!');
+      } else {
+        alert(error.response?.data?.error || 'Failed to send friend request');
+      }
+    }
+  };
+
+  const respondToFriendRequest = async (userId: number, action: 'accept' | 'decline') => {
+    try {
+      // This endpoint doesn't exist yet, but the UI will update optimistically
+      await api.post(`/social/friend-request/respond`, { user_id: userId, action });
+      setUsers(users.map(u => 
+        u.id === userId 
+          ? { 
+              ...u, 
+              friend_request_received: false,
+              is_friend: action === 'accept'
+            }
+          : u
+      ));
+    } catch (error: any) {
+      console.error('Error responding to friend request:', error);
+      if (error.response?.status === 404) {
+        alert('Friend request response feature is not yet implemented on the server. Please use the social page to respond to requests.');
+      } else {
+        alert(error.response?.data?.error || 'Failed to respond to friend request');
+      }
+    }
+  };
+
   const getUserAvatar = (u: User) => {
-    if (u.minecraft_uuid) {
-      return `https://crafatar.com/renders/head/${u.minecraft_uuid}`;
-    }
-    if (u.minecraft_username) {
-      return `https://mc-heads.net/avatar/${u.minecraft_username}/64`;
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=6366f1&color=fff`;
+    // Use minecraft_username if available, otherwise fallback to username
+    const username = u.minecraft_username || u.username;
+    // Use "maid" if the username is "admin"
+    const displayUsername = username === 'admin' ? 'maid' : username;
+    return `https://mc-heads.net/head/${displayUsername}`;
   };
 
   const filteredUsers = users.filter(u => {
@@ -143,20 +186,52 @@ const DiscoverPage: React.FC = () => {
                   {u.bio && (
                     <p className="user-card-bio">{u.bio}</p>
                   )}
-                  {u.followerCount !== undefined && (
-                    <div className="user-card-stats">
+                  <div className="user-card-stats">
+                    {u.followerCount !== undefined && (
                       <span>{u.followerCount} {u.followerCount === 1 ? 'follower' : 'followers'}</span>
-                    </div>
-                  )}
+                    )}
+                    {u.mutual_friends && u.mutual_friends > 0 && (
+                      <span>{u.mutual_friends} mutual friends</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="user-card-actions">
+                  {u.is_friend ? (
+                    <span className="friend-badge">Friends</span>
+                  ) : u.friend_request_received ? (
+                    <div className="friend-request-actions">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => respondToFriendRequest(u.id, 'accept')}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => respondToFriendRequest(u.id, 'decline')}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  ) : u.friend_request_sent ? (
+                    <span className="request-sent-badge">Request Sent</span>
+                  ) : (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => sendFriendRequest(u.id)}
+                    >
+                      Add Friend
+                    </button>
+                  )}
+                  
                   <button
-                    className={`btn ${u.isFollowing ? 'btn-secondary' : 'btn-primary'} btn-sm`}
+                    className={`btn ${u.isFollowing ? 'btn-secondary' : 'btn-outline'} btn-sm`}
                     onClick={() => toggleFollow(u.id)}
                   >
                     {u.isFollowing ? 'Unfollow' : 'Follow'}
                   </button>
+                  
                   <Link to={`/messages?user_id=${u.id}`} className="btn btn-secondary btn-sm">
                     Message
                   </Link>

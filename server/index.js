@@ -122,24 +122,24 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting configuration
 const generalLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 200,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 1000, // Increased from 200 to 1000 for normal browsing
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
 });
 
 const authLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 500,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 2000, // Increased from 500 to 2000 for authenticated users
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
 });
 
 const authRouteLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Keep login attempts low for security
   message: { error: 'Too many login attempts, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false

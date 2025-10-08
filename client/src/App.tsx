@@ -10,19 +10,21 @@ import ServerDetailPage from './pages/ServerDetailPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import DonationsPage from './pages/DonationsPage';
 import MessagesPage from './pages/MessagesPage';
 import SocialPage from './pages/SocialPage';
-import UserProfilePage from './pages/UserProfilePage';
 import DiscoverPage from './pages/DiscoverPage';
+import UserProfilePage from './pages/UserProfilePage';
+import GroupPage from './pages/GroupPage';
+import EventPage from './pages/EventPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import ForumListPage from './pages/ForumListPage';
 import ForumViewPage from './pages/ForumViewPage';
 import ForumTopicPage from './pages/ForumTopicPage';
 import ForumNewTopicPage from './pages/ForumNewTopicPage';
+import ProfilePage from './pages/ProfilePage';
 import ReputationLeaderboard from './pages/ReputationLeaderboard';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -159,6 +161,26 @@ function AppContent() {
           }
         />
         <Route path="/users/:userId" element={<UserProfilePage />} />
+        <Route
+          path="/groups/:groupId"
+          element={
+            flags.social ? (
+              <PrivateRoute>
+                <GroupPage />
+              </PrivateRoute>
+            ) : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/events/:eventId"
+          element={
+            flags.social ? (
+              <PrivateRoute>
+                <EventPage />
+              </PrivateRoute>
+            ) : <Navigate to="/" />
+          }
+        />
         <Route
           path="/admin/*"
           element={

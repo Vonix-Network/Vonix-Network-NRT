@@ -1,6 +1,6 @@
 {
   "name": "vonix-network-community",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Minecraft Community Platform with Live Discord Chat, Server Management, and Admin Dashboard",
   "main": "server/index.js",
   "scripts": {
@@ -55,6 +55,7 @@
     "ws": "^8.16.0",
     "express-validator": "^7.0.1",
     "dompurify": "^3.0.8",
+    "isomorphic-dompurify": "^2.9.0",
     "jsdom": "^23.2.0",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",

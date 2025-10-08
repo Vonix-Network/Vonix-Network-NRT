@@ -6,6 +6,8 @@ We release patches for security vulnerabilities. Currently supported versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.2.x   | :white_check_mark: |
+| 1.1.x   | :white_check_mark: |
 | 1.0.x   | :white_check_mark: |
 | < 1.0   | :x:                |
 
@@ -189,6 +191,9 @@ Restricts cross-origin requests to trusted domains.
 - **Authentication endpoints**: 20 requests / 15 minutes
 - **General API**: 200 requests / 5 minutes
 - **Authenticated users**: 500 requests / 5 minutes
+- **Post creation**: 10 requests / 15 minutes
+- **Comments**: 20 requests / 5 minutes
+- **Friend requests**: 50 requests / 1 hour
 
 #### 4. Input Validation
 - Express-validator on all inputs
@@ -478,7 +483,22 @@ Subscribe to security updates:
 
 ## Version History
 
-### 1.0.0 (Current)
+### 1.2.0 (Current)
+- Enhanced rate limiting with granular controls
+- Advanced input validation and sanitization
+- DOMPurify integration for XSS prevention
+- Content length limits and validation
+- Social platform security measures
+- Database optimization and indexing
+- Comprehensive error handling
+
+### 1.1.0
+- Email system security
+- Enhanced user profile validation
+- Forum security improvements
+- Analytics security measures
+
+### 1.0.0
 - Initial security implementation
 - Basic authentication and authorization
 - Rate limiting

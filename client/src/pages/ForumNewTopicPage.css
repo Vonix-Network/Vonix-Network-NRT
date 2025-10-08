@@ -27,7 +27,7 @@
 }
 
 .page-header strong {
-  color: var(--primary-color);
+  color: var(--accent-primary);
 }
 
 .new-topic-form {
@@ -65,7 +65,7 @@
 .form-group input[type="text"]:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--accent-primary);
 }
 
 .form-group textarea {
@@ -83,14 +83,14 @@
 .bbcode-help {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(0, 217, 126, 0.1);
   border-radius: 6px;
   font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .bbcode-help strong {
-  color: var(--primary-color);
+  color: var(--accent-primary);
   margin-right: 0.5rem;
 }
 
@@ -126,10 +126,10 @@
 }
 
 .poll-creator {
-  background: rgba(99, 102, 241, 0.05);
+  background: rgba(0, 217, 126, 0.05);
   padding: 1.5rem;
   border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(0, 217, 126, 0.2);
 }
 
 .poll-option-input {
@@ -159,9 +159,9 @@
 }
 
 .btn-add-option {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: var(--primary-color);
+  background: rgba(0, 217, 126, 0.1);
+  border: 1px solid rgba(0, 217, 126, 0.3);
+  color: var(--accent-primary);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
@@ -170,7 +170,7 @@
 }
 
 .btn-add-option:hover {
-  background: var(--primary-color);
+  background: var(--accent-primary);
   color: white;
 }
 
@@ -194,13 +194,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 217, 126, 0.3);
 }
 
 .btn-primary:disabled {
@@ -269,7 +269,7 @@
 .btn-back {
   display: inline-block;
   margin-top: 1rem;
-  color: var(--primary-color);
+  color: var(--accent-primary);
   text-decoration: none;
 }
 

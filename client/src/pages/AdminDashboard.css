@@ -718,13 +718,13 @@ td .badge-error {
 
 .tab-button:hover {
   color: var(--text-primary);
-  background: rgba(99, 102, 241, 0.05);
+  background: rgba(0, 217, 126, 0.05);
 }
 
 .tab-button.active {
   color: var(--accent-primary);
   border-bottom-color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(0, 217, 126, 0.1);
 }
 
 /* Settings Card Styles */
@@ -766,7 +766,7 @@ td .badge-error {
 }
 
 .simple-chart {
-  background: rgba(99, 102, 241, 0.03);
+  background: rgba(0, 217, 126, 0.03);
   padding: 1.5rem;
   border-radius: 8px;
 }
@@ -816,7 +816,7 @@ td .badge-error {
 }
 
 .top-users-card {
-  background: rgba(99, 102, 241, 0.03);
+  background: rgba(0, 217, 126, 0.03);
   padding: 1.5rem;
   border-radius: 8px;
 }
@@ -881,14 +881,14 @@ td .badge-error {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: rgba(99, 102, 241, 0.03);
+  background: rgba(0, 217, 126, 0.03);
   border-radius: 8px;
   border-left: 3px solid var(--accent-primary);
   transition: all 0.2s ease;
 }
 
 .activity-item:hover {
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(0, 217, 126, 0.06);
   transform: translateX(4px);
 }
 

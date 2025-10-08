@@ -15,9 +15,108 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 
 // Get users for discovery (all authenticated users)
 router.get('/discover', authenticateToken, (req, res) => {
-  const db = getDatabase();
-  const users = db.prepare('SELECT id, username, minecraft_username, minecraft_uuid, created_at FROM users').all();
-  res.json(users);
+  try {
+    const db = getDatabase();
+    
+    const users = db.prepare(`
+      SELECT 
+        u.id, u.username, u.minecraft_username, u.minecraft_uuid, u.created_at,
+        CASE 
+          WHEN f.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as is_friend,
+        CASE 
+          WHEN fr_sent.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as friend_request_sent,
+        CASE 
+          WHEN fr_received.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as friend_request_received
+      FROM users u
+      LEFT JOIN friends f ON (
+        (f.user1_id = ? AND f.user2_id = u.id) OR 
+        (f.user2_id = ? AND f.user1_id = u.id)
+      )
+      LEFT JOIN friend_requests fr_sent ON (
+        fr_sent.sender_id = ? AND fr_sent.receiver_id = u.id AND fr_sent.status = 'pending'
+      )
+      LEFT JOIN friend_requests fr_received ON (
+        fr_received.sender_id = u.id AND fr_received.receiver_id = ? AND fr_received.status = 'pending'
+      )
+      WHERE u.id != ?
+      ORDER BY u.created_at DESC
+    `).all(req.user.id, req.user.id, req.user.id, req.user.id, req.user.id);
+    
+    res.json(users);
+  } catch (error) {
+    console.error('Error loading users for discovery:', error);
+    res.status(500).json({ error: 'Failed to load users' });
+  }
+});
+
+// Search users by username or minecraft username
+router.get('/search', authenticateToken, (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({ error: 'Search query must be at least 2 characters' });
+    }
+    
+    const db = getDatabase();
+    const searchTerm = `%${q.trim()}%`;
+    
+    const users = db.prepare(`
+      SELECT 
+        u.id, u.username, u.minecraft_username, u.minecraft_uuid, u.created_at,
+        CASE 
+          WHEN f.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as is_friend,
+        CASE 
+          WHEN fr_sent.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as friend_request_sent,
+        CASE 
+          WHEN fr_received.id IS NOT NULL THEN 1 
+          ELSE 0 
+        END as friend_request_received
+      FROM users u
+      LEFT JOIN friends f ON (
+        (f.user1_id = ? AND f.user2_id = u.id) OR 
+        (f.user2_id = ? AND f.user1_id = u.id)
+      )
+      LEFT JOIN friend_requests fr_sent ON (
+        fr_sent.sender_id = ? AND fr_sent.receiver_id = u.id AND fr_sent.status = 'pending'
+      )
+      LEFT JOIN friend_requests fr_received ON (
+        fr_received.sender_id = u.id AND fr_received.receiver_id = ? AND fr_received.status = 'pending'
+      )
+      WHERE (u.username LIKE ? OR u.minecraft_username LIKE ?)
+      AND u.id != ?
+      ORDER BY 
+        CASE 
+          WHEN u.username = ? THEN 1
+          WHEN u.minecraft_username = ? THEN 2
+          WHEN u.username LIKE ? THEN 3
+          WHEN u.minecraft_username LIKE ? THEN 4
+          ELSE 5
+        END,
+        u.username ASC
+      LIMIT 20
+    `).all(
+      req.user.id, req.user.id, req.user.id, req.user.id,
+      searchTerm, searchTerm, req.user.id,
+      q.trim(), q.trim(), 
+      `${q.trim()}%`, `${q.trim()}%`
+    );
+    
+    res.json(users);
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ error: 'Failed to search users' });
+  }
 });
 
 // Get current user info

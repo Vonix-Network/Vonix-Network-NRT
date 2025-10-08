@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](Dockerfile)
-[![Version](https://img.shields.io/badge/version-1.1.1-blue)](package.json)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](package.json)
 
 > A comprehensive Minecraft community platform featuring real-time Discord chat integration, server management, forums, blogs, social features, and a powerful admin dashboard with feature toggles.
 
@@ -23,20 +23,19 @@
 - **📝 Forum System**: Full-featured community forums with moderation tools.
 - **📰 Blog Platform**: A complete blog with markdown support.
 - **💰 Donation System**: Track donation goals and packages.
-- **👥 Social Features**: User profiles and private messaging.
+- **👥 Social Features**: User profiles, private messaging, stories, friend system, groups, and events.
 
-### 🆕 New in v1.1.1
-- **📧 Email System**: Full SMTP configuration with admin dashboard, test emails, and notification templates
-- **🏆 Reputation System**: Automatic point awards, 6-tier ranking (Newcomer to Legend), **public reputation leaderboard**
-- **🎖️ Badges & Achievements**: Earn badges for milestones, display achievement collections on profiles
-- **📊 Enhanced User Profiles**: Activity stats, post counts, likes received/given, best answers, custom titles
-- **🔔 Forum Subscriptions**: Subscribe to topics and forums with email notifications for new replies
-- **🔍 Advanced Forum Search**: Full-text search with author, date, and forum filters
-- **📈 Admin Analytics Dashboard**: Real-time graphs, user activity trends, forum statistics, top contributors
-- **📱 Mobile Navigation**: Professional hamburger menu with slide-in sidebar for admin dashboard
-- **🔧 Database Migrations**: Automatic schema updates on server start (SQLite compatible)
-- **⚡ Performance Improvements**: Instant UI updates, optimistic deletions, cache invalidation, accurate timestamps
-- **✅ Bug Fixes**: Forum moderation routes, negative counts, leaderboard links, last post timestamps
+### 🆕 New in v1.2.0 - Social Platform & Security Overhaul
+- **🌐 Complete Social Platform**: Facebook-like social features with posts, comments, reactions, and sharing
+- **📖 Stories System**: 24-hour ephemeral stories with custom backgrounds and view tracking
+- **👫 Advanced Friend System**: Send/accept friend requests, friend discovery, and friend-only content feeds
+- **🎉 Groups & Events**: Create and join social groups, organize community events with RSVP functionality
+- **🔒 Enhanced Security**: Rate limiting, input validation, XSS protection, and SQL injection prevention
+- **⚡ Database Optimization**: Advanced indexing, query optimization, and performance improvements
+- **🎨 Minecraft Green Theme**: Consistent green accent theme across the entire platform
+- **📱 Mobile-First Design**: Responsive social features optimized for all device sizes
+- **🛡️ Content Sanitization**: DOMPurify integration for safe user-generated content
+- **📊 Social Analytics**: Track engagement, popular content, and user interactions
 
 ### 🎨 Major Visual Overhaul & Retheme
 - **🌟 Complete Admin Dashboard Retheme**: Transformed from light theme to professional dark gaming aesthetic with modern UI elements
@@ -193,8 +192,6 @@ npm run test:watch
 
 ## ⚙️ Configuration
 
-### Environment Variables
-
 See [`.env.example`](.env.example) for all available configuration options.
 
 #### Required Variables
@@ -207,7 +204,6 @@ See [`.env.example`](.env.example) for all available configuration options.
 | `CLIENT_URL` | Frontend URL for CORS | `https://vonix.network` |
 
 #### Optional Variables
-
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `DISCORD_BOT_TOKEN` | Discord bot token | _(optional)_ |
@@ -417,11 +413,45 @@ The API is accessible at `http://localhost:5000/api`
 - `GET /api/forum/search` - Advanced forum search with filters
 
 #### Social Features
-- `GET /api/social/profile/:userId` - Get user profile
-- `POST /api/social/follow/:userId` - Follow user
-- `DELETE /api/social/follow/:userId` - Unfollow user
+- `GET /api/social/profile/:userId` - Get user profile with friend status
+- `PUT /api/social/profile` - Update user profile
+- `POST /api/social/posts` - Create a new post
+- `GET /api/social/feed` - Get personalized feed (friends + own posts)
+- `GET /api/social/posts/user/:userId` - Get user's posts
+- `DELETE /api/social/posts/:postId` - Delete post (own or admin)
+- `POST /api/social/posts/:postId/like` - Like/unlike post
+- `POST /api/social/posts/:postId/react` - Add reaction to post
+- `GET /api/social/posts/:postId/comments` - Get post comments
+- `POST /api/social/posts/:postId/comments` - Add comment to post
+- `DELETE /api/social/comments/:commentId` - Delete comment
+- `POST /api/social/comments/:commentId/like` - Like/unlike comment
+- `POST /api/social/follow/:userId` - Follow/unfollow user
 - `GET /api/social/followers/:userId` - Get user's followers
 - `GET /api/social/following/:userId` - Get who user follows
+
+#### Stories
+- `GET /api/social/stories` - Get stories from friends
+- `POST /api/social/stories` - Create a new story
+- `POST /api/social/stories/:storyId/view` - Mark story as viewed
+
+#### Friend System
+- `GET /api/social/friends` - Get user's friends list
+- `GET /api/social/friend-requests` - Get pending friend requests
+- `POST /api/social/friend-request` - Send friend request
+- `POST /api/social/friend-request/respond` - Accept/decline friend request
+- `GET /api/social/suggested-friends` - Get friend suggestions
+
+#### Groups & Events
+- `GET /api/social/groups` - Get user's groups
+- `POST /api/social/groups` - Create new group
+- `GET /api/social/groups/:groupId` - Get group details
+- `POST /api/social/groups/:groupId/join` - Join group
+- `POST /api/social/groups/:groupId/leave` - Leave group
+- `GET /api/social/events` - Get user's events
+- `POST /api/social/events` - Create new event
+- `GET /api/social/events/:eventId` - Get event details
+- `POST /api/social/events/:eventId/attend` - Attend event
+- `POST /api/social/events/:eventId/unattend` - Unattend event
 
 #### Donations
 - `GET /api/donations/public` - Get public donations list
@@ -646,14 +676,33 @@ For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🔒 Security
 
-- **JWT Authentication** - Secure token-based authentication
-- **Rate Limiting** - Prevent abuse and DDoS attacks
-- **Helmet.js** - Security headers
-- **Input Validation** - Express-validator for all inputs
-- **XSS Protection** - DOMPurify sanitization
-- **SQL Injection Protection** - Parameterized queries
-- **CORS Configuration** - Whitelist allowed origins
-- **Error Handling** - No sensitive data in error messages
+### Authentication & Authorization
+- **JWT Authentication** - Secure token-based authentication with refresh tokens
+- **Role-Based Access Control** - Admin, moderator, and user roles with granular permissions
+- **Session Management** - Secure session handling with automatic expiration
+
+### Input Protection
+- **Rate Limiting** - Multi-tier rate limiting (general: 1000/5min, auth: 2000/5min, posts: 15/15min, comments: 20/5min, friend requests: 25/hour)
+- **Input Validation** - Express-validator with comprehensive validation rules
+- **Content Sanitization** - DOMPurify integration to prevent XSS attacks
+- **Length Limits** - Enforced character limits (posts: 2000, comments: 1000, bio: 500)
+
+### Data Protection
+- **SQL Injection Protection** - Parameterized queries with better-sqlite3
+- **XSS Prevention** - Content sanitization with allowed HTML tags only
+- **CSRF Protection** - Cross-site request forgery prevention
+- **Helmet.js** - Comprehensive security headers
+
+### Infrastructure Security
+- **CORS Configuration** - Whitelist allowed origins with dynamic configuration
+- **Error Handling** - Sanitized error messages without sensitive data exposure
+- **Database Security** - WAL mode, proper indexing, and connection pooling
+- **Content Security Policy** - Strict CSP headers for XSS prevention
+
+### Monitoring & Logging
+- **Security Logging** - Winston logging with security event tracking
+- **Error Tracking** - Optional Sentry integration for production monitoring
+- **Health Checks** - Comprehensive system health monitoring
 
 For security policies and reporting vulnerabilities, see [SECURITY.md](SECURITY.md)
 
@@ -799,7 +848,7 @@ Default rate limits (configurable in `server/index.js`):
 
 ## 📊 Project Status
 
-Current Version: **1.1.0**
+Current Version: **1.2.0**
 
 ### Completed Features
 - ✅ Core features complete
@@ -813,21 +862,33 @@ Current Version: **1.1.0**
 - ✅ Feature toggles system
 - ✅ Dynamic configuration
 - ✅ Enhanced UI/UX
-- ✅ Email system with SMTP configuration (v1.1.0)
-- ✅ Advanced user profiles with badges (v1.1.0)
-- ✅ Forum subscriptions and search (v1.1.0)
-- ✅ Analytics dashboard (v1.1.0)
-
-### Recently Added (v1.1.0)
 - ✅ Email system with SMTP configuration
-- ✅ Advanced user profiles with badges and achievements
-- ✅ Enhanced forum features (subscriptions, search, email notifications)
-- ✅ Admin analytics dashboard with graphs and insights
+- ✅ Advanced user profiles with badges
+- ✅ Forum subscriptions and search
+- ✅ Analytics dashboard
+- ✅ Complete social platform (v1.2.0)
+- ✅ Stories system (v1.2.0)
+- ✅ Friend system with requests (v1.2.0)
+- ✅ Groups and events (v1.2.0)
+- ✅ Enhanced security measures (v1.2.0)
+- ✅ Database optimization (v1.2.0)
+- ✅ Minecraft green theme (v1.2.0)
+
+### Recently Added (v1.2.0)
+- ✅ Facebook-like social platform with posts, comments, and reactions
+- ✅ 24-hour stories with custom backgrounds and view tracking
+- ✅ Advanced friend system with discovery and suggestions
+- ✅ Social groups and community events with RSVP
+- ✅ Comprehensive security overhaul with rate limiting and input validation
+- ✅ Database performance optimization with advanced indexing
+- ✅ Consistent Minecraft green theme across all components
+- ✅ Mobile-first responsive design for social features
 
 ### Planned Features
-- 🚧 Two-Factor Authentication (v1.2.0)
-- 🚧 Redis caching (v1.2.0)
-- 🚧 File uploads (v1.2.0)
+- 🚧 Two-Factor Authentication (v1.3.0)
+- 🚧 File uploads and media sharing (v1.3.0)
+- 🚧 Real-time notifications (v1.3.0)
+- 🚧 Redis caching (v1.4.0)
 - 🚧 Mobile app (v2.0.0)
 - 🚧 Plugin system (v2.0.0)
 - 🚧 Multi-language support (v2.0.0)

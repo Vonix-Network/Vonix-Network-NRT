@@ -194,6 +194,166 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id);
     CREATE INDEX IF NOT EXISTS idx_follows_following ON follows(following_id);
 
+    -- Stories
+    CREATE TABLE IF NOT EXISTS stories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      background_color TEXT DEFAULT '#00d97e',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      expires_at DATETIME DEFAULT (datetime('now', '+24 hours')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_stories_user_id ON stories(user_id);
+    CREATE INDEX IF NOT EXISTS idx_stories_expires ON stories(expires_at);
+
+    -- Story Views
+    CREATE TABLE IF NOT EXISTS story_views (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      story_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(story_id, user_id)
+    );
+
+    -- Friend Requests
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id INTEGER NOT NULL,
+      receiver_id INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(sender_id, receiver_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id);
+    CREATE INDEX IF NOT EXISTS idx_friend_requests_sender ON friend_requests(sender_id);
+
+    -- Friends (accepted friend requests)
+    CREATE TABLE IF NOT EXISTS friends (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user1_id INTEGER NOT NULL,
+      user2_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(user1_id, user2_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_friends_user1 ON friends(user1_id);
+    CREATE INDEX IF NOT EXISTS idx_friends_user2 ON friends(user2_id);
+    CREATE INDEX IF NOT EXISTS idx_friends_composite ON friends(user1_id, user2_id);
+
+    -- Post Reactions (extended likes)
+    CREATE TABLE IF NOT EXISTS post_reactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      post_id INTEGER NOT NULL,
+      reaction_type TEXT NOT NULL DEFAULT 'like',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+      UNIQUE(user_id, post_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_post_reactions_post ON post_reactions(post_id);
+    CREATE INDEX IF NOT EXISTS idx_post_reactions_user ON post_reactions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_post_reactions_composite ON post_reactions(post_id, reaction_type);
+    CREATE INDEX IF NOT EXISTS idx_post_reactions_user_post ON post_reactions(user_id, post_id);
+
+    -- Comment Likes
+    CREATE TABLE IF NOT EXISTS comment_likes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      comment_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+      UNIQUE(user_id, comment_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_comment_likes_comment ON comment_likes(comment_id);
+    CREATE INDEX IF NOT EXISTS idx_comment_likes_user ON comment_likes(user_id);
+
+    -- Post Shares
+    CREATE TABLE IF NOT EXISTS post_shares (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      original_post_id INTEGER NOT NULL,
+      shared_post_id INTEGER NOT NULL,
+      content TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (original_post_id) REFERENCES posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (shared_post_id) REFERENCES posts(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_post_shares_original ON post_shares(original_post_id);
+    CREATE INDEX IF NOT EXISTS idx_post_shares_user ON post_shares(user_id);
+
+    -- Social Groups
+    CREATE TABLE IF NOT EXISTS social_groups (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT,
+      privacy TEXT DEFAULT 'public',
+      created_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    -- Group Members
+    CREATE TABLE IF NOT EXISTS group_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      role TEXT DEFAULT 'member',
+      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (group_id) REFERENCES social_groups(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(group_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members(group_id);
+    CREATE INDEX IF NOT EXISTS idx_group_members_user ON group_members(user_id);
+
+    -- Events
+    CREATE TABLE IF NOT EXISTS events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      date DATETIME NOT NULL,
+      location TEXT,
+      created_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    -- Event Attendees
+    CREATE TABLE IF NOT EXISTS event_attendees (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      status TEXT DEFAULT 'attending',
+      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(event_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_event_attendees_event ON event_attendees(event_id);
+    CREATE INDEX IF NOT EXISTS idx_event_attendees_user ON event_attendees(user_id);
+    CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+    CREATE INDEX IF NOT EXISTS idx_events_created_by ON events(created_by);
+
     -- ========================================
     -- FORUM SYSTEM TABLES (phpBB-like)
     -- ========================================

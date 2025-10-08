@@ -139,6 +139,18 @@
   border-color: var(--accent-primary);
 }
 
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
 .btn-success {
   background: var(--accent-success);
   color: white;

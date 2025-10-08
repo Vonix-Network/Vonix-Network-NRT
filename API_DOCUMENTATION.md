@@ -35,8 +35,11 @@ API endpoints are rate-limited to prevent abuse:
 | Endpoint Type | Limit | Window |
 |---------------|-------|--------|
 | Authentication | 20 requests | 15 minutes |
-| General API | 200 requests | 5 minutes |
-| Authenticated | 500 requests | 5 minutes |
+| General API | 1000 requests | 5 minutes |
+| Authenticated | 2000 requests | 5 minutes |
+| Post Creation | 15 requests | 15 minutes |
+| Comments | 20 requests | 5 minutes |
+| Friend Requests | 25 requests | 1 hour |
 
 Rate limit headers are included in responses:
 - `RateLimit-Limit` - Total requests allowed

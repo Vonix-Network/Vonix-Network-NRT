@@ -78,7 +78,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, rgba(0, 217, 126, 0.1), rgba(0, 179, 104, 0.1));
   border: 1px solid var(--accent-primary);
   border-radius: 8px;
   animation: fadeIn 0.3s ease-out;
