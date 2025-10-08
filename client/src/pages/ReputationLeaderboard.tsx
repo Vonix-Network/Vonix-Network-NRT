@@ -170,7 +170,6 @@ const ReputationLeaderboard: React.FC = () => {
                   <Link to={`/users/${user.id}`} className="player-link">
                     <div className="player-avatar">
                       <img src={getAvatarUrl(user)} alt={user.username} />
-                      <div className="player-letter">{(user.minecraft_username || user.username).charAt(0).toUpperCase()}</div>
                     </div>
                     <span className="player-name">{user.minecraft_username || user.username}</span>
                   </Link>

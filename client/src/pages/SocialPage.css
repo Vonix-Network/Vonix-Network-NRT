@@ -26,10 +26,11 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: 260px 1fr 300px;
-  gap: 20px;
-  padding: 0 20px;
+  gap: var(--space-lg);
+  padding: 0 var(--space-lg);
   position: relative;
   z-index: 1;
+  container-type: inline-size;
 }
 
 /* Sidebar */
@@ -1291,11 +1292,60 @@
   animation: pulse 2s infinite;
 }
 
-/* Responsive */
+/* Enhanced Responsive Design */
+@container (max-width: 1200px) {
+  .social-container {
+    grid-template-columns: 240px 1fr 280px;
+    gap: var(--space-md);
+  }
+}
+
+@container (max-width: 1024px) {
+  .social-container {
+    grid-template-columns: 1fr 280px;
+    gap: var(--space-md);
+  }
+  
+  .social-sidebar {
+    display: none;
+  }
+}
+
 @media (max-width: 1200px) {
+  .social-container {
+    grid-template-columns: 240px 1fr 280px;
+    gap: var(--space-md);
+    padding: 0 var(--space-md);
+  }
+  
+  .sidebar-profile {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+  }
+  
+  .sidebar-avatar {
+    max-width: 60px;
+    max-height: 60px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .social-container {
+    grid-template-columns: 1fr 280px;
+    max-width: 900px;
+  }
+  
+  .social-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
   .social-container {
     grid-template-columns: 1fr;
     max-width: 600px;
+    padding: 0 var(--space-sm);
+    gap: var(--space-sm);
   }
 
   .social-sidebar,
@@ -1304,10 +1354,12 @@
     position: static;
     top: auto;
     height: auto;
+    margin-bottom: var(--space-lg);
   }
 
   .stories-section {
-    padding: 10px 0;
+    padding: var(--space-sm) 0;
+    gap: var(--space-sm);
   }
 
   .story-card {
@@ -1317,16 +1369,12 @@
 
   .groups-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
 
   .friends-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .social-page.minecraft-theme {
-    padding-top: 10px;
+    gap: var(--space-sm);
   }
 
   .social-container {
