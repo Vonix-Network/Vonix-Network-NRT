@@ -163,9 +163,12 @@ const DashboardOverview: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [servers, setServers] = useState<Server[]>([]);
   const [clearingChat, setClearingChat] = useState(false);
+  const [scriptLoading, setScriptLoading] = useState<{[key: string]: boolean}>({});
+  const [systemStats, setSystemStats] = useState<any>(null);
 
   useEffect(() => {
     loadServers();
+    loadSystemStats();
   }, []);
 
   const loadServers = async () => {
@@ -174,6 +177,15 @@ const DashboardOverview: React.FC = () => {
       setServers(response.data);
     } catch (error) {
       console.error('Error loading servers:', error);
+    }
+  };
+
+  const loadSystemStats = async () => {
+    try {
+      const response = await api.get('/admin/scripts/status');
+      setSystemStats(response.data);
+    } catch (error) {
+      console.error('Error loading system stats:', error);
     }
   };
 
@@ -192,6 +204,41 @@ const DashboardOverview: React.FC = () => {
     } finally {
       setClearingChat(false);
     }
+  };
+
+  const executeScript = async (scriptName: string, confirmMessage: string) => {
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    setScriptLoading(prev => ({ ...prev, [scriptName]: true }));
+    try {
+      const response = await api.post(`/admin/scripts/${scriptName}`);
+      alert(response.data.message);
+      // Refresh system stats after script execution
+      loadSystemStats();
+    } catch (error: any) {
+      console.error(`Error executing ${scriptName}:`, error);
+      alert(error.response?.data?.error || `Failed to execute ${scriptName}`);
+    } finally {
+      setScriptLoading(prev => ({ ...prev, [scriptName]: false }));
+    }
+  };
+
+  const handleRefreshUserStats = () => {
+    executeScript('refresh-user-stats', 'This will recalculate all user activity statistics. This may take a few moments. Continue?');
+  };
+
+  const handleCleanupForumData = () => {
+    executeScript('cleanup-forum-data', 'This will clean up orphaned forum data and update forum counts. Continue?');
+  };
+
+  const handleRecalculateReputation = () => {
+    executeScript('recalculate-reputation', 'This will recalculate all user reputation scores from the reputation log. Continue?');
+  };
+
+  const handleOptimizeDatabase = () => {
+    executeScript('optimize-database', 'This will optimize the database by running VACUUM and ANALYZE operations. Continue?');
   };
 
   return (
@@ -231,6 +278,34 @@ const DashboardOverview: React.FC = () => {
             <div className="stat-label">Total Players</div>
           </div>
         </div>
+
+        {systemStats && (
+          <>
+            <div className="stat-card">
+              <div className="stat-icon">👤</div>
+              <div className="stat-content">
+                <div className="stat-value">{systemStats.stats?.users || 0}</div>
+                <div className="stat-label">Total Users</div>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">💬</div>
+              <div className="stat-content">
+                <div className="stat-value">{systemStats.stats?.forumPosts || 0}</div>
+                <div className="stat-label">Forum Posts</div>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon">💾</div>
+              <div className="stat-content">
+                <div className="stat-value">{systemStats.database?.sizeFormatted || 'N/A'}</div>
+                <div className="stat-label">Database Size</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="dashboard-quick-actions">
@@ -270,6 +345,55 @@ const DashboardOverview: React.FC = () => {
             <div className="action-title">Clear Old Chat</div>
             <div className="action-description">
               {clearingChat ? 'Clearing...' : 'Delete all but newest 20 messages'}
+            </div>
+          </button>
+
+          {/* Script Execution Actions */}
+          <button 
+            className="action-card" 
+            onClick={handleRefreshUserStats}
+            disabled={scriptLoading['refresh-user-stats']}
+          >
+            <div className="action-icon">📊</div>
+            <div className="action-title">Refresh User Stats</div>
+            <div className="action-description">
+              {scriptLoading['refresh-user-stats'] ? 'Refreshing...' : 'Recalculate all user activity statistics'}
+            </div>
+          </button>
+
+          <button 
+            className="action-card" 
+            onClick={handleCleanupForumData}
+            disabled={scriptLoading['cleanup-forum-data']}
+          >
+            <div className="action-icon">🧹</div>
+            <div className="action-title">Cleanup Forum Data</div>
+            <div className="action-description">
+              {scriptLoading['cleanup-forum-data'] ? 'Cleaning...' : 'Remove orphaned data and fix counts'}
+            </div>
+          </button>
+
+          <button 
+            className="action-card" 
+            onClick={handleRecalculateReputation}
+            disabled={scriptLoading['recalculate-reputation']}
+          >
+            <div className="action-icon">⭐</div>
+            <div className="action-title">Recalculate Reputation</div>
+            <div className="action-description">
+              {scriptLoading['recalculate-reputation'] ? 'Calculating...' : 'Rebuild all user reputation scores'}
+            </div>
+          </button>
+
+          <button 
+            className="action-card" 
+            onClick={handleOptimizeDatabase}
+            disabled={scriptLoading['optimize-database']}
+          >
+            <div className="action-icon">🚀</div>
+            <div className="action-title">Optimize Database</div>
+            <div className="action-description">
+              {scriptLoading['optimize-database'] ? 'Optimizing...' : 'Run database maintenance operations'}
             </div>
           </button>
 

@@ -17,6 +17,7 @@ interface User {
   posts_created: number;
   likes_received: number;
   best_answers: number;
+  forum_engagement_score: number;
   rank: number;
   tierInfo: {
     tier: string;
@@ -158,6 +159,7 @@ const ReputationLeaderboard: React.FC = () => {
               <div className="col-tier">TIER</div>
               <div className="col-reputation">REPUTATION</div>
               <div className="col-posts">POSTS</div>
+              <div className="col-engagement">FORUM ENGAGEMENT</div>
             </div>
 
             {users.map((user, index) => (
@@ -187,6 +189,20 @@ const ReputationLeaderboard: React.FC = () => {
 
                 <div className="col-posts">
                   <span className="posts-count">{user.post_count || user.posts_created || 0}</span>
+                </div>
+
+                <div className="col-engagement">
+                  <div className="engagement-stats">
+                    <div className="engagement-score">
+                      <span className="score-value">{user.forum_engagement_score || 0}</span>
+                      <span className="score-label">pts</span>
+                    </div>
+                    <div className="engagement-breakdown">
+                      <span className="stat-item" title="Topics Created">📝 {user.topics_created || 0}</span>
+                      <span className="stat-item" title="Posts Created">💬 {user.posts_created || 0}</span>
+                      <span className="stat-item" title="Likes Received">👍 {user.likes_received || 0}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

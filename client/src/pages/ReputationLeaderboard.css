@@ -208,7 +208,7 @@
 
 .rankings-header {
   display: grid;
-  grid-template-columns: 80px 2fr 120px 120px 100px;
+  grid-template-columns: 80px 2fr 120px 120px 100px 180px;
   gap: 1rem;
   padding: 1rem 1.5rem;
   background: var(--bg-secondary);
@@ -221,7 +221,7 @@
 
 .rankings-row {
   display: grid;
-  grid-template-columns: 80px 2fr 120px 120px 100px;
+  grid-template-columns: 80px 2fr 120px 120px 100px 180px;
   gap: 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
@@ -289,6 +289,53 @@
   color: var(--text-secondary);
 }
 
+/* Forum Engagement Styles */
+.engagement-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.engagement-score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.score-value {
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-size: 1rem;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.engagement-breakdown {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 /* Pagination */
 .leaderboard-pagination {
   display: flex;
@@ -306,12 +353,12 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .table-header,
-  .table-row {
-    grid-template-columns: 60px 1fr 120px 150px;
+  .rankings-header,
+  .rankings-row {
+    grid-template-columns: 60px 1fr 100px 120px 150px;
   }
 
-  .col-stats {
+  .col-posts {
     display: none;
   }
 }
@@ -344,7 +391,8 @@
   }
 
   .col-tier,
-  .col-posts {
+  .col-posts,
+  .col-engagement {
     display: none;
   }
 

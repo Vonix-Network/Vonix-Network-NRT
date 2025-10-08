@@ -22,15 +22,26 @@ router.get('/leaderboard', (req, res) => {
         u.post_count,
         u.role,
         up.title,
-        uas.topics_created,
-        uas.posts_created,
-        uas.likes_received,
-        uas.best_answers
+        -- Calculate real forum engagement metrics
+        COALESCE((SELECT COUNT(*) FROM forum_topics WHERE user_id = u.id), 0) as topics_created,
+        COALESCE((SELECT COUNT(*) FROM forum_posts WHERE user_id = u.id AND deleted = 0), 0) as posts_created,
+        COALESCE((SELECT COUNT(*) FROM post_votes pv 
+                  JOIN forum_posts fp ON pv.post_id = fp.id 
+                  WHERE fp.user_id = u.id AND pv.vote_type = 'up'), 0) as likes_received,
+        COALESCE((SELECT COUNT(*) FROM forum_posts fp
+                  JOIN post_votes pv ON fp.id = pv.post_id
+                  WHERE fp.user_id = u.id AND pv.vote_type = 'up'
+                  GROUP BY fp.user_id), 0) as best_answers,
+        -- Calculate total forum engagement score
+        (COALESCE((SELECT COUNT(*) FROM forum_topics WHERE user_id = u.id), 0) * 5 +
+         COALESCE((SELECT COUNT(*) FROM forum_posts WHERE user_id = u.id AND deleted = 0), 0) * 2 +
+         COALESCE((SELECT COUNT(*) FROM post_votes pv 
+                   JOIN forum_posts fp ON pv.post_id = fp.id 
+                   WHERE fp.user_id = u.id AND pv.vote_type = 'up'), 0)) as forum_engagement_score
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
-      LEFT JOIN user_activity_stats uas ON u.id = uas.user_id
       WHERE u.id IS NOT NULL
-      ORDER BY u.reputation DESC, u.post_count DESC
+      ORDER BY u.reputation DESC, forum_engagement_score DESC, u.post_count DESC
       LIMIT ? OFFSET ?
     `).all(limit, offset);
 

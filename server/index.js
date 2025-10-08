@@ -42,6 +42,7 @@ const userProfilesRoutes = require('./routes/user-profiles');
 const forumSubscriptionsRoutes = require('./routes/forum-subscriptions');
 const forumSearchRoutes = require('./routes/forum-search');
 const adminAnalyticsRoutes = require('./routes/admin-analytics');
+const adminScriptsRoutes = require('./routes/admin-scripts');
 const reputationLeaderboardRoutes = require('./routes/reputation-leaderboard');
 
 // Services
@@ -167,6 +168,7 @@ app.use('/api/admin/features', authLimiter, adminFeaturesRoutes);
 app.use('/api/admin/registration', authLimiter, adminRegistrationRoutes);
 app.use('/api/admin/email', authLimiter, adminEmailRoutes);
 app.use('/api/admin/analytics', authLimiter, adminAnalyticsRoutes);
+app.use('/api/admin/scripts', authLimiter, adminScriptsRoutes);
 app.use('/api/user-profiles', generalLimiter, userProfilesRoutes);
 app.use('/api/forum/subscriptions', authLimiter, forumSubscriptionsRoutes);
 app.use('/api/forum/search', generalLimiter, forumSearchRoutes);

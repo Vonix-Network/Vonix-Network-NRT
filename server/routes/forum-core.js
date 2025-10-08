@@ -3,6 +3,60 @@ const router = express.Router();
 const { getDatabase } = require('../database/init');
 const { authenticateToken, optionalAuth, verifyToken } = require('../middleware/auth');
 const { awardReputation } = require('../services/reputation');
+
+// Helper function to update user activity stats
+function updateUserActivityStats(db, userId, action) {
+  try {
+    // Ensure user has an activity stats record
+    db.prepare(`
+      INSERT OR IGNORE INTO user_activity_stats (user_id, topics_created, posts_created, likes_received, likes_given, best_answers, days_active, last_post_at, join_date)
+      VALUES (?, 0, 0, 0, 0, 0, 0, NULL, CURRENT_TIMESTAMP)
+    `).run(userId);
+
+    // Update stats based on action
+    if (action === 'topic_created') {
+      db.prepare(`
+        UPDATE user_activity_stats 
+        SET topics_created = topics_created + 1, last_post_at = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+      `).run(userId);
+      
+      // Also update user post_count
+      db.prepare(`
+        UPDATE users 
+        SET post_count = post_count + 1
+        WHERE id = ?
+      `).run(userId);
+    } else if (action === 'post_created') {
+      db.prepare(`
+        UPDATE user_activity_stats 
+        SET posts_created = posts_created + 1, last_post_at = CURRENT_TIMESTAMP
+        WHERE user_id = ?
+      `).run(userId);
+      
+      // Also update user post_count
+      db.prepare(`
+        UPDATE users 
+        SET post_count = post_count + 1
+        WHERE id = ?
+      `).run(userId);
+    } else if (action === 'like_received') {
+      db.prepare(`
+        UPDATE user_activity_stats 
+        SET likes_received = likes_received + 1
+        WHERE user_id = ?
+      `).run(userId);
+    } else if (action === 'like_given') {
+      db.prepare(`
+        UPDATE user_activity_stats 
+        SET likes_given = likes_given + 1
+        WHERE user_id = ?
+      `).run(userId);
+    }
+  } catch (error) {
+    logger.error('Error updating user activity stats:', error);
+  }
+}
 const { cacheMiddleware, clearCache } = require('../middleware/cache');
 const { parseBBCode } = require('../utils/bbcode');
 const { validateTopicCreation, validatePostContent, validateId, validateSearch } = require('../middleware/validation');
@@ -306,6 +360,10 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
       WHERE id = ?
     `).run(postId, topicId, userId, forumId);
 
+    // Update user activity stats
+    updateUserActivityStats(db, userId, 'topic_created');
+    updateUserActivityStats(db, userId, 'post_created');
+
     // Award reputation for creating a topic
     awardReputation(userId, 'TOPIC_CREATED', `Created topic: ${title}`, topicId);
     // Award reputation for creating a post
@@ -380,6 +438,12 @@ router.post('/topic/:id/reply', verifyToken, validatePostContent, async (req, re
 
     db.prepare('INSERT INTO forum_search_index (post_id, topic_id, user_id, content_text) VALUES (?, ?, ?, ?)')
       .run(postId, topicId, req.user.id, content);
+
+    // Update user activity stats
+    updateUserActivityStats(db, req.user.id, 'post_created');
+
+    // Award reputation for creating a post
+    awardReputation(req.user.id, 'POST_CREATED', `Posted reply in topic: ${topic.title}`, postId);
 
     const subscribers = db
       .prepare('SELECT DISTINCT user_id FROM forum_subscriptions WHERE topic_id = ? AND user_id != ?')
@@ -690,6 +754,17 @@ router.post('/post/:postId/vote', authenticateToken, (req, res) => {
           // Update reputation (reverse the previous vote)
           const reputationChange = existingVote.vote_type === 'up' ? -3 : 1;
           awardReputation(post.user_id, reputationChange, `Post vote removed`);
+          
+          // Update activity stats (reverse the like)
+          if (existingVote.vote_type === 'up') {
+            updateUserActivityStats(db, post.user_id, 'like_received');
+            // Note: We're adding 1 to reverse the -1 that would happen
+            db.prepare(`
+              UPDATE user_activity_stats 
+              SET likes_received = CASE WHEN likes_received > 0 THEN likes_received - 1 ELSE 0 END
+              WHERE user_id = ?
+            `).run(post.user_id);
+          }
         } else {
           // Change vote type
           db.prepare(`
@@ -703,6 +778,19 @@ router.post('/post/:postId/vote', authenticateToken, (req, res) => {
           const newReputationChange = voteType === 'up' ? 3 : -1;
           const totalChange = oldReputationChange + newReputationChange;
           awardReputation(post.user_id, totalChange, `Post vote changed to ${voteType}vote`);
+          
+          // Update activity stats for vote change
+          if (existingVote.vote_type === 'up' && voteType === 'down') {
+            // Changed from upvote to downvote - remove a like
+            db.prepare(`
+              UPDATE user_activity_stats 
+              SET likes_received = CASE WHEN likes_received > 0 THEN likes_received - 1 ELSE 0 END
+              WHERE user_id = ?
+            `).run(post.user_id);
+          } else if (existingVote.vote_type === 'down' && voteType === 'up') {
+            // Changed from downvote to upvote - add a like
+            updateUserActivityStats(db, post.user_id, 'like_received');
+          }
         }
       } else {
         // New vote
@@ -714,6 +802,12 @@ router.post('/post/:postId/vote', authenticateToken, (req, res) => {
         // Award reputation
         const reputationChange = voteType === 'up' ? 3 : -1;
         awardReputation(post.user_id, reputationChange, `Post ${voteType}voted`);
+        
+        // Update activity stats for new vote
+        if (voteType === 'up') {
+          updateUserActivityStats(db, post.user_id, 'like_received');
+          updateUserActivityStats(db, userId, 'like_given');
+        }
       }
     })();
 

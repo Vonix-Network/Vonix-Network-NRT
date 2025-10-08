@@ -205,6 +205,21 @@
   font-size: 0.95rem;
 }
 
+/* Disabled action cards (for loading states) */
+.action-card:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+}
+
+.action-card:disabled:hover {
+  transform: none !important;
+  border-color: var(--border-color) !important;
+  box-shadow: none !important;
+}
+
 .manage-servers-header {
   display: flex;
   justify-content: space-between;
