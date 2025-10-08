@@ -11,6 +11,13 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: true, // Allow external connections
+    allowedHosts: [
+      'localhost',
+      '127.0.0.1',
+      'vonix.network',
+      '.vonix.network', // Allow subdomains
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
