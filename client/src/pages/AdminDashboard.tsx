@@ -1365,6 +1365,7 @@ const UserModal: React.FC<{
               onChange={handleChange}
             >
               <option value="user">User</option>
+              <option value="moderator">Moderator</option>
               <option value="admin">Admin</option>
             </select>
           </div>

@@ -26,6 +26,38 @@ function isAdmin(req, res, next) {
   next();
 }
 
+function isModerator(req, res, next) {
+  if (req.user.role !== 'moderator' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Moderator access required' });
+  }
+  next();
+}
+
+function isAdminOrModerator(req, res, next) {
+  if (req.user.role !== 'admin' && req.user.role !== 'moderator') {
+    return res.status(403).json({ error: 'Admin or moderator access required' });
+  }
+  next();
+}
+
+function requireRole(role) {
+  return (req, res, next) => {
+    if (req.user.role !== role) {
+      return res.status(403).json({ error: `${role} access required` });
+    }
+    next();
+  };
+}
+
+function requireAnyRole(roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: `Access denied. Required roles: ${roles.join(', ')}` });
+    }
+    next();
+  };
+}
+
 // Optional authentication - doesn't fail if no token
 function optionalAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -50,6 +82,10 @@ module.exports = {
   authenticateToken,
   verifyToken: authenticateToken, // Alias for consistency
   isAdmin,
+  isModerator,
+  isAdminOrModerator,
+  requireRole,
+  requireAnyRole,
   optionalAuth,
   JWT_SECRET
 };

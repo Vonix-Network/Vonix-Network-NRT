@@ -174,6 +174,113 @@ function runMigrations(db) {
       logger.info('✅ Email notifications column added');
     }
 
+    // Create moderator system tables
+    logger.info('🛡️ Setting up moderator system tables...');
+    
+    // Forum moderation log table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS forum_moderation_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        moderator_id INTEGER,
+        user_id INTEGER,
+        post_id INTEGER,
+        topic_id INTEGER,
+        action TEXT NOT NULL,
+        reason TEXT,
+        resolved INTEGER DEFAULT 0,
+        resolved_by INTEGER,
+        resolved_at DATETIME,
+        resolution_action TEXT,
+        resolution_reason TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (moderator_id) REFERENCES users(id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES forum_posts(id),
+        FOREIGN KEY (topic_id) REFERENCES forum_topics(id),
+        FOREIGN KEY (resolved_by) REFERENCES users(id)
+      )
+    `);
+
+    // Forum warnings table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS forum_warnings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        moderator_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (moderator_id) REFERENCES users(id)
+      )
+    `);
+
+    // Forum bans table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS forum_bans (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        moderator_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        expires_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (moderator_id) REFERENCES users(id)
+      )
+    `);
+
+    // Social posts table (basic version for stats)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS social_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        deleted INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+
+    // Social reports table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS social_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reporter_id INTEGER NOT NULL,
+        post_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        resolved INTEGER DEFAULT 0,
+        resolved_by INTEGER,
+        resolved_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (reporter_id) REFERENCES users(id),
+        FOREIGN KEY (post_id) REFERENCES social_posts(id),
+        FOREIGN KEY (resolved_by) REFERENCES users(id)
+      )
+    `);
+
+    // Create indexes for moderator tables (create them individually to handle errors gracefully)
+    const moderatorIndexes = [
+      'CREATE INDEX IF NOT EXISTS idx_moderation_log_action ON forum_moderation_log(action)',
+      'CREATE INDEX IF NOT EXISTS idx_moderation_log_resolved ON forum_moderation_log(resolved)',
+      'CREATE INDEX IF NOT EXISTS idx_moderation_log_created ON forum_moderation_log(created_at)',
+      'CREATE INDEX IF NOT EXISTS idx_warnings_user ON forum_warnings(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_warnings_created ON forum_warnings(created_at)',
+      'CREATE INDEX IF NOT EXISTS idx_bans_user ON forum_bans(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_bans_expires ON forum_bans(expires_at)',
+      'CREATE INDEX IF NOT EXISTS idx_social_posts_deleted ON social_posts(deleted)',
+      'CREATE INDEX IF NOT EXISTS idx_social_reports_resolved ON social_reports(resolved)'
+    ];
+
+    moderatorIndexes.forEach(indexSql => {
+      try {
+        db.exec(indexSql);
+      } catch (indexError) {
+        // Log but don't fail - indexes are not critical for functionality
+        logger.warn(`Index creation warning: ${indexError.message}`);
+      }
+    });
+
+    logger.info('✅ Moderator system tables ready');
     logger.info('✅ All migrations completed successfully');
   } catch (error) {
     logger.error('❌ Migration error:', error);
