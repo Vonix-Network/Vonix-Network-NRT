@@ -107,31 +107,9 @@ const DonationSubscription: React.FC<DonationSubscriptionProps> = ({
                 </>
               )}
             </div>
-          ) : (
-            <div className="subscription-status permanent">
-              <span className="status-icon">♾️</span>
-              <span className="status-text">Permanent rank</span>
-            </div>
-          )}
+          ) : null}
         </div>
       )}
-
-      {/* Monthly Subscription Info */}
-      <div className="donation-subscription__info">
-        <div className="subscription-info-card">
-          <h4>Monthly Subscription Model</h4>
-          <p>Our ranks work like Hypixel - you subscribe monthly to maintain your rank and perks.</p>
-          <div className="rank-pricing">
-            <div className="rank-price">🌟 <strong>Supporter:</strong> $5/month</div>
-            <div className="rank-price">💎 <strong>Patron:</strong> $10/month</div>
-            <div className="rank-price">👑 <strong>Champion:</strong> $15/month</div>
-            <div className="rank-price">🏆 <strong>Legend:</strong> $20/month</div>
-          </div>
-          <p className="subscription-note">
-            <strong>Tip:</strong> You can purchase multiple months at once (e.g., $20 = 4 months of Supporter)
-          </p>
-        </div>
-      </div>
 
       {/* Perks Display */}
       {showPerks && fullRank && (

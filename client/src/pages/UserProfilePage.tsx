@@ -344,15 +344,6 @@ const UserProfilePage: React.FC = () => {
                   <span className="reputation-tier">{getReputationTier(profile.reputation).tier}</span>
                 </div>
               )}
-              {(profile.total_donated !== undefined && profile.total_donated > 0) || profile.donation_rank && (
-                <div className="donation-subscription-section">
-                  <DonationSubscription 
-                    totalDonated={profile.total_donated}
-                    donationRank={profile.donation_rank}
-                    showPerks={true}
-                  />
-                </div>
-              )}
             </div>
             {profile.minecraft_username && (
               <p className="profile-handle">@{profile.username}</p>
