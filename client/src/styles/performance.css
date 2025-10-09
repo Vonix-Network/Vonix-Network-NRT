@@ -1,4 +1,4 @@
-/* Performance Optimizations & Common Patterns */
+/* Performance Optimizations & Modern Patterns */
 
 /* GPU Acceleration for Smooth Animations */
 .gpu-accelerated {
@@ -8,15 +8,16 @@
   perspective: 1000px;
 }
 
-/* Optimized Card Pattern */
+/* Modern Optimized Card Pattern */
 .card-optimized {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  border-radius: var(--radius-8);
+  padding: var(--space-6);
   transition: all var(--transition-base);
   will-change: transform, box-shadow;
   contain: layout style paint;
+  backdrop-filter: blur(10px);
 }
 
 .card-optimized:hover {
@@ -25,16 +26,17 @@
   box-shadow: var(--glow-primary);
 }
 
-/* Optimized Button Base */
+/* Modern Optimized Button Base */
 .btn-optimized {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-lg);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
   border: none;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
+  border-radius: var(--radius-6);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
   text-decoration: none;
   cursor: pointer;
   transition: all var(--transition-base);
@@ -42,11 +44,12 @@
   user-select: none;
   white-space: nowrap;
   contain: layout style;
+  min-height: 44px; /* Touch target size */
 }
 
 .btn-optimized:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.3);
+  box-shadow: 0 0 0 3px rgba(0, 217, 166, 0.3);
 }
 
 .btn-optimized:disabled {
@@ -55,9 +58,9 @@
   transform: none !important;
 }
 
-/* Optimized Avatar Pattern */
+/* Modern Optimized Avatar Pattern */
 .avatar-optimized {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-4);
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
@@ -70,13 +73,13 @@
   transform: scale(1.05);
 }
 
-/* Optimized Input Pattern */
+/* Modern Optimized Input Pattern */
 .input-optimized {
   width: 100%;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-3) var(--space-4);
   background: var(--bg-secondary);
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-6);
   color: var(--text-primary);
   font-family: inherit;
   font-size: var(--text-base);
@@ -87,7 +90,7 @@
 .input-optimized:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 217, 166, 0.1);
   background: var(--bg-tertiary);
 }
 
@@ -96,7 +99,7 @@
   transition: color var(--transition-base);
 }
 
-/* Optimized Modal Pattern */
+/* Modern Optimized Modal Pattern */
 .modal-optimized {
   position: fixed;
   top: 0;
@@ -117,22 +120,23 @@
 .modal-content-optimized {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-2xl);
+  border-radius: var(--radius-12);
+  padding: var(--space-8);
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-2xl);
   animation: scaleIn var(--transition-slow) ease-out;
   contain: layout style paint;
+  backdrop-filter: blur(10px);
 }
 
-/* Optimized Loading States */
+/* Modern Optimized Loading States */
 .loading-optimized {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
   color: var(--text-secondary);
 }
 
@@ -146,12 +150,12 @@
   will-change: transform;
 }
 
-/* Optimized Skeleton Loading */
+/* Modern Optimized Skeleton Loading */
 .skeleton-optimized {
   background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-4);
 }
 
 @keyframes shimmer {
@@ -163,20 +167,21 @@
   }
 }
 
-/* Optimized Notification/Toast */
+/* Modern Optimized Notification/Toast */
 .toast-optimized {
   position: fixed;
-  top: var(--space-lg);
-  right: var(--space-lg);
+  top: var(--space-6);
+  right: var(--space-6);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-6);
+  padding: var(--space-4) var(--space-6);
   box-shadow: var(--shadow-xl);
   z-index: var(--z-toast);
   animation: slideInRight var(--transition-slow) ease-out;
   will-change: transform, opacity;
   contain: layout style paint;
+  backdrop-filter: blur(10px);
 }
 
 .toast-success {
@@ -195,7 +200,7 @@
   border-left: 4px solid var(--accent-info);
 }
 
-/* Optimized Dropdown */
+/* Modern Optimized Dropdown */
 .dropdown-optimized {
   position: relative;
   display: inline-block;
@@ -208,7 +213,7 @@
   min-width: 200px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-6);
   box-shadow: var(--shadow-xl);
   z-index: var(--z-dropdown);
   opacity: 0;
@@ -216,6 +221,7 @@
   transform: translateY(-8px);
   transition: all var(--transition-base);
   contain: layout style paint;
+  backdrop-filter: blur(10px);
 }
 
 .dropdown-optimized:hover .dropdown-content-optimized,

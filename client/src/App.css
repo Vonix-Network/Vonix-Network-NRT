@@ -1,6 +1,6 @@
 .App {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: var(--gradient-secondary);
 }
 
 .loading-container {
@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .spinner {
@@ -21,115 +21,125 @@
   animation: spin 1s linear infinite;
 }
 
+/* Modern Container System */
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-8);
   container-type: inline-size;
 }
 
 .container-sm {
   max-width: 640px;
   margin: 0 auto;
-  padding: var(--space-lg);
+  padding: var(--space-6);
 }
 
 .container-md {
   max-width: 768px;
   margin: 0 auto;
-  padding: var(--space-lg);
+  padding: var(--space-6);
 }
 
 .container-lg {
   max-width: 1024px;
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-8);
 }
 
 .container-xl {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-8);
 }
 
+/* Enhanced Page Headers */
 .page-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
 }
 
 .page-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  font-size: var(--text-5xl);
+  font-weight: var(--font-extrabold);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
+  letter-spacing: -0.025em;
 }
 
 .page-subtitle {
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
 }
 
-/* Cards */
+/* Enhanced Card System */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-12);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
   border-color: var(--accent-primary);
   box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--border-color);
 }
 
 .card-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
   color: var(--text-primary);
+  margin: 0;
 }
 
 .card-body {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: var(--leading-relaxed);
 }
 
 /* Enhanced Button System */
 .btn {
-  --btn-padding-y: 0.75rem;
-  --btn-padding-x: 1.5rem;
-  --btn-font-size: 1rem;
-  --btn-border-radius: var(--radius-lg);
+  --btn-padding-y: var(--space-3);
+  --btn-padding-x: var(--space-6);
+  --btn-font-size: var(--text-base);
+  --btn-border-radius: var(--radius-6);
   --btn-transition: all var(--transition-base);
-  
+
   padding: var(--btn-padding-y) var(--btn-padding-x);
   border: none;
   border-radius: var(--btn-border-radius);
   font-size: var(--btn-font-size);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: var(--btn-transition);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
+  gap: var(--space-2);
   text-decoration: none;
   position: relative;
   overflow: hidden;
   white-space: nowrap;
   user-select: none;
   will-change: transform, box-shadow;
+  min-height: 44px; /* Touch target size */
 }
 
 .btn:disabled {
@@ -140,12 +150,12 @@
 
 .btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.3);
+  box-shadow: 0 0 0 3px rgba(0, 217, 166, 0.3);
 }
 
 /* Button Variants */
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  background: var(--gradient-primary);
   color: white;
   border: 1px solid var(--accent-primary);
 }
