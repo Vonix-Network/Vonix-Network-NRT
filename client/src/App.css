@@ -1,3 +1,8 @@
+@import './styles/theme-optimization.css';
+@import './styles/component-standards.css';
+@import './styles/streamlined-forum.css';
+@import './styles/compact-forum.css';
+
 .App {
   min-height: 100vh;
   background: var(--gradient-secondary);

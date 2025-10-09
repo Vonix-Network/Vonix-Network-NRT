@@ -1,0 +1,465 @@
+/* ===================================
+   VONIX NETWORK - COMPONENT STANDARDS
+   ===================================
+   
+   This file defines standardized component patterns
+   to ensure consistency across the entire application.
+*/
+
+/* ===== STANDARDIZED CARD PATTERNS ===== */
+
+/* Base card - used for all card-like components */
+.vonix-base-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-12);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
+}
+
+.vonix-base-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-primary), var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Interactive card - for clickable cards */
+.vonix-interactive-card {
+  cursor: pointer;
+}
+
+.vonix-interactive-card:active {
+  transform: translateY(0);
+}
+
+/* ===== STANDARDIZED BUTTON PATTERNS ===== */
+
+/* Enhanced primary button */
+.vonix-btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border: 1px solid var(--accent-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-6);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
+  min-height: 44px;
+}
+
+.vonix-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--transition-slower);
+}
+
+.vonix-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--glow-primary);
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-tertiary));
+}
+
+.vonix-btn-primary:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.vonix-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.vonix-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Enhanced secondary button */
+.vonix-btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-6);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
+  min-height: 44px;
+}
+
+.vonix-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== STANDARDIZED FORM PATTERNS ===== */
+
+/* Enhanced form input */
+.vonix-form-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-8);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-family: inherit;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(10px);
+}
+
+.vonix-form-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.1);
+  background: var(--bg-tertiary);
+}
+
+.vonix-form-input:hover:not(:focus) {
+  border-color: var(--border-light);
+}
+
+.vonix-form-input::placeholder {
+  color: var(--text-muted);
+  transition: color var(--transition-base);
+}
+
+.vonix-form-input:focus::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ===== STANDARDIZED STATUS INDICATORS ===== */
+
+/* Enhanced status badge */
+.vonix-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-6);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+  backdrop-filter: blur(10px);
+}
+
+.vonix-status-badge--online {
+  background: rgba(0, 217, 126, 0.1);
+  color: var(--accent-success);
+  border-color: rgba(0, 217, 126, 0.2);
+}
+
+.vonix-status-badge--offline {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-error);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.vonix-status-badge--warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent-warning);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.vonix-status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== STANDARDIZED NAVIGATION PATTERNS ===== */
+
+/* Enhanced navigation item */
+.vonix-nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  font-size: var(--text-base);
+  border-radius: var(--radius-6);
+  transition: all var(--transition-base);
+}
+
+.vonix-nav-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  transition: all var(--transition-base);
+  transform: translateX(-50%);
+}
+
+.vonix-nav-item:hover,
+.vonix-nav-item.active {
+  color: var(--text-primary);
+  background: rgba(0, 217, 126, 0.05);
+}
+
+.vonix-nav-item.active::before {
+  width: 80%;
+}
+
+/* ===== STANDARDIZED AVATAR PATTERNS ===== */
+
+/* Enhanced avatar system */
+.vonix-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-6);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  will-change: transform;
+}
+
+.vonix-avatar--small {
+  width: 32px;
+  height: 32px;
+}
+
+.vonix-avatar--medium {
+  width: 48px;
+  height: 48px;
+}
+
+.vonix-avatar--large {
+  width: 64px;
+  height: 64px;
+}
+
+.vonix-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.vonix-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.vonix-avatar--placeholder {
+  background: var(--gradient-primary);
+  color: white;
+  font-weight: var(--font-bold);
+}
+
+/* ===== STANDARDIZED LOADING PATTERNS ===== */
+
+/* Enhanced loading spinner */
+.vonix-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.vonix-spinner--large {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+}
+
+.vonix-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--text-secondary);
+}
+
+/* ===== STANDARDIZED EMPTY STATE PATTERNS ===== */
+
+/* Enhanced empty state */
+.vonix-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-12);
+  min-height: 300px;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+.vonix-empty-state__icon {
+  font-size: var(--text-6xl);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-4);
+  opacity: 0.7;
+}
+
+.vonix-empty-state__title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.vonix-empty-state__description {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  max-width: 400px;
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+
+/* ===== STANDARDIZED MODAL PATTERNS ===== */
+
+/* Enhanced modal overlay */
+.vonix-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn var(--duration-200) ease-out;
+}
+
+.vonix-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-12);
+  padding: var(--space-8);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-2xl);
+  backdrop-filter: blur(10px);
+  animation: scaleIn var(--duration-200) ease-out;
+}
+
+/* ===== STANDARDIZED RESPONSIVE PATTERNS ===== */
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .vonix-base-card {
+    padding: var(--space-4);
+  }
+  
+  .vonix-btn-primary,
+  .vonix-btn-secondary {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+  }
+  
+  .vonix-empty-state {
+    padding: var(--space-8) var(--space-4);
+    min-height: 200px;
+  }
+  
+  .vonix-empty-state__icon {
+    font-size: var(--text-4xl);
+  }
+  
+  .vonix-empty-state__title {
+    font-size: var(--text-lg);
+  }
+  
+  .vonix-empty-state__description {
+    font-size: var(--text-sm);
+  }
+  
+  .vonix-modal {
+    padding: var(--space-6);
+    margin: var(--space-4);
+  }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* Focus states for all interactive elements */
+.vonix-base-card:focus-visible,
+.vonix-btn-primary:focus-visible,
+.vonix-btn-secondary:focus-visible,
+.vonix-form-input:focus-visible,
+.vonix-nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.3);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .vonix-base-card,
+  .vonix-btn-primary,
+  .vonix-btn-secondary,
+  .vonix-form-input,
+  .vonix-status-badge,
+  .vonix-nav-item,
+  .vonix-avatar,
+  .vonix-spinner {
+    transition: none;
+    animation: none;
+  }
+  
+  .vonix-modal-overlay,
+  .vonix-modal {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .vonix-base-card,
+  .vonix-btn-primary,
+  .vonix-btn-secondary,
+  .vonix-form-input,
+  .vonix-status-badge,
+  .vonix-modal {
+    border-width: 2px;
+  }
+}

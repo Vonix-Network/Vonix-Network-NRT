@@ -5,8 +5,10 @@
 }
 
 .discover-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0 var(--space-6);
 }
 
 .discover-header {

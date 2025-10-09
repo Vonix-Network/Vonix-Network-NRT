@@ -4,7 +4,7 @@
   gap: var(--space-1);
   background: var(--rank-color);
   color: var(--rank-text-color);
-  border-radius: var(--radius-2);
+  border-radius: var(--radius-6);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   padding: var(--space-1) var(--space-3);
@@ -14,6 +14,8 @@
   overflow: hidden;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
 }
 
 .donation-rank--small {
@@ -77,11 +79,12 @@
 .donation-rank:hover {
   transform: translateY(-1px);
   filter: brightness(1.1);
-  box-shadow: 0 0 15px var(--rank-color);
+  box-shadow: var(--shadow-md), 0 0 15px var(--rank-color);
 }
 
 .donation-rank--glow:hover {
   box-shadow:
+    var(--shadow-lg),
     0 0 15px var(--rank-color),
     0 0 25px var(--rank-color),
     0 0 35px var(--rank-color);

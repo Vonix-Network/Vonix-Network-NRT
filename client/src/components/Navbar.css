@@ -61,12 +61,12 @@
 .nav-link {
   color: var(--text-secondary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: var(--text-base);
-  padding: var(--space-sm) 0;
+  padding: var(--space-2) 0;
   position: relative;
   transition: color var(--transition-base);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-6);
 }
 
 .nav-link::after {
@@ -95,21 +95,25 @@
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  gap: 0.5rem !important;
-  padding: 12px !important;
+  gap: var(--space-2) !important;
+  padding: var(--space-3) !important;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: var(--radius-6);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
   height: auto;
   white-space: nowrap;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
 }
 
 .user-card:hover {
   background: var(--bg-hover);
   border-color: var(--accent-primary);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .user-avatar-container {
@@ -169,9 +173,9 @@
 }
 
 .user-name {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   white-space: nowrap !important;
   overflow: hidden;
   text-overflow: ellipsis;
