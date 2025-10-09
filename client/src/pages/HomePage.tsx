@@ -95,6 +95,21 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Footer CTA Section */}
+      <section className="footer-cta-section">
+        <div className="container">
+          <div className="footer-cta-card">
+            <h2 className="footer-cta-title">Ready to Join the Adventure?</h2>
+            <p className="footer-cta-description">
+              Connect with players, explore modded worlds, and be part of something amazing
+            </p>
+            <Link to="/servers" className="btn btn-primary btn-lg">
+              Get Started Now
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
