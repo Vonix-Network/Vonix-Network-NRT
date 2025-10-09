@@ -15,16 +15,18 @@
   margin-bottom: var(--space-8);
 }
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
+.forum-list-page .header-content {
+  display: flex !important;
+  justify-content: space-between !important;
   align-items: center;
   gap: var(--space-8);
   flex-wrap: wrap;
+  width: 100% !important;
 }
 
-.header-text {
-  flex: 0 1 auto;
+.forum-list-page .header-text {
+  flex: 1 !important;
+  max-width: none !important;
 }
 
 .forum-title {
@@ -40,11 +42,12 @@
   margin: 0;
 }
 
-.header-actions {
+.forum-list-page .header-actions {
   display: flex !important;
   align-items: center;
-  justify-content: flex-end;
-  flex-shrink: 0;
+  justify-content: flex-end !important;
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
 }
 
 .search-container {
@@ -364,21 +367,39 @@
   color: #ef4444;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
+/* Responsive - Tablet */
+@media (max-width: 1024px) {
+  .forum-list-page .header-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: var(--space-4) !important;
+    text-align: center;
   }
 
-  .header-actions {
+  .forum-list-page .header-actions {
+    justify-content: center !important;
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
     justify-content: center;
+    position: relative;
   }
 
   .forum-search {
     width: 100%;
-    max-width: 400px;
+    max-width: 350px;
+  }
+
+  .search-container .search-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(calc(-175px + 0.75rem)) translateY(-50%);
   }
 
   .forum-icon-container {
@@ -392,5 +413,27 @@
 
   .forum-list-page .container {
     padding: 0 var(--space-4);
+  }
+}
+
+/* Mobile - Smaller screens */
+@media (max-width: 480px) {
+  .search-container {
+    max-width: 300px !important;
+  }
+  
+  .forum-search {
+    max-width: 280px !important;
+  }
+  
+  .search-container .search-icon {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translateX(calc(-140px + 0.75rem)) translateY(-50%) !important;
+  }
+  
+  .forum-list-page .container {
+    padding: 0 var(--space-3);
   }
 }
