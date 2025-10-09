@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import UserDisplay from '../components/UserDisplay';
+import DonationRank from '../components/DonationRank';
 import './SocialPage.css';
 
 interface User {
@@ -638,13 +639,35 @@ const SocialPage: React.FC = () => {
                 <UserDisplay
                   username={user.username}
                   minecraftUsername={user.minecraft_username}
-                  totalDonated={user.total_donated}
-                  donationRank={user.donation_rank}
                   size="medium"
                   showIcon={true}
-                  showBadge={true}
+                  showBadge={false}
                 />
               </Link>
+              {user.donation_rank && (
+                <div className="sidebar-donation-badge">
+                  <DonationRank
+                    rank={{
+                      id: user.donation_rank.id,
+                      name: user.donation_rank.name,
+                      color: user.donation_rank.color,
+                      textColor: user.donation_rank.textColor,
+                      icon: user.donation_rank.icon,
+                      badge: user.donation_rank.badge,
+                      glow: user.donation_rank.glow,
+                      minAmount: 0,
+                      duration: 30,
+                      subtitle: '',
+                      perks: [],
+                      minecraftPerks: []
+                    }}
+                    showIcon={true}
+                    showBadge={true}
+                    showName={false}
+                    size="medium"
+                  />
+                </div>
+              )}
               <div className="user-stats">
                 <span>{friends.length} friends</span>
               </div>
