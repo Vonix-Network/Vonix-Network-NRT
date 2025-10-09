@@ -22,7 +22,7 @@ const HomePage: React.FC = () => {
             </p>
             <div className="hero-actions">
               <Link to="/servers" className="btn btn-primary btn-lg">
-                Get Started →
+                Get Started
               </Link>
               <a
                 href={DISCORD_INVITE_URL}
@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
               <div className="feature-icon">🎯</div>
               <h3 className="feature-title">Modded Excellence</h3>
               <p className="feature-description">
-                Experience curated modpacks like BMC5 by LunaPixel Studios with optimized performance and cutting-edge gameplay
+                Experience curated modpacks with optimized performance and cutting-edge gameplay
               </p>
             </div>
 
@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Chat Section */}
+      {/* Chat Section - Positioned like old site */}
       {flags.discord_chat && (
         <section className="chat-section">
           <div className="container">
@@ -85,8 +85,7 @@ const HomePage: React.FC = () => {
               <div className="chat-info">
                 <h2 className="section-title">Live Community Chat</h2>
                 <p className="section-description">
-                  Connect instantly with fellow gamers through our integrated Discord chat. 
-                  Share strategies, get help, and be part of our thriving community!
+                  Connect instantly with fellow gamers through our integrated Discord chat. Share strategies, get help, and be part of our thriving community!
                 </p>
               </div>
               <div className="chat-container">
@@ -96,21 +95,6 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       )}
-
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-card">
-            <h2 className="cta-title">Ready to Join the Adventure?</h2>
-            <p className="cta-description">
-              Connect with players, explore modded worlds, and be part of something amazing
-            </p>
-            <Link to="/servers" className="btn btn-primary btn-lg">
-              Get Started Now
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
