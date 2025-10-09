@@ -1,14 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
 import './ForumListPage.css';
 
 interface LastPost {
   last_post_username?: string;
+  last_post_minecraft_username?: string;
   last_post_user_uuid?: string;
   last_post_topic_title?: string;
   last_post_topic_slug?: string;
   last_post_time?: string;
+  last_post_total_donated?: number;
+  last_post_donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface Forum extends LastPost {
@@ -140,7 +152,22 @@ const ForumListPage: React.FC = () => {
                           {forum.description || 'Join the discussion and share your thoughts'}
                         </p>
                         <div className="forum-meta">
-                          <span className="forum-author">by {forum.last_post_username || 'Admin'}</span>
+                          <span className="forum-author">
+                            by{' '}
+                            {forum.last_post_username ? (
+                              <UserDisplay
+                                username={forum.last_post_username}
+                                minecraftUsername={forum.last_post_minecraft_username}
+                                totalDonated={forum.last_post_total_donated}
+                                donationRank={forum.last_post_donation_rank}
+                                size="small"
+                                showIcon={false}
+                                showBadge={true}
+                              />
+                            ) : (
+                              'Admin'
+                            )}
+                          </span>
                           <span className="forum-time">Last reply {formatDate(forum.last_post_time)}</span>
                         </div>
                       </div>
@@ -150,23 +177,16 @@ const ForumListPage: React.FC = () => {
                       <div className="forum-engagement">
                         <div className="engagement-item">
                           <svg className="engagement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                          <span className="engagement-count">{forum.topics_count || 0}</span>
+                        </div>
+                        <div className="engagement-item">
+                          <svg className="engagement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
                             <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"></path>
                           </svg>
-                          <span className="engagement-count">{forum.topics_count}</span>
-                        </div>
-                        <div className="engagement-item">
-                          <svg className="engagement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                          </svg>
-                          <span className="engagement-count">{forum.posts_count}</span>
-                        </div>
-                        <div className="engagement-item">
-                          <svg className="engagement-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M7 10v12l5-3 5 3V10"></path>
-                            <path d="M5 6h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path>
-                          </svg>
-                          <span className="engagement-count">{Math.floor(Math.random() * 100)}</span>
+                          <span className="engagement-count">{forum.posts_count || 0}</span>
                         </div>
                       </div>
                       

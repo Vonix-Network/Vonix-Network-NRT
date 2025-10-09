@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
+import DonationSubscription from '../components/DonationSubscription';
 import './UserProfilePage.css';
 
 interface UserProfile {
@@ -31,6 +33,18 @@ interface UserProfile {
   custom_banner?: string;
   avatar_border?: string;
   title?: string;
+  // Donation rank information
+  total_donated?: number;
+  donation_rank_id?: string;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
   // Activity stats
   stats?: {
     topics_created: number;
@@ -312,12 +326,31 @@ const UserProfilePage: React.FC = () => {
 
           <div className="profile-info">
             <div className="profile-name-section">
-              <h1 className="profile-name">{profile.minecraft_username || profile.username}</h1>
+              <div className="profile-name">
+                <UserDisplay
+                  username={profile.username}
+                  minecraftUsername={profile.minecraft_username}
+                  totalDonated={profile.total_donated}
+                  donationRank={profile.donation_rank}
+                  size="large"
+                  showIcon={true}
+                  showBadge={true}
+                />
+              </div>
               {profile.reputation !== undefined && profile.reputation > 0 && (
                 <div className="reputation-badge">
                   <span className="reputation-icon">⭐</span>
                   <span className="reputation-score">{profile.reputation}</span>
                   <span className="reputation-tier">{getReputationTier(profile.reputation).tier}</span>
+                </div>
+              )}
+              {(profile.total_donated !== undefined && profile.total_donated > 0) || profile.donation_rank && (
+                <div className="donation-subscription-section">
+                  <DonationSubscription 
+                    totalDonated={profile.total_donated}
+                    donationRank={profile.donation_rank}
+                    showPerks={true}
+                  />
                 </div>
               )}
             </div>
@@ -544,7 +577,7 @@ const UserProfilePage: React.FC = () => {
                             <span className="engagement-count">{post.comment_count}</span>
                           </div>
 
-                          {post.share_count > 0 && (
+                          {post.share_count && post.share_count > 0 && (
                             <div className="engagement-item">
                               <span className="engagement-icon">🔄</span>
                               <span className="engagement-count">{post.share_count}</span>

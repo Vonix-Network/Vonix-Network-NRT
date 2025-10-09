@@ -8,13 +8,13 @@ export const BRAND_SLOGAN = import.meta.env.VITE_BRAND_SLOGAN || import.meta.env
 
 // API base URL used by axios
 export const API_URL =
-  import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:3001/api`;
+  import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api`;
 
 // Websocket URL for chat
 export const WS_URL =
   import.meta.env.VITE_WS_URL || import.meta.env.REACT_APP_WS_URL || (window.location.protocol === 'https:'
     ? `wss://${window.location.hostname}/ws/chat`
-    : `ws://${window.location.hostname}:3001/ws/chat`);
+    : `ws://${window.location.hostname}:5000/ws/chat`);
 
 // External links
 export const DISCORD_INVITE_URL =

@@ -1,0 +1,266 @@
+.donation-subscription {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.donation-subscription__status {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.donation-subscription__rank,
+.donation-subscription__total {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donation-subscription__label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 140px;
+}
+
+.donation-subscription__amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.donation-subscription__expiration {
+  margin-bottom: 1.5rem;
+}
+
+.subscription-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.subscription-status.active {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+.subscription-status.expiring {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+}
+
+.subscription-status.expired {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.subscription-status.permanent {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid #8b5cf6;
+  color: #8b5cf6;
+}
+
+.status-icon {
+  font-size: 1.125rem;
+}
+
+.status-text {
+  font-size: 0.875rem;
+}
+
+.rank-badge-fallback {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.donation-subscription__info {
+  margin-bottom: 1.5rem;
+}
+
+.subscription-info-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.subscription-info-card h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+}
+
+.subscription-info-card p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.rank-pricing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.rank-price {
+  padding: 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.subscription-note {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3b82f6;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  color: #3b82f6 !important;
+}
+
+.donation-subscription__perks {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.donation-subscription__perks-title {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+}
+
+.donation-subscription__perks-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.donation-subscription__perks-section h5 {
+  margin: 0 0 0.75rem 0;
+  color: var(--accent-primary);
+  font-size: 1rem;
+}
+
+.donation-subscription__perks-section ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.donation-subscription__perks-section li {
+  margin: 0.25rem 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.donation-subscription-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.donation-subscription-empty .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.donation-subscription-empty h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+.donation-subscription-empty p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.cta-buttons .btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.cta-buttons .btn-primary {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+}
+
+.cta-buttons .btn-primary:hover {
+  background: var(--accent-primary-dark);
+  transform: translateY(-1px);
+}
+
+.cta-buttons .btn-secondary {
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.cta-buttons .btn-secondary:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .donation-subscription {
+    padding: 1rem;
+  }
+  
+  .donation-subscription__status {
+    gap: 0.75rem;
+  }
+  
+  .donation-subscription__rank,
+  .donation-subscription__total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .donation-subscription__label {
+    min-width: auto;
+  }
+  
+  .rank-pricing {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-buttons .btn {
+    width: 100%;
+    max-width: 200px;
+  }
+}

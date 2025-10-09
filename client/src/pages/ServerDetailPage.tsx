@@ -154,7 +154,7 @@ const ServerDetailPage: React.FC = () => {
                   {server.player_list.map((player) => (
                     <div key={player.uuid} className="player-item">
                       <img
-                        src={`https://crafatar.com/avatars/${player.uuid}?size=32&overlay`}
+                        src={`https://mc-heads.net/head/${encodeURIComponent(player.name)}/32`}
                         alt={player.name}
                         className="player-avatar"
                       />

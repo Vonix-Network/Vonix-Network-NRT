@@ -8,6 +8,18 @@ interface User {
   minecraft_username?: string;
   minecraft_uuid?: string;
   mustChangePassword: boolean;
+  total_donated?: number;
+  donation_rank_id?: string;
+  donation_rank_expires_at?: string;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface AuthContextType {
@@ -27,6 +39,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    // Refresh user data when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        checkAuth();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');

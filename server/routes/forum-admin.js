@@ -409,50 +409,7 @@ router.delete('/users/:userId/groups/:groupId', async (req, res) => {
 // BULK OPERATIONS
 // ========================================
 
-// POST /api/forum-admin/bulk/recalculate - Recalculate forum statistics
-router.post('/bulk/recalculate', async (req, res) => {
-  try {
-    const db = getDatabase();
-    
-    // Recalculate all forum stats
-    const forums = db.prepare('SELECT id FROM forums').all();
-    
-    for (const forum of forums) {
-      const topicsCount = db.prepare(`
-        SELECT COUNT(*) as count FROM forum_topics WHERE forum_id = ?
-      `).get(forum.id).count;
-      
-      const postsCount = db.prepare(`
-        SELECT COUNT(*) as count FROM forum_posts p
-        JOIN forum_topics t ON p.topic_id = t.id
-        WHERE t.forum_id = ? AND p.deleted = 0
-      `).get(forum.id).count;
-      
-      db.prepare(`
-        UPDATE forums SET topics_count = ?, posts_count = ? WHERE id = ?
-      `).run(topicsCount, postsCount, forum.id);
-    }
-    
-    // Recalculate topic reply counts
-    const topics = db.prepare('SELECT id FROM forum_topics').all();
-    
-    for (const topic of topics) {
-      const repliesCount = db.prepare(`
-        SELECT COUNT(*) - 1 as count FROM forum_posts 
-        WHERE topic_id = ? AND deleted = 0
-      `).get(topic.id).count;
-      
-      db.prepare(`
-        UPDATE forum_topics SET replies = ? WHERE id = ?
-      `).run(Math.max(0, repliesCount), topic.id);
-    }
-    
-    res.json({ success: true, message: 'Statistics recalculated' });
-  } catch (error) {
-    console.error('Error recalculating stats:', error);
-    res.status(500).json({ error: 'Failed to recalculate statistics' });
-  }
-});
+// Removed duplicate recalculate route - using recalculate-stats instead
 
 // POST /api/forum-admin/bulk/rebuild-search - Rebuild search index
 router.post('/bulk/rebuild-search', async (req, res) => {

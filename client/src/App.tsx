@@ -13,6 +13,7 @@ import BlogPostPage from './pages/BlogPostPage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import DonationsPage from './pages/DonationsPage';
+import DonationRanks from './pages/DonationRanks';
 import MessagesPage from './pages/MessagesPage';
 import SocialPage from './pages/SocialPage';
 import DiscoverPage from './pages/DiscoverPage';
@@ -138,6 +139,7 @@ function AppContent() {
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/donations" element={<DonationsPage />} />
+        <Route path="/ranks" element={<DonationRanks />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/login" element={<LoginPage />} />

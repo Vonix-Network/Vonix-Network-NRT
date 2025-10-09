@@ -281,6 +281,100 @@ function runMigrations(db) {
     });
 
     logger.info('✅ Moderator system tables ready');
+
+    // Migration: Add donation tracking columns to users table
+    const donationColumns = ['total_donated', 'donation_rank_id'];
+    donationColumns.forEach(column => {
+      const hasColumn = usersTableInfo.some(col => col.name === column);
+      if (!hasColumn) {
+        logger.info(`💰 Adding ${column} column to users table...`);
+        if (column === 'total_donated') {
+          db.exec('ALTER TABLE users ADD COLUMN total_donated REAL DEFAULT 0.0');
+        } else if (column === 'donation_rank_id') {
+          db.exec('ALTER TABLE users ADD COLUMN donation_rank_id TEXT');
+        }
+        logger.info(`✅ ${column} column added`);
+      }
+    });
+
+    // Update existing donations table to link with users
+    const donationsTableInfo = db.prepare("PRAGMA table_info(donations)").all();
+    const hasUserIdInDonations = donationsTableInfo.some(col => col.name === 'user_id');
+    
+    if (!hasUserIdInDonations) {
+      logger.info('🔗 Adding user_id column to donations table...');
+      db.exec('ALTER TABLE donations ADD COLUMN user_id INTEGER REFERENCES users(id)');
+      logger.info('✅ user_id column added to donations');
+    }
+
+    // Create donation_transactions table for detailed tracking
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS donation_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        minecraft_username TEXT,
+        minecraft_uuid TEXT,
+        amount REAL NOT NULL,
+        currency TEXT DEFAULT 'USD',
+        payment_method TEXT,
+        payment_id TEXT,
+        status TEXT DEFAULT 'completed',
+        message TEXT,
+        anonymous INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Add expiration date columns to users table for donation ranks
+    const rankExpirationColumns = ['donation_rank_expires_at', 'donation_rank_granted_by'];
+    rankExpirationColumns.forEach(column => {
+      const hasColumn = usersTableInfo.some(col => col.name === column);
+      if (!hasColumn) {
+        logger.info(`⏰ Adding ${column} column to users table...`);
+        if (column === 'donation_rank_expires_at') {
+          db.exec('ALTER TABLE users ADD COLUMN donation_rank_expires_at DATETIME');
+        } else if (column === 'donation_rank_granted_by') {
+          db.exec('ALTER TABLE users ADD COLUMN donation_rank_granted_by INTEGER REFERENCES users(id)');
+        }
+        logger.info(`✅ ${column} column added`);
+      }
+    });
+
+    // Create donation_rank_history table for tracking rank changes
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS donation_rank_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        old_rank_id TEXT,
+        new_rank_id TEXT,
+        old_expires_at DATETIME,
+        new_expires_at DATETIME,
+        action_type TEXT NOT NULL, -- 'granted', 'extended', 'changed', 'expired', 'revoked'
+        days_added INTEGER,
+        reason TEXT,
+        granted_by INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Create indexes for donation tables
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_donations_user ON donations(user_id);
+      CREATE INDEX IF NOT EXISTS idx_donations_minecraft_uuid ON donations(minecraft_uuid);
+      CREATE INDEX IF NOT EXISTS idx_donation_transactions_user ON donation_transactions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_donation_transactions_status ON donation_transactions(status);
+      CREATE INDEX IF NOT EXISTS idx_users_total_donated ON users(total_donated DESC);
+      CREATE INDEX IF NOT EXISTS idx_users_donation_rank ON users(donation_rank_id);
+      CREATE INDEX IF NOT EXISTS idx_users_donation_rank_expires ON users(donation_rank_expires_at);
+      CREATE INDEX IF NOT EXISTS idx_donation_rank_history_user ON donation_rank_history(user_id);
+      CREATE INDEX IF NOT EXISTS idx_donation_rank_history_action ON donation_rank_history(action_type);
+    `);
+
+    logger.info('✅ Donation system tables ready');
     logger.info('✅ All migrations completed successfully');
   } catch (error) {
     logger.error('❌ Migration error:', error);

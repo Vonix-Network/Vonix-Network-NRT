@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
 import './ForumViewPage.css';
 
 interface Topic {
@@ -14,11 +15,33 @@ interface Topic {
   pinned: number;
   announcement: number;
   author_username: string;
+  author_minecraft_username?: string;
   author_uuid?: string;
   user_id: number;
+  author_total_donated?: number;
+  author_donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
   last_post_username?: string;
+  last_post_minecraft_username?: string;
   last_post_user_uuid?: string;
   last_post_time?: string;
+  last_post_total_donated?: number;
+  last_post_donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
   created_at: string;
   hasUnread?: boolean;
 }
@@ -198,17 +221,28 @@ const ForumViewPage: React.FC = () => {
                         alt={topic.author_username}
                         className="user-avatar-tiny"
                       />
-                      <span>by {topic.author_username}</span>
+                      <span>
+                        by{' '}
+                        <UserDisplay
+                          username={topic.author_username}
+                          minecraftUsername={topic.author_minecraft_username}
+                          totalDonated={topic.author_total_donated}
+                          donationRank={topic.author_donation_rank}
+                          size="small"
+                          showIcon={false}
+                          showBadge={true}
+                        />
+                      </span>
                     </div>
                   </div>
 
                   <div className="topic-stats-col">
                     <div className="stat">
-                      <span className="stat-number">{topic.replies}</span>
+                      <span className="stat-number">{topic.replies || 0}</span>
                       <span className="stat-label">Replies</span>
                     </div>
                     <div className="stat">
-                      <span className="stat-number">{topic.views}</span>
+                      <span className="stat-number">{topic.views || 0}</span>
                       <span className="stat-label">Views</span>
                     </div>
                   </div>
@@ -222,7 +256,15 @@ const ForumViewPage: React.FC = () => {
                             alt={topic.last_post_username}
                             className="user-avatar-small"
                           />
-                          <span>{topic.last_post_username}</span>
+                          <UserDisplay
+                            username={topic.last_post_username}
+                            minecraftUsername={topic.last_post_minecraft_username}
+                            totalDonated={topic.last_post_total_donated}
+                            donationRank={topic.last_post_donation_rank}
+                            size="small"
+                            showIcon={false}
+                            showBadge={true}
+                          />
                         </div>
                         <div className="last-post-time">{formatDate(topic.last_post_time)}</div>
                       </>

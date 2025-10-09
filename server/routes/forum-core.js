@@ -4,6 +4,61 @@ const { getDatabase } = require('../database/init');
 const { authenticateToken, optionalAuth, verifyToken } = require('../middleware/auth');
 const { awardReputation } = require('../services/reputation');
 
+// Donation rank system constants
+const DONATION_RANKS = {
+  SUPPORTER: { 
+    id: 'supporter', 
+    name: 'Supporter', 
+    minAmount: 5, 
+    color: '#10b981',
+    textColor: '#ffffff',
+    icon: '🌟',
+    badge: 'SUP',
+    glow: false
+  },
+  PATRON: { 
+    id: 'patron', 
+    name: 'Patron', 
+    minAmount: 10, 
+    color: '#3b82f6',
+    textColor: '#ffffff',
+    icon: '💎',
+    badge: 'PAT',
+    glow: true
+  },
+  CHAMPION: { 
+    id: 'champion', 
+    name: 'Champion', 
+    minAmount: 15, 
+    color: '#8b5cf6',
+    textColor: '#ffffff',
+    icon: '👑',
+    badge: 'CHA',
+    glow: true
+  },
+  LEGEND: { 
+    id: 'legend', 
+    name: 'Legend', 
+    minAmount: 20, 
+    color: '#f59e0b',
+    textColor: '#000000',
+    icon: '🏆',
+    badge: 'LEG',
+    glow: true
+  }
+};
+
+// Helper function to add donation rank information to user objects
+function addDonationRankInfo(user) {
+  if (user.donation_rank_id) {
+    const rank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+    if (rank) {
+      user.donation_rank = rank;
+    }
+  }
+  return user;
+}
+
 // Helper function to update user activity stats
 function updateUserActivityStats(db, userId, action) {
   try {
@@ -116,7 +171,10 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
       SELECT 
         f.*,
         u.username as last_post_username,
+        u.minecraft_username as last_post_minecraft_username,
         u.minecraft_uuid as last_post_user_uuid,
+        u.total_donated as last_post_total_donated,
+        u.donation_rank_id as last_post_donation_rank_id,
         t.title as last_post_topic_title,
         t.slug as last_post_topic_slug,
         f.last_post_time
@@ -128,7 +186,16 @@ router.get('/', cacheMiddleware(60), async (req, res) => {
 
     const categoriesWithForums = categories.map(c => ({
       ...c,
-      forums: forums.filter(f => f.category_id === c.id)
+      forums: forums.filter(f => f.category_id === c.id).map(f => {
+        // Add donation rank info for last post user
+        if (f.last_post_donation_rank_id) {
+          const rank = DONATION_RANKS[f.last_post_donation_rank_id.toUpperCase()];
+          if (rank) {
+            f.last_post_donation_rank = rank;
+          }
+        }
+        return f;
+      })
     }));
 
     res.json(categoriesWithForums);
@@ -159,9 +226,15 @@ router.get('/forum/:id', optionalAuth, cacheMiddleware(45), async (req, res) => 
       SELECT 
         t.*,
         u.username as author_username,
+        u.minecraft_username as author_minecraft_username,
         u.minecraft_uuid as author_uuid,
+        u.total_donated as author_total_donated,
+        u.donation_rank_id as author_donation_rank_id,
         lu.username as last_post_username,
-        lu.minecraft_uuid as last_post_user_uuid
+        lu.minecraft_username as last_post_minecraft_username,
+        lu.minecraft_uuid as last_post_user_uuid,
+        lu.total_donated as last_post_total_donated,
+        lu.donation_rank_id as last_post_donation_rank_id
       FROM forum_topics t
       JOIN users u ON t.user_id = u.id
       LEFT JOIN users lu ON t.last_post_user_id = lu.id
@@ -174,9 +247,30 @@ router.get('/forum/:id', optionalAuth, cacheMiddleware(45), async (req, res) => 
       .prepare('SELECT COUNT(*) as count FROM forum_topics WHERE forum_id = ?')
       .get(forumId).count;
 
-    let topicsWithReadStatus = topics;
+    // Add donation rank information to topics
+    const topicsWithRanks = topics.map(topic => {
+      // Add author donation rank
+      if (topic.author_donation_rank_id) {
+        const authorRank = DONATION_RANKS[topic.author_donation_rank_id.toUpperCase()];
+        if (authorRank) {
+          topic.author_donation_rank = authorRank;
+        }
+      }
+      
+      // Add last post user donation rank
+      if (topic.last_post_donation_rank_id) {
+        const lastPostRank = DONATION_RANKS[topic.last_post_donation_rank_id.toUpperCase()];
+        if (lastPostRank) {
+          topic.last_post_donation_rank = lastPostRank;
+        }
+      }
+      
+      return topic;
+    });
+
+    let topicsWithReadStatus = topicsWithRanks;
     if (req.user) {
-      topicsWithReadStatus = topics.map(topic => {
+      topicsWithReadStatus = topicsWithRanks.map(topic => {
         const view = db
           .prepare(`
             SELECT viewed_at, last_post_id FROM forum_topic_views
@@ -231,14 +325,31 @@ router.get('/topic/:slug', optionalAuth, cacheMiddleware(30), async (req, res) =
     `).get(slug);
     if (!topic) return res.status(404).json({ error: 'Topic not found' });
 
-    db.prepare('UPDATE forum_topics SET views = views + 1 WHERE id = ?').run(topic.id);
+    // Track view count - only increment once per user per topic per session (1 hour)
+    if (req.user) {
+      const recentView = db.prepare(`
+        SELECT viewed_at FROM forum_topic_views 
+        WHERE user_id = ? AND topic_id = ? 
+        AND viewed_at > datetime('now', '-1 hour')
+      `).get(req.user.id, topic.id);
+      
+      if (!recentView) {
+        db.prepare('UPDATE forum_topics SET views = views + 1 WHERE id = ?').run(topic.id);
+      }
+    } else {
+      // For anonymous users, increment every time (they can't spam via auth loops)
+      db.prepare('UPDATE forum_topics SET views = views + 1 WHERE id = ?').run(topic.id);
+    }
 
     const posts = db.prepare(`
       SELECT 
         p.*,
         u.username,
+        u.minecraft_username,
         u.minecraft_uuid,
         u.role,
+        u.total_donated,
+        u.donation_rank_id,
         up.bio,
         (SELECT COUNT(*) FROM forum_posts WHERE user_id = u.id) as user_post_count,
         eu.username as edited_by_username,
@@ -254,7 +365,10 @@ router.get('/topic/:slug', optionalAuth, cacheMiddleware(30), async (req, res) =
       LIMIT ? OFFSET ?
     `).all(req.user?.id || null, topic.id, limit, offset);
 
-    const postsWithParsed = posts.map(p => ({ ...p, content_html: parseBBCode(p.content) }));
+    const postsWithParsed = posts.map(p => ({ 
+      ...addDonationRankInfo(p), 
+      content_html: parseBBCode(p.content) 
+    }));
 
     const totalCount = db
       .prepare('SELECT COUNT(*) as count FROM forum_posts WHERE topic_id = ? AND deleted = 0')
@@ -349,11 +463,10 @@ router.post('/forum/:id/topic', verifyToken, validateTopicCreation, async (req, 
       WHERE id = ?
     `).run(postId, userId, topicId);
 
+    // Forum count updates disabled - was causing reliability issues
     db.prepare(`
       UPDATE forums 
-      SET topics_count = topics_count + 1,
-          posts_count = posts_count + 1,
-          last_post_id = ?,
+      SET last_post_id = ?,
           last_post_topic_id = ?,
           last_post_user_id = ?,
           last_post_time = CURRENT_TIMESTAMP
@@ -426,10 +539,10 @@ router.post('/topic/:id/reply', verifyToken, validatePostContent, async (req, re
       WHERE id = ?
     `).run(postId, req.user.id, topicId);
 
+    // Forum count updates disabled - was causing reliability issues
     db.prepare(`
       UPDATE forums 
-      SET posts_count = posts_count + 1,
-          last_post_id = ?,
+      SET last_post_id = ?,
           last_post_topic_id = ?,
           last_post_user_id = ?,
           last_post_time = CURRENT_TIMESTAMP
@@ -514,8 +627,8 @@ router.delete('/post/:id', verifyToken, async (req, res) => {
 
     db.prepare('UPDATE forum_topics SET replies = CASE WHEN replies > 0 THEN replies - 1 ELSE 0 END WHERE id = ?')
       .run(post.topic_id);
-    db.prepare('UPDATE forums SET posts_count = CASE WHEN posts_count > 0 THEN posts_count - 1 ELSE 0 END WHERE id = ?')
-      .run(post.forum_id);
+    // Forum-level count updates disabled, but topic reply counts are reliable
+    // Note: forum.posts_count updates disabled to prevent sync issues
 
     const topicLastPost = db
       .prepare(`
@@ -589,12 +702,13 @@ router.delete('/topic/:id', verifyToken, async (req, res) => {
       .get(topicId);
     db.prepare('DELETE FROM forum_topics WHERE id = ?').run(topicId);
 
-    db.prepare(`
-      UPDATE forums 
-      SET topics_count = MAX(0, topics_count - 1),
-          posts_count = MAX(0, posts_count - ?)
-      WHERE id = ?
-    `).run(postCount.count, topic.forum_id);
+    // Forum count updates disabled - was causing reliability issues
+    // db.prepare(`
+    //   UPDATE forums 
+    //   SET topics_count = MAX(0, topics_count - 1),
+    //       posts_count = MAX(0, posts_count - ?)
+    //   WHERE id = ?
+    // `).run(postCount.count, topic.forum_id);
 
     const lastPost = db
       .prepare(`

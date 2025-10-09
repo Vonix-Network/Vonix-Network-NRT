@@ -10,42 +10,6 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { flags } = useFeatures();
-  const [resolvedUuid, setResolvedUuid] = useState<string | null>(null);
-
-  // Resolve UUID from username if UUID is missing but username exists
-  useEffect(() => {
-    let cancelled = false;
-    async function resolveUuid(username: string) {
-      try {
-        // Check cache first
-        const cacheKey = `uuid_cache_${username.toLowerCase()}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          if (!cancelled) setResolvedUuid(cached);
-          return;
-        }
-        const resp = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          const id: string | undefined = data?.id;
-          if (id && !cancelled) {
-            localStorage.setItem(cacheKey, id);
-            setResolvedUuid(id);
-          }
-        }
-      } catch {
-        // ignore resolution errors
-      }
-    }
-
-    if (!user) return;
-    if (!user.minecraft_uuid && user.minecraft_username) {
-      resolveUuid(user.minecraft_username);
-    } else {
-      setResolvedUuid(null);
-    }
-    return () => { cancelled = true; };
-  }, [user]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
@@ -115,6 +79,13 @@ const Navbar: React.FC = () => {
           >
             Donations
           </Link>
+          <Link
+            to="/ranks"
+            className={`nav-link ${isActive('/ranks') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Ranks
+          </Link>
 
           {user ? (
             <>
@@ -155,17 +126,18 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
               <Link to="/profile" className="user-card" onClick={() => setMobileMenuOpen(false)}>
-                {(user.minecraft_uuid || resolvedUuid) ? (
-                  <img 
-                    src={`https://crafatar.com/renders/head/${(user.minecraft_uuid || resolvedUuid)}`}
+                <div className="user-avatar-container">
+                  <img
+                    src={`https://mc-heads.net/head/${encodeURIComponent(user.username)}/32`}
                     alt={user.username}
                     className="user-avatar"
+                    onError={(e) => {
+                      // Hide broken image if it fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
                   />
-                ) : (
-                  <div className="user-avatar-placeholder">
-                    {user.username.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                </div>
                 <span className="user-name">{user.username}</span>
               </Link>
             </>

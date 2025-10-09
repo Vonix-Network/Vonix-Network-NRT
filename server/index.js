@@ -48,6 +48,7 @@ const reputationLeaderboardRoutes = require('./routes/reputation-leaderboard');
 
 // Services
 const { startDiscordBot, stopDiscordBot } = require('./services/discord');
+const rankExpirationService = require('./services/rankExpirationService');
 
 const app = express();
 const server = http.createServer(app);
@@ -58,6 +59,14 @@ initializeDatabase();
 
 // Initialize Discord Bot (no-op if not configured)
 (async () => { try { await startDiscordBot(); } catch (_) {} })();
+
+// Initialize Rank Expiration Service
+try {
+  rankExpirationService.start();
+  logger.info('✅ Rank expiration service initialized');
+} catch (error) {
+  logger.error('❌ Failed to start rank expiration service:', error);
+}
 
 // WebSocket Server for real-time chat
 const wss = new WebSocketServer({ server, path: '/ws/chat' });
@@ -125,7 +134,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting configuration
 const generalLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 1000, // Increased from 200 to 1000 for normal browsing
+  max: 2000, // Reasonable limit for normal usage
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
@@ -302,6 +311,14 @@ const gracefulShutdown = (signal) => {
     
     // Close Discord bot
     (async () => { try { await stopDiscordBot(); logger.info('Discord bot disconnected'); } catch (_) {} })();
+    
+    // Stop rank expiration service
+    try {
+      rankExpirationService.stop();
+      logger.info('Rank expiration service stopped');
+    } catch (error) {
+      logger.error('Error stopping rank expiration service:', error);
+    }
     
     logger.info('Graceful shutdown complete');
     process.exit(0);

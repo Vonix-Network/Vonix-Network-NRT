@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDiscordPage from './AdminDiscordPage';
 import AdminFeaturesPage from './AdminFeaturesPage';
@@ -94,6 +94,12 @@ const AdminDashboard: React.FC = () => {
             💖 Donations
           </Link>
           <Link
+            to="/admin/ranks"
+            className={`admin-nav-link ${location.pathname.includes('/admin/ranks') ? 'active' : ''}`}
+          >
+            💎 Ranks
+          </Link>
+          <Link
             to="/admin/forums"
             className={`admin-nav-link ${location.pathname.includes('/admin/forums') ? 'active' : ''}`}
           >
@@ -145,6 +151,7 @@ const AdminDashboard: React.FC = () => {
           <Route path="/blog" element={<ManageBlog />} />
           <Route path="/users" element={<ManageUsers />} />
           <Route path="/donations" element={<ManageDonations />} />
+          <Route path="/ranks" element={<ManageRanks />} />
           <Route path="/forums" element={<ManageForums />} />
           <Route path="/moderation" element={<ForumModeration />} />
           <Route path="/discord" element={<AdminDiscordPage />} />
@@ -743,17 +750,18 @@ const ManageBlog: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
-
   useEffect(() => {
     loadPosts();
   }, []);
 
   const loadPosts = async () => {
     try {
-      const response = await api.get('/blog/admin/all');
+      setLoading(true);
+      const response = await api.get('/blog');
       setPosts(response.data);
     } catch (error) {
       console.error('Error loading posts:', error);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -762,7 +770,6 @@ const ManageBlog: React.FC = () => {
   const handleDelete = async (id: number) => {
     // eslint-disable-next-line no-restricted-globals
     if (!window.confirm('Are you sure you want to delete this blog post?')) return;
-
     try {
       await api.delete(`/blog/${id}`);
       loadPosts();
@@ -1416,6 +1423,395 @@ const UserModal: React.FC<{
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Saving...' : user ? 'Update User' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ========================================
+// RANKS MANAGEMENT COMPONENT
+// ========================================
+
+const ManageRanks: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'settings' | 'users'>('settings');
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingRank, setEditingRank] = useState<any>(null);
+
+  const loadRanks = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Load from API with cache busting
+      const response = await api.get(`/donations/ranks?t=${Date.now()}`);
+      console.log('🔄 Loaded ranks from API:', response.data);
+      console.log('🔍 First rank details:', response.data[0]);
+      setRanks(response.data);
+      
+    } catch (error) {
+      console.error('Error loading ranks:', error);
+      setRanks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRanks();
+  }, [loadRanks]);
+
+  const handleSaveRank = useCallback(async (rankData: any) => {
+    try {
+      // Extract the editing info from the data
+      const { _isEditing, _editingId, ...cleanRankData } = rankData;
+      
+      if (_isEditing && _editingId) {
+        await api.put(`/donations/ranks/${_editingId}`, cleanRankData);
+      } else {
+        await api.post('/donations/ranks', cleanRankData);
+      }
+      await loadRanks(); // Wait for reload to complete
+      setEditingRank(null);
+    } catch (error: any) {
+      console.error('Save rank error:', error);
+      alert(error.response?.data?.error || 'Failed to save rank');
+      throw error; // Re-throw so child component knows it failed
+    }
+  }, [loadRanks]);
+
+  return (
+    <div className="admin-section">
+      <div className="section-header">
+        <h2 className="section-title">💎 Ranks Management</h2>
+        <p className="section-subtitle">Manage donation rank settings and user assignments</p>
+      </div>
+
+      <div className="tab-navigation">
+        <button
+          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          ⚙️ Rank Settings
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          👥 User Management
+        </button>
+      </div>
+
+      {activeTab === 'settings' && <ManageRankSettings ranks={ranks} loading={loading} onEdit={setEditingRank} onSave={handleSaveRank} onReload={loadRanks} />}
+      {activeTab === 'users' && (
+        <div>
+          <h3>User Management Debug</h3>
+          <p>Active tab: {activeTab}</p>
+          <ManageDonationRanks />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ManageRankSettings: React.FC<{
+  ranks: any[];
+  loading: boolean;
+  onEdit: (rank: any) => void;
+  onSave: (rankData: any) => void;
+  onReload: () => void;
+}> = React.memo(({ ranks, loading, onEdit, onSave, onReload }) => {
+  const [editingRank, setEditingRank] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleEdit = (rank: any) => {
+    setEditingRank(rank);
+    setShowModal(true);
+  };
+
+  const handleSave = async (rankData: any) => {
+    try {
+      // Pass the editing rank info along with the form data
+      const saveData = {
+        ...rankData,
+        _isEditing: !!editingRank,
+        _editingId: editingRank?.id
+      };
+      await onSave(saveData);
+      setShowModal(false);
+      setEditingRank(null);
+    } catch (error) {
+      console.error('Failed to save rank:', error);
+      // Keep modal open on error so user can try again
+    }
+  };
+
+  if (loading) {
+    return <div className="loading-container">Loading ranks...</div>;
+  }
+
+  // Debug: Log current state (removed to prevent infinite loop)
+  // console.log('ManageRankSettings render - ranks:', ranks, 'length:', ranks.length, 'loading:', loading);
+
+  return (
+    <div className="rank-settings">
+      <div className="section-header">
+        <h3>Donation Rank Configuration</h3>
+        <p>Configure rank costs, benefits, and appearance</p>
+        <button className="btn btn-secondary" onClick={onReload}>
+          🔄 Reload Ranks
+        </button>
+      </div>
+
+      <div className="ranks-grid">
+        {Array.isArray(ranks) && ranks.length > 0 ? ranks.map((rank) => (
+          <div key={rank.id} className="rank-card">
+            <div className="rank-header">
+              <span className="rank-icon">{rank.icon}</span>
+              <h4>{rank.name}</h4>
+              <span className="rank-cost">${rank.minAmount}/month</span>
+            </div>
+            <div className="rank-details">
+              <p className="rank-subtitle">{rank.subtitle}</p>
+              <div className="rank-perks">
+                <strong>Community Perks:</strong>
+                <ul>
+                  {rank.perks && rank.perks.slice(0, 3).map((perk: string, index: number) => (
+                    <li key={index}>{perk}</li>
+                  ))}
+                  {rank.perks && rank.perks.length > 3 && <li>+{rank.perks.length - 3} more...</li>}
+                </ul>
+              </div>
+            </div>
+            <div className="rank-actions">
+              <button className="btn btn-sm btn-secondary" onClick={() => handleEdit(rank)}>
+                ✏️ Edit
+              </button>
+            </div>
+          </div>
+        )) : (
+          <div className="empty-state">
+            <p>No ranks available.</p>
+            <p>Debug: Ranks array length: {ranks.length}</p>
+            <p>Debug: Loading state: {loading.toString()}</p>
+            <p>Debug: Ranks data: {JSON.stringify(ranks.slice(0, 1), null, 2)}</p>
+            <button className="btn btn-primary" onClick={onReload}>
+              🔄 Reload Ranks
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <RankEditModal
+          rank={editingRank}
+          onSave={handleSave}
+          onClose={() => {
+            setShowModal(false);
+            setEditingRank(null);
+          }}
+        />
+      )}
+    </div>
+  );
+});
+
+const RankEditModal: React.FC<{
+  rank: any;
+  onSave: (rankData: any) => void;
+  onClose: () => void;
+}> = ({ rank, onSave, onClose }) => {
+  const [formData, setFormData] = useState({
+    name: rank?.name || '',
+    minAmount: rank?.minAmount || 5,
+    subtitle: rank?.subtitle || '',
+    color: rank?.color || '#10b981',
+    textColor: rank?.textColor || '#ffffff',
+    icon: rank?.icon || '🌟',
+    badge: rank?.badge || rank?.name?.substring(0, 3).toUpperCase() || 'NEW',
+    glow: rank?.glow || false,
+    perks: rank?.perks?.join('\n') || '',
+    minecraftPerks: rank?.minecraftPerks?.join('\n') || ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value 
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({
+        id: rank?.id,
+        ...formData,
+        perks: formData.perks.split('\n').filter((p: string) => p.trim()),
+        minecraftPerks: formData.minecraftPerks.split('\n').filter((p: string) => p.trim())
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to save rank');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">{rank ? 'Edit Rank' : 'Create New Rank'}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Rank Name *</label>
+              <input
+                type="text"
+                name="name"
+                className="form-input"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Supporter"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Monthly Cost ($) *</label>
+              <input
+                type="number"
+                name="minAmount"
+                className="form-input"
+                value={formData.minAmount}
+                onChange={handleChange}
+                min="1"
+                placeholder="5"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Icon</label>
+              <input
+                type="text"
+                name="icon"
+                className="form-input"
+                value={formData.icon}
+                onChange={handleChange}
+                placeholder="🌟"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Badge</label>
+              <input
+                type="text"
+                name="badge"
+                className="form-input"
+                value={formData.badge}
+                onChange={handleChange}
+                placeholder="SUP"
+                maxLength={3}
+              />
+              <small className="form-hint">3-letter code</small>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Background Color</label>
+              <input
+                type="color"
+                name="color"
+                className="form-input"
+                value={formData.color}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Text Color</label>
+              <input
+                type="color"
+                name="textColor"
+                className="form-input"
+                value={formData.textColor}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              <input
+                type="checkbox"
+                name="glow"
+                checked={formData.glow}
+                onChange={handleChange}
+                style={{ marginRight: '0.5rem' }}
+              />
+              Enable Glow Effect
+            </label>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Subtitle</label>
+            <input
+              type="text"
+              name="subtitle"
+              className="form-input"
+              value={formData.subtitle}
+              onChange={handleChange}
+              placeholder="$5 Monthly — Covers basic server costs"
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Community Perks</label>
+              <textarea
+                name="perks"
+                className="form-textarea"
+                value={formData.perks}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Custom username color&#10;Supporter badge&#10;Priority support"
+              />
+              <small className="form-hint">One perk per line</small>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Minecraft Perks</label>
+              <textarea
+                name="minecraftPerks"
+                className="form-textarea"
+                value={formData.minecraftPerks}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Supporter prefix&#10;/hat command&#10;Priority queue"
+              />
+              <small className="form-hint">One perk per line</small>
+            </div>
+          </div>
+
+          {error && <div className="form-error">{error}</div>}
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving...' : rank ? 'Update Rank' : 'Create Rank'}
             </button>
           </div>
         </form>
@@ -2157,6 +2553,862 @@ const ForumModeration: React.FC = () => {
   );
 };
 
+// ========================================
+// DONATION RANKS MANAGEMENT COMPONENT
+// ========================================
+
+interface DonationUser {
+  id: number;
+  username: string;
+  minecraft_username: string;
+  minecraft_uuid: string;
+  total_donated: number;
+  donation_rank_id: string | null;
+  donation_rank_expires_at: string | null;
+  donation_rank_granted_by: number | null;
+  granted_by_username: string | null;
+  created_at: string;
+  rank: any;
+  isExpired: boolean;
+  daysUntilExpiration: number | null;
+}
+
+const ManageDonationRanks: React.FC = () => {
+  const [users, setUsers] = useState<DonationUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showSetDonatedModal, setShowSetDonatedModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<DonationUser | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [serviceStatus, setServiceStatus] = useState<any>(null);
+  const [serviceLoading, setServiceLoading] = useState(false);
+
+  useEffect(() => {
+    loadUsers();
+    loadServiceStatus();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Loading users from /donations/admin/users...');
+      const response = await api.get('/donations/admin/users');
+      console.log('✅ API Response:', response);
+      console.log('📊 Users data:', response.data);
+      console.log('📈 Users count:', response.data?.length || 0);
+      setUsers(response.data || []);
+    } catch (error: any) {
+      console.error('❌ Error loading users:', error);
+      console.error('📋 Error details:', error.response?.data);
+      console.error('🔢 Status code:', error.response?.status);
+      
+      // Fallback: try to load regular users if donations endpoint fails
+      try {
+        console.log('🔄 Trying fallback: loading regular users...');
+        const fallbackResponse = await api.get('/users');
+        console.log('✅ Fallback users loaded:', fallbackResponse.data?.length || 0);
+        const usersWithDefaults = (fallbackResponse.data || []).map((user: any) => ({
+          ...user,
+          total_donated: 0,
+          donation_rank_id: null,
+          donation_rank_expires_at: null,
+          donation_rank_granted_by: null,
+          granted_by_username: null,
+          rank: null,
+          isExpired: false,
+          daysUntilExpiration: null
+        }));
+        setUsers(usersWithDefaults);
+      } catch (fallbackError) {
+        console.error('❌ Fallback also failed:', fallbackError);
+        setUsers([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadServiceStatus = async () => {
+    try {
+      const response = await api.get('/donations/admin/expiration-service/status');
+      setServiceStatus(response.data);
+    } catch (error) {
+      console.error('Error loading service status:', error);
+    }
+  };
+
+  const handleServiceAction = async (action: string) => {
+    setServiceLoading(true);
+    try {
+      await api.post(`/donations/admin/expiration-service/${action}`);
+      loadServiceStatus();
+      alert(`Service ${action} successful`);
+    } catch (error: any) {
+      alert(error.response?.data?.error || `Failed to ${action} service`);
+    } finally {
+      setServiceLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.minecraft_username && user.minecraft_username.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const handleSetDonated = (user: DonationUser) => {
+    setSelectedUser(user);
+    setShowSetDonatedModal(true);
+    setShowGrantModal(false);
+    setShowHistoryModal(false);
+    setShowExtendModal(false);
+  };
+
+  const handleGrantRank = (user: DonationUser) => {
+    setSelectedUser(user);
+    setShowGrantModal(true);
+    setShowSetDonatedModal(false);
+    setShowHistoryModal(false);
+    setShowExtendModal(false);
+  };
+
+  const handleExtendRank = (user: DonationUser) => {
+    setSelectedUser(user);
+    setShowExtendModal(true);
+    setShowSetDonatedModal(false);
+    setShowGrantModal(false);
+    setShowHistoryModal(false);
+  };
+
+  const handleViewHistory = (user: DonationUser) => {
+    setSelectedUser(user);
+    setShowHistoryModal(true);
+    setShowSetDonatedModal(false);
+    setShowGrantModal(false);
+    setShowExtendModal(false);
+  };
+
+  const handleRevokeRank = async (user: DonationUser) => {
+    if (!window.confirm(`Are you sure you want to revoke ${user.username}'s rank? This action is permanent and cannot be undone.`)) return;
+    
+    try {
+      await api.delete(`/donations/admin/users/${user.id}/rank`);
+      loadUsers();
+      alert('Rank revoked successfully');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Failed to revoke rank');
+    }
+  };
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading donation ranks...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="manage-donation-ranks">
+      <div className="section-header">
+        <div>
+          <h2 className="section-title">Donation Ranks Management</h2>
+          <p className="section-subtitle">Manage user donation ranks, expiration dates, and history</p>
+        </div>
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="form-input"
+            style={{ width: '300px' }}
+          />
+        </div>
+      </div>
+
+      {/* Service Status */}
+      {serviceStatus && (
+        <div className="service-status-card" style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.125rem' }}>Rank Expiration Service</h3>
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+                Status: <span style={{ color: serviceStatus.isRunning ? '#10b981' : '#ef4444', fontWeight: '600' }}>
+                  {serviceStatus.isRunning ? '🟢 Running' : '🔴 Stopped'}
+                </span>
+                {serviceStatus.nextCheck && (
+                  <span> • Next check: {new Date(serviceStatus.nextCheck).toLocaleString()}</span>
+                )}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={() => handleServiceAction('check')}
+                disabled={serviceLoading}
+              >
+                🔄 Check Now
+              </button>
+              {serviceStatus.isRunning ? (
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={() => handleServiceAction('stop')}
+                  disabled={serviceLoading}
+                >
+                  ⏹️ Stop
+                </button>
+              ) : (
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={() => handleServiceAction('start')}
+                  disabled={serviceLoading}
+                >
+                  ▶️ Start
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="admin-table-container">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Current Rank</th>
+              <th>Total Donated</th>
+              <th>Expires</th>
+              <th>Granted By</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.map((user) => (
+              <tr key={user.id} className={user.isExpired ? 'expired-rank' : ''}>
+                <td>
+                  <div>
+                    <strong>{user.username}</strong>
+                    {user.minecraft_username && (
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                        MC: {user.minecraft_username}
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  {user.rank ? (
+                    <span
+                      className="rank-badge"
+                      style={{
+                        backgroundColor: user.rank.color,
+                        color: 'white',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '0.25rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      {user.rank.icon} {user.rank.name}
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--text-secondary)' }}>No rank</span>
+                  )}
+                </td>
+                <td>${user.total_donated?.toFixed(2) || '0.00'}</td>
+                <td>
+                  {user.donation_rank_expires_at ? (
+                    <div>
+                      <div>{formatDate(user.donation_rank_expires_at)}</div>
+                      {user.daysUntilExpiration !== null && (
+                        <div style={{ fontSize: '0.75rem', color: user.daysUntilExpiration < 0 ? 'red' : 'var(--text-secondary)' }}>
+                          {user.daysUntilExpiration < 0 
+                            ? `Expired ${Math.abs(user.daysUntilExpiration)} days ago`
+                            : `${user.daysUntilExpiration} days left`
+                          }
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span style={{ color: 'var(--text-secondary)' }}>Permanent</span>
+                  )}
+                </td>
+                <td>{user.granted_by_username || '-'}</td>
+                <td>
+                  {user.isExpired ? (
+                    <span className="badge badge-error">Expired</span>
+                  ) : user.donation_rank_id ? (
+                    <span className="badge badge-success">Active</span>
+                  ) : (
+                    <span className="badge badge-warning">No Rank</span>
+                  )}
+                </td>
+                <td>
+                  <div className="table-actions">
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => handleSetDonated(user)}
+                      title="Set total donated amount"
+                    >
+                      💰 Set $
+                    </button>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleGrantRank(user)}
+                      title="Grant or change rank"
+                    >
+                      💎 Rank
+                    </button>
+                    {user.donation_rank_id && (
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => handleExtendRank(user)}
+                        title="Add days to current rank"
+                      >
+                        ⏰ Extend
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-sm btn-info"
+                      onClick={() => handleViewHistory(user)}
+                      title="View rank history"
+                    >
+                      📋 History
+                    </button>
+                    {user.donation_rank_id && (
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleRevokeRank(user)}
+                        title="Revoke current rank"
+                      >
+                        🗑️ Revoke
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredUsers.length === 0 && !loading && (
+        <div className="empty-state">
+          <div className="empty-icon">💎</div>
+          <h3>No Users Found</h3>
+          <p>No users with donation ranks or donations found.</p>
+          <p>Debug: Total users loaded: {users.length}</p>
+          <p>Debug: Search term: "{searchTerm}"</p>
+          <button className="btn btn-primary" onClick={loadUsers}>
+            🔄 Reload Users
+          </button>
+        </div>
+      )}
+
+      {/* Modals */}
+      {showSetDonatedModal && selectedUser && (
+        <SetDonatedModal
+          user={selectedUser}
+          onClose={() => {
+            setShowSetDonatedModal(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setShowSetDonatedModal(false);
+            setSelectedUser(null);
+            loadUsers();
+          }}
+        />
+      )}
+
+      {showGrantModal && selectedUser && (
+        <GrantRankModal
+          user={selectedUser}
+          onClose={() => {
+            setShowGrantModal(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setShowGrantModal(false);
+            setSelectedUser(null);
+            loadUsers();
+          }}
+        />
+      )}
+
+      {showExtendModal && selectedUser && (
+        <ExtendRankModal
+          user={selectedUser}
+          onClose={() => {
+            setShowExtendModal(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            setShowExtendModal(false);
+            setSelectedUser(null);
+            loadUsers();
+          }}
+        />
+      )}
+
+      {showHistoryModal && selectedUser && (
+        <RankHistoryModal
+          user={selectedUser}
+          onClose={() => {
+            setShowHistoryModal(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+// Grant/Change Rank Modal
+const GrantRankModal: React.FC<{
+  user: DonationUser;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ user, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    rankId: user.donation_rank_id || 'supporter',
+    expirationDays: 30,
+    expirationDate: '',
+    expirationMode: 'days', // 'days', 'date', or 'permanent'
+    reason: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const donationRanks = [
+    { id: 'supporter', name: 'Supporter', color: '#10b981', icon: '🌟' },
+    { id: 'patron', name: 'Patron', color: '#3b82f6', icon: '💎' },
+    { id: 'champion', name: 'Champion', color: '#8b5cf6', icon: '👑' },
+    { id: 'legend', name: 'Legend', color: '#f59e0b', icon: '🏆' }
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      let expirationDays = null;
+      
+      if (formData.expirationMode === 'days' && formData.expirationDays > 0) {
+        expirationDays = formData.expirationDays;
+      } else if (formData.expirationMode === 'date' && formData.expirationDate) {
+        // Calculate days from now to the specified date
+        const targetDate = new Date(formData.expirationDate);
+        const now = new Date();
+        const diffTime = targetDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 0) {
+          setError('Expiration date must be in the future');
+          return;
+        }
+        
+        expirationDays = diffDays;
+      }
+      // If permanent mode, expirationDays stays null
+
+      const requestData = {
+        rankId: formData.rankId,
+        expirationDays,
+        reason: formData.reason
+      };
+
+      await api.post(`/donations/admin/users/${user.id}/rank`, requestData);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to grant rank');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">
+            {user.donation_rank_id ? 'Change' : 'Grant'} Donation Rank - {user.username}
+          </h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Rank *</label>
+            <select
+              className="form-input"
+              value={formData.rankId}
+              onChange={(e) => setFormData(prev => ({ ...prev, rankId: e.target.value }))}
+              required
+            >
+              {donationRanks.map(rank => (
+                <option key={rank.id} value={rank.id}>
+                  {rank.icon} {rank.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Expiration</label>
+            <select
+              className="form-input"
+              value={formData.expirationMode}
+              onChange={(e) => setFormData(prev => ({ ...prev, expirationMode: e.target.value }))}
+            >
+              <option value="days">Days from now</option>
+              <option value="date">Specific date</option>
+              <option value="permanent">Permanent (no expiration)</option>
+            </select>
+          </div>
+
+          {formData.expirationMode === 'days' && (
+            <div className="form-group">
+              <label className="form-label">Duration (Days)</label>
+              <input
+                type="number"
+                className="form-input"
+                value={formData.expirationDays}
+                onChange={(e) => setFormData(prev => ({ ...prev, expirationDays: parseInt(e.target.value) || 0 }))}
+                min="1"
+                placeholder="30"
+                required
+              />
+              <small className="form-hint">Standard: 30 days per $5 donation.</small>
+            </div>
+          )}
+
+          {formData.expirationMode === 'date' && (
+            <div className="form-group">
+              <label className="form-label">Expiration Date</label>
+              <input
+                type="datetime-local"
+                className="form-input"
+                value={formData.expirationDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, expirationDate: e.target.value }))}
+                min={new Date().toISOString().slice(0, 16)}
+                required
+              />
+              <small className="form-hint">Select the exact date and time when the rank should expire.</small>
+            </div>
+          )}
+
+          {formData.expirationMode === 'permanent' && (
+            <div className="form-group">
+              <div className="form-info">
+                <span style={{ color: 'var(--color-warning)' }}>⚠️</span>
+                <span>This rank will never expire automatically.</span>
+              </div>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="form-label">Reason</label>
+            <textarea
+              className="form-textarea"
+              value={formData.reason}
+              onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+              placeholder="Optional reason for this action..."
+              rows={3}
+            />
+          </div>
+
+          {error && <div className="form-error">{error}</div>}
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Saving...' : user.donation_rank_id ? 'Change Rank' : 'Grant Rank'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Extend Rank Modal
+const ExtendRankModal: React.FC<{
+  user: DonationUser;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ user, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    days: 30,
+    reason: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await api.post(`/donations/admin/users/${user.id}/extend`, formData);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to extend rank');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Extend Rank - {user.username}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Days to Add *</label>
+            <input
+              type="number"
+              className="form-input"
+              value={formData.days}
+              onChange={(e) => setFormData(prev => ({ ...prev, days: parseInt(e.target.value) || 0 }))}
+              min="1"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Reason</label>
+            <textarea
+              className="form-textarea"
+              value={formData.reason}
+              onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+              placeholder="Optional reason for extending the rank..."
+              rows={3}
+            />
+          </div>
+
+          {error && <div className="form-error">{error}</div>}
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Extending...' : 'Extend Rank'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Rank History Modal
+const RankHistoryModal: React.FC<{
+  user: DonationUser;
+  onClose: () => void;
+}> = ({ user, onClose }) => {
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      const response = await api.get(`/donations/admin/users/${user.id}/history`);
+      setHistory(response.data);
+    } catch (error) {
+      console.error('Error loading rank history:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getActionIcon = (actionType: string) => {
+    switch (actionType) {
+      case 'granted': return '✅';
+      case 'changed': return '🔄';
+      case 'extended': return '⏰';
+      case 'revoked': return '❌';
+      case 'expired': return '⏱️';
+      default: return '📝';
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Rank History - {user.username}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="modal-body">
+          {loading ? (
+            <div className="loading-container">
+              <div className="spinner"></div>
+              <p>Loading history...</p>
+            </div>
+          ) : history.length === 0 ? (
+            <div className="empty-state">
+              <p>No rank history found for this user.</p>
+            </div>
+          ) : (
+            <div className="history-list">
+              {history.map((entry) => (
+                <div key={entry.id} className="history-entry">
+                  <div className="history-icon">
+                    {getActionIcon(entry.action_type)}
+                  </div>
+                  <div className="history-content">
+                    <div className="history-action">
+                      <strong>{entry.action_type.charAt(0).toUpperCase() + entry.action_type.slice(1)}</strong>
+                      {entry.old_rank_name && entry.new_rank_name && entry.action_type === 'changed' && (
+                        <span> from {entry.old_rank_name} to {entry.new_rank_name}</span>
+                      )}
+                      {entry.new_rank_name && entry.action_type === 'granted' && (
+                        <span> {entry.new_rank_name} rank</span>
+                      )}
+                      {entry.days_added && (
+                        <span> (+{entry.days_added} days)</span>
+                      )}
+                    </div>
+                    {entry.reason && (
+                      <div className="history-reason">
+                        Reason: {entry.reason}
+                      </div>
+                    )}
+                    <div className="history-meta">
+                      {formatDate(entry.created_at)}
+                      {entry.granted_by_username && (
+                        <span> • by {entry.granted_by_username}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-secondary" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Set Donated Amount Modal
+const SetDonatedModal: React.FC<{
+  user: DonationUser;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ user, onClose, onSuccess }) => {
+  const [amount, setAmount] = useState(user.total_donated?.toString() || '0');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const numAmount = parseFloat(amount);
+    
+    if (isNaN(numAmount) || numAmount < 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post(`/donations/admin/users/${user.id}/set-donated`, {
+        amount: numAmount
+      });
+      alert(`Successfully set ${user.username}'s total donated to $${numAmount.toFixed(2)}`);
+      onSuccess();
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Failed to set donated amount');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header">
+          <h3>Set Total Donated - {user.username}</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">
+              Total Donated Amount ($) <span className="required">*</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              className="form-input"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              required
+            />
+            <small className="form-hint">
+              This will set the user's total donated amount. Current: ${user.total_donated?.toFixed(2) || '0.00'}
+            </small>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Setting...' : 'Set Amount'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 export default AdminDashboard;
 
 // Donations Management Component
@@ -2342,16 +3594,11 @@ function ManageDonations() {
                     <tr key={d.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {d.minecraft_uuid ? (
-                            <img src={`https://crafatar.com/renders/head/${d.minecraft_uuid}`} alt={d.minecraft_username || 'Supporter'} style={{ width: 24, height: 24, borderRadius: 4 }} />
-                          ) : (
-                            <div style={{ width: 24, height: 24, borderRadius: 4, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🎮</div>
-                          )}
+                          <img src={`https://mc-heads.net/head/${encodeURIComponent(d.minecraft_username || 'Steve')}/24`} alt={d.minecraft_username || 'Supporter'} style={{ width: 24, height: 24, borderRadius: 4 }} />
                           <strong>{d.minecraft_username || 'Anonymous'}</strong>
                         </div>
                       </td>
                       <td><strong>{Number(d.amount).toFixed(2)} {d.currency || 'USD'}</strong></td>
-                      <td>{d.method || '-'}</td>
                       <td>
                         <span className={`badge ${d.displayed ? 'badge-success' : 'badge-warning'}`}>{d.displayed ? 'Shown' : 'Hidden'}</span>
                       </td>

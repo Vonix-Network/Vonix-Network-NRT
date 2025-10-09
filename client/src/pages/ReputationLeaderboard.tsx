@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
 import './ReputationLeaderboard.css';
 
 interface User {
@@ -19,6 +20,16 @@ interface User {
   best_answers: number;
   forum_engagement_score: number;
   rank: number;
+  total_donated?: number;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
   tierInfo: {
     tier: string;
     icon: string;
@@ -105,7 +116,14 @@ const ReputationLeaderboard: React.FC = () => {
                     <img src={getAvatarUrl(users[1])} alt={users[1].username} className="podium-avatar" />
                   </div>
                   <div className="podium-info">
-                    <div className="podium-username">{users[1].minecraft_username || users[1].username}</div>
+                    <UserDisplay
+                      username={users[1].username}
+                      minecraftUsername={users[1].minecraft_username}
+                      totalDonated={users[1].total_donated}
+                      donationRank={users[1].donation_rank}
+                      size="small"
+                      className="podium-user-display"
+                    />
                     <div className="podium-tier">{users[1].tierInfo.tier}</div>
                     <div className="podium-points">{users[1].reputation} pts</div>
                   </div>
@@ -122,7 +140,14 @@ const ReputationLeaderboard: React.FC = () => {
                   <div className="winner-crown">🏆</div>
                 </div>
                 <div className="podium-info">
-                  <div className="podium-username">{users[0].minecraft_username || users[0].username}</div>
+                  <UserDisplay
+                    username={users[0].username}
+                    minecraftUsername={users[0].minecraft_username}
+                    totalDonated={users[0].total_donated}
+                    donationRank={users[0].donation_rank}
+                    size="medium"
+                    className="podium-user-display winner"
+                  />
                   <div className="podium-tier winner-tier">{users[0].tierInfo.tier}</div>
                   <div className="podium-points winner-points">{users[0].reputation} pts</div>
                 </div>
@@ -138,7 +163,14 @@ const ReputationLeaderboard: React.FC = () => {
                     <img src={getAvatarUrl(users[2])} alt={users[2].username} className="podium-avatar" />
                   </div>
                   <div className="podium-info">
-                    <div className="podium-username">{users[2].minecraft_username || users[2].username}</div>
+                    <UserDisplay
+                      username={users[2].username}
+                      minecraftUsername={users[2].minecraft_username}
+                      totalDonated={users[2].total_donated}
+                      donationRank={users[2].donation_rank}
+                      size="small"
+                      className="podium-user-display"
+                    />
                     <div className="podium-tier">{users[2].tierInfo.tier}</div>
                     <div className="podium-points">{users[2].reputation} pts</div>
                   </div>
@@ -173,7 +205,14 @@ const ReputationLeaderboard: React.FC = () => {
                     <div className="player-avatar">
                       <img src={getAvatarUrl(user)} alt={user.username} />
                     </div>
-                    <span className="player-name">{user.minecraft_username || user.username}</span>
+                    <UserDisplay
+                      username={user.username}
+                      minecraftUsername={user.minecraft_username}
+                      totalDonated={user.total_donated}
+                      donationRank={user.donation_rank}
+                      size="small"
+                      className="player-user-display"
+                    />
                   </Link>
                 </div>
 

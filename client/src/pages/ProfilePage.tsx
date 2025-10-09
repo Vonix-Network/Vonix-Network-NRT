@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
+import DonationSubscription from '../components/DonationSubscription';
 import './ProfilePage.css';
 
 const ProfilePage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [resolvedUuid, setResolvedUuid] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -16,41 +17,13 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Resolve UUID from username if UUID is missing but username exists
   useEffect(() => {
-    let cancelled = false;
-    async function resolveUuid(username: string) {
-      try {
-        const cacheKey = `uuid_cache_${username.toLowerCase()}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          if (!cancelled) setResolvedUuid(cached);
-          return;
-        }
-        const resp = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          const id: string | undefined = data?.id;
-          if (id && !cancelled) {
-            localStorage.setItem(cacheKey, id);
-            setResolvedUuid(id);
-          }
-        }
-      } catch {
-        // ignore
-      }
+    if (!user) {
+      navigate('/login');
     }
-    if (user && !user.minecraft_uuid && user.minecraft_username) {
-      resolveUuid(user.minecraft_username);
-    } else {
-      setResolvedUuid(null);
-    }
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.minecraft_uuid, user?.minecraft_username]);
+  }, [user, navigate]);
 
   if (!user) {
-    navigate('/login');
     return null;
   }
 
@@ -103,32 +76,50 @@ const ProfilePage: React.FC = () => {
       <div className="profile-container">
         <div className="profile-header">
           <div className="profile-avatar-large">
-            {(user.minecraft_uuid || resolvedUuid) ? (
-              <img 
-                src={`https://crafatar.com/renders/head/${(user.minecraft_uuid || resolvedUuid)}`}
-                alt={user.username}
-                className="minecraft-avatar-large"
-              />
-            ) : user.minecraft_username ? (
-              <img 
-                src={`https://mc-heads.net/avatar/${user.minecraft_username}/128`}
-                alt={user.username}
-                className="minecraft-avatar-large"
-              />
-            ) : (
-              <div className="avatar-placeholder-large">
-                {user.username.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-          <div className="profile-info">
-            <h1 className="profile-username">{user.username}</h1>
-            <div className="profile-badges">
-              <span className={`badge badge-${user.role === 'admin' ? 'primary' : 'success'}`}>
-                {user.role}
-              </span>
+            <img 
+              src={`https://mc-heads.net/avatar/${encodeURIComponent(user.username)}/128`}
+              alt={user.username}
+              className="minecraft-avatar-large"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const placeholder = target.nextElementSibling as HTMLElement;
+                if (placeholder) placeholder.style.display = 'flex';
+              }}
+            />
+            <div 
+              className="profile-avatar-placeholder"
+              style={{ display: 'none' }}
+            >
+              {user.username.charAt(0).toUpperCase()}
             </div>
           </div>
+          <div className="profile-info">
+            <UserDisplay
+              username={user.username}
+              minecraftUsername={user.minecraft_username}
+              totalDonated={user.total_donated}
+              donationRank={user.donation_rank}
+              size="large"
+              showIcon={true}
+              showBadge={true}
+            />
+          </div>
+          <div className="profile-badges">
+            <span className={`badge badge-${user.role === 'admin' ? 'primary' : 'success'}`}>
+              {user.role}
+            </span>
+          </div>
+          {(user.total_donated !== undefined && user.total_donated > 0) || user.donation_rank && (
+            <div className="donation-subscription-section">
+              <DonationSubscription 
+                totalDonated={user.total_donated}
+                donationRank={user.donation_rank}
+                donationRankExpiresAt={user.donation_rank_expires_at}
+                showPerks={true}
+              />
+            </div>
+          )}
         </div>
 
         <div className="profile-section">
@@ -139,33 +130,23 @@ const ProfilePage: React.FC = () => {
               <div className="info-value">{user.username}</div>
             </div>
 
-            {user.minecraft_username && (
-              <>
-                <div className="info-item">
-                  <label className="info-label">Minecraft Username</label>
-                  <div className="info-value minecraft-username">
-                    {(user.minecraft_uuid || resolvedUuid) ? (
-                      <img 
-                        src={`https://crafatar.com/renders/head/${(user.minecraft_uuid || resolvedUuid)}`}
-                        alt={user.minecraft_username}
-                        className="minecraft-head-small"
-                      />
-                    ) : (
-                      <img 
-                        src={`https://mc-heads.net/avatar/${user.minecraft_username}/24`}
-                        alt={user.minecraft_username}
-                        className="minecraft-head-small"
-                      />
-                    )}
-                    {user.minecraft_username}
-                  </div>
-                </div>
+            <div className="info-item">
+              <label className="info-label">Minecraft Username</label>
+              <div className="info-value minecraft-username">
+                <img 
+                  src={`https://mc-heads.net/head/${encodeURIComponent(user.username)}/24`}
+                  alt={user.username}
+                  className="minecraft-head-small"
+                />
+                {user.username}
+              </div>
+            </div>
 
-                <div className="info-item">
-                  <label className="info-label">Minecraft UUID</label>
-                  <div className="info-value mono">{user.minecraft_uuid}</div>
-                </div>
-              </>
+            {user.minecraft_uuid && (
+              <div className="info-item">
+                <label className="info-label">Minecraft UUID</label>
+                <div className="info-value mono">{user.minecraft_uuid}</div>
+              </div>
             )}
 
             <div className="info-item">

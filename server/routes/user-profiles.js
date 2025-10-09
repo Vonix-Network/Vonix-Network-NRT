@@ -3,6 +3,50 @@ const { authenticateToken } = require('../middleware/auth');
 const { getDatabase } = require('../database/init');
 const logger = require('../utils/logger');
 
+// Donation rank system constants
+const DONATION_RANKS = {
+  SUPPORTER: { 
+    id: 'supporter', 
+    name: 'Supporter', 
+    minAmount: 5, 
+    color: '#10b981',
+    textColor: '#ffffff',
+    icon: '🌟',
+    badge: 'SUP',
+    glow: false
+  },
+  PATRON: { 
+    id: 'patron', 
+    name: 'Patron', 
+    minAmount: 10, 
+    color: '#3b82f6',
+    textColor: '#ffffff',
+    icon: '💎',
+    badge: 'PAT',
+    glow: true
+  },
+  CHAMPION: { 
+    id: 'champion', 
+    name: 'Champion', 
+    minAmount: 15, 
+    color: '#8b5cf6',
+    textColor: '#ffffff',
+    icon: '👑',
+    badge: 'CHA',
+    glow: true
+  },
+  LEGEND: { 
+    id: 'legend', 
+    name: 'Legend', 
+    minAmount: 20, 
+    color: '#f59e0b',
+    textColor: '#000000',
+    icon: '🏆',
+    badge: 'LEG',
+    glow: true
+  }
+};
+
 const router = express.Router();
 
 // GET /api/user-profiles/:userId - Get user profile with stats, badges, and achievements
@@ -15,7 +59,8 @@ router.get('/:userId', (req, res) => {
     const user = db.prepare(`
       SELECT id, username, email, minecraft_username, minecraft_uuid,
              avatar_url, reputation, post_count, 
-             created_at, last_seen_at, role
+             created_at, last_seen_at, role,
+             total_donated, donation_rank_id
       FROM users 
       WHERE id = ?
     `).get(userId);
@@ -75,6 +120,10 @@ router.get('/:userId', (req, res) => {
       created_at: user.created_at,
       last_seen_at: user.last_seen_at,
       role: user.role,
+      // Donation rank information
+      total_donated: user.total_donated || 0,
+      donation_rank_id: user.donation_rank_id,
+      donation_rank: user.donation_rank_id ? DONATION_RANKS[user.donation_rank_id.toUpperCase()] : null,
       // Profile details
       bio: profile?.bio,
       location: profile?.location,

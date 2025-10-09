@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
+import { getDonationRankByAmount } from '../types/donationRanks';
 import './ForumTopicPage.css';
 
 interface Post {
@@ -9,6 +11,7 @@ interface Post {
   content: string;
   content_html: string;
   username: string;
+  minecraft_username?: string;
   minecraft_uuid?: string;
   role: string;
   user_post_count: number;
@@ -20,6 +23,17 @@ interface Post {
   upvotes: number;
   downvotes: number;
   user_vote?: 'up' | 'down' | null;
+  total_donated?: number;
+  donation_rank_id?: string;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface Poll {
@@ -359,7 +373,17 @@ const ForumTopicPage: React.FC = () => {
                   </div>
                   
                   <div className="author-details">
-                    <h4 className="author-name">{post.username}</h4>
+                    <div className="author-name">
+                      <UserDisplay
+                        username={post.username}
+                        minecraftUsername={post.minecraft_username}
+                        totalDonated={post.total_donated}
+                        donationRank={post.donation_rank}
+                        size="medium"
+                        showIcon={true}
+                        showBadge={true}
+                      />
+                    </div>
                     <div className="author-meta">
                       <span className="author-posts">Posts: {post.user_post_count}</span>
                       <span className="author-joined">Joined: Oct 2025</span>

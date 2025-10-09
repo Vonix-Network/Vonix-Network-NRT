@@ -141,13 +141,7 @@ const MessagesPage: React.FC = () => {
   };
 
   const getUserAvatar = (u: User | Conversation) => {
-    if ('minecraft_uuid' in u && u.minecraft_uuid) {
-      return `https://crafatar.com/renders/head/${u.minecraft_uuid}`;
-    }
-    if ('minecraft_username' in u && u.minecraft_username) {
-      return `https://mc-heads.net/avatar/${u.minecraft_username}/32`;
-    }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=6366f1&color=fff`;
+    return `https://mc-heads.net/head/${encodeURIComponent(u.username)}/32`;
   };
 
   const formatTime = (timestamp: string) => {

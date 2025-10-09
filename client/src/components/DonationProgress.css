@@ -1,0 +1,237 @@
+.donation-progress {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+}
+
+.donation-progress__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.donation-progress__current,
+.donation-progress__rank {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.donation-progress__label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.donation-progress__amount {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--accent-primary);
+  text-shadow: 0 0 10px rgba(0, 217, 126, 0.3);
+}
+
+.donation-progress__rank {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.donation-progress__next-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.donation-progress__next-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.donation-progress__remaining {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.donation-progress__bar {
+  width: 100%;
+  height: var(--space-md);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+  border: 1px solid var(--border-color);
+}
+
+.donation-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  transition: width 0.3s ease;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 10px rgba(0, 217, 126, 0.3);
+}
+
+.donation-progress__fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: progress-shine 2s infinite;
+}
+
+.donation-progress__amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.donation-progress__maxed {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.donation-progress__maxed-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #000;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.donation-progress__maxed-icon {
+  font-size: 1.5rem;
+}
+
+.donation-progress__perks {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.donation-progress__perks-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.donation-progress__perks-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.donation-progress__perks-section h5 {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.donation-progress__perks-section ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.donation-progress__perks-section li {
+  margin-bottom: 0.25rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.donation-progress-empty {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.donation-progress-empty p {
+  margin: var(--space-sm) 0;
+  line-height: 1.5;
+}
+
+.donation-progress-empty strong {
+  color: var(--accent-primary);
+}
+
+/* Subscription Info */
+.donation-subscription-info {
+  margin-top: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 20px rgba(0, 217, 126, 0.1);
+}
+
+.donation-subscription-info h4 {
+  margin: 0 0 var(--space-lg) 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.donation-subscription-info ul {
+  margin: 0;
+  padding-left: var(--space-lg);
+  list-style-type: disc;
+}
+
+.donation-subscription-info li {
+  margin-bottom: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+/* Animations */
+@keyframes progress-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .donation-progress {
+    padding: 1rem;
+  }
+  
+  .donation-progress__status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .donation-progress__perks-lists {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .donation-progress__next-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

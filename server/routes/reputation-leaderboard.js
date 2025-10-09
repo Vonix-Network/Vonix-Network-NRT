@@ -2,6 +2,50 @@ const express = require('express');
 const { getDatabase } = require('../database/init');
 const logger = require('../utils/logger');
 
+// Donation rank system constants
+const DONATION_RANKS = {
+  SUPPORTER: { 
+    id: 'supporter', 
+    name: 'Supporter', 
+    minAmount: 5, 
+    color: '#10b981',
+    textColor: '#ffffff',
+    icon: '🌟',
+    badge: 'SUP',
+    glow: false
+  },
+  PATRON: { 
+    id: 'patron', 
+    name: 'Patron', 
+    minAmount: 10, 
+    color: '#3b82f6',
+    textColor: '#ffffff',
+    icon: '💎',
+    badge: 'PAT',
+    glow: true
+  },
+  CHAMPION: { 
+    id: 'champion', 
+    name: 'Champion', 
+    minAmount: 15, 
+    color: '#8b5cf6',
+    textColor: '#ffffff',
+    icon: '👑',
+    badge: 'CHA',
+    glow: true
+  },
+  LEGEND: { 
+    id: 'legend', 
+    name: 'Legend', 
+    minAmount: 20, 
+    color: '#f59e0b',
+    textColor: '#000000',
+    icon: '🏆',
+    badge: 'LEG',
+    glow: true
+  }
+};
+
 const router = express.Router();
 
 // GET /api/reputation/leaderboard - Get top users by reputation
@@ -21,6 +65,8 @@ router.get('/leaderboard', (req, res) => {
         u.reputation,
         u.post_count,
         u.role,
+        u.total_donated,
+        u.donation_rank_id,
         up.title,
         -- Calculate real forum engagement metrics
         COALESCE((SELECT COUNT(*) FROM forum_topics WHERE user_id = u.id), 0) as topics_created,
@@ -60,12 +106,24 @@ router.get('/leaderboard', (req, res) => {
       return { tier: 'Newcomer', icon: '🌱', color: '#10b981' };
     };
 
-    // Add tier info to each user
-    const usersWithTiers = topUsers.map((user, index) => ({
-      ...user,
-      rank: offset + index + 1,
-      tierInfo: getReputationTier(user.reputation || 0)
-    }));
+    // Add tier info and donation rank info to each user
+    const usersWithTiers = topUsers.map((user, index) => {
+      const userWithTier = {
+        ...user,
+        rank: offset + index + 1,
+        tierInfo: getReputationTier(user.reputation || 0)
+      };
+
+      // Add donation rank information
+      if (user.donation_rank_id) {
+        const donationRank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+        if (donationRank) {
+          userWithTier.donation_rank = donationRank;
+        }
+      }
+
+      return userWithTier;
+    });
 
     res.json({
       users: usersWithTiers,
@@ -91,8 +149,11 @@ router.get('/user/:userId', (req, res) => {
       SELECT 
         u.id,
         u.username,
+        u.minecraft_username,
         u.reputation,
-        u.post_count
+        u.post_count,
+        u.total_donated,
+        u.donation_rank_id
       FROM users u
       WHERE u.id = ?
     `).get(userId);
@@ -116,6 +177,14 @@ router.get('/user/:userId', (req, res) => {
       ORDER BY created_at DESC
       LIMIT 20
     `).all(userId);
+
+    // Add donation rank information
+    if (user.donation_rank_id) {
+      const donationRank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+      if (donationRank) {
+        user.donation_rank = donationRank;
+      }
+    }
 
     res.json({
       user,

@@ -140,11 +140,7 @@ const DonationsPage: React.FC = () => {
                     <tr key={d.id}>
                       <td>
                         <div className="supporter-cell">
-                          {d.minecraft_uuid ? (
-                            <img className="mc-head" src={`https://crafatar.com/renders/head/${d.minecraft_uuid}`} alt={d.minecraft_username || 'Supporter'} />
-                          ) : (
-                            <div className="mc-head placeholder">🎮</div>
-                          )}
+                          <img className="mc-head" src={`https://mc-heads.net/head/${encodeURIComponent(d.minecraft_username || 'Steve')}/32`} alt={d.minecraft_username || 'Supporter'} />
                           <div>
                             <div className="supporter-name">{d.minecraft_username || 'Anonymous'}</div>
                             {d.message && <div className="supporter-message">{d.message}</div>}

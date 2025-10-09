@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import UserDisplay from '../components/UserDisplay';
 import './SocialPage.css';
 
 interface User {
@@ -634,7 +635,15 @@ const SocialPage: React.FC = () => {
             </Link>
             <div className="sidebar-user-info">
               <Link to={`/users/${user.id}`} className="sidebar-username">
-                {user.minecraft_username || user.username}
+                <UserDisplay
+                  username={user.username}
+                  minecraftUsername={user.minecraft_username}
+                  totalDonated={user.total_donated}
+                  donationRank={user.donation_rank}
+                  size="medium"
+                  showIcon={true}
+                  showBadge={true}
+                />
               </Link>
               <div className="user-stats">
                 <span>{friends.length} friends</span>

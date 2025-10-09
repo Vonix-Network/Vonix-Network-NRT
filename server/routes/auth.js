@@ -4,6 +4,50 @@ const jwt = require('jsonwebtoken');
 const { getDatabase } = require('../database/init');
 const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 
+// Donation rank system constants
+const DONATION_RANKS = {
+  SUPPORTER: { 
+    id: 'supporter', 
+    name: 'Supporter', 
+    minAmount: 5, 
+    color: '#10b981',
+    textColor: '#ffffff',
+    icon: '🌟',
+    badge: 'SUP',
+    glow: false
+  },
+  PATRON: { 
+    id: 'patron', 
+    name: 'Patron', 
+    minAmount: 10, 
+    color: '#3b82f6',
+    textColor: '#ffffff',
+    icon: '💎',
+    badge: 'PAT',
+    glow: true
+  },
+  CHAMPION: { 
+    id: 'champion', 
+    name: 'Champion', 
+    minAmount: 15, 
+    color: '#8b5cf6',
+    textColor: '#ffffff',
+    icon: '👑',
+    badge: 'CHA',
+    glow: true
+  },
+  LEGEND: { 
+    id: 'legend', 
+    name: 'Legend', 
+    minAmount: 20, 
+    color: '#f59e0b',
+    textColor: '#000000',
+    icon: '🏆',
+    badge: 'LEG',
+    glow: true
+  }
+};
+
 const router = express.Router();
 
 // Login
@@ -49,6 +93,15 @@ router.post('/login', (req, res) => {
 
     console.log('✅ Login successful for:', username);
 
+    // Add donation rank information
+    let donationRank = null;
+    if (user.donation_rank_id) {
+      const rank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+      if (rank) {
+        donationRank = rank;
+      }
+    }
+
     res.json({
       token,
       user: {
@@ -57,7 +110,11 @@ router.post('/login', (req, res) => {
         role: user.role,
         mustChangePassword: user.must_change_password === 1,
         minecraft_username: user.minecraft_username || null,
-        minecraft_uuid: user.minecraft_uuid || null
+        minecraft_uuid: user.minecraft_uuid || null,
+        total_donated: user.total_donated || 0,
+        donation_rank_id: user.donation_rank_id || null,
+        donation_rank_expires_at: user.donation_rank_expires_at || null,
+        donation_rank: donationRank
       }
     });
   } catch (error) {
@@ -104,10 +161,19 @@ router.post('/change-password', authenticateToken, (req, res) => {
 // Verify token
 router.get('/verify', authenticateToken, (req, res) => {
   const db = getDatabase();
-  const user = db.prepare('SELECT id, username, role, must_change_password, minecraft_username, minecraft_uuid FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, username, role, must_change_password, minecraft_username, minecraft_uuid, total_donated, donation_rank_id, donation_rank_expires_at FROM users WHERE id = ?').get(req.user.id);
 
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
+  }
+
+  // Add donation rank information
+  let donationRank = null;
+  if (user.donation_rank_id) {
+    const rank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+    if (rank) {
+      donationRank = rank;
+    }
   }
 
   res.json({
@@ -117,7 +183,11 @@ router.get('/verify', authenticateToken, (req, res) => {
       role: user.role,
       mustChangePassword: user.must_change_password === 1,
       minecraft_username: user.minecraft_username || null,
-      minecraft_uuid: user.minecraft_uuid || null
+      minecraft_uuid: user.minecraft_uuid || null,
+      total_donated: user.total_donated || 0,
+      donation_rank_id: user.donation_rank_id || null,
+      donation_rank_expires_at: user.donation_rank_expires_at || null,
+      donation_rank: donationRank
     }
   });
 });

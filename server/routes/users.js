@@ -9,7 +9,12 @@ const router = express.Router();
 // Get all users (admin only)
 router.get('/', authenticateToken, isAdmin, async (req, res) => {
   const db = getDatabase();
-  const users = db.prepare('SELECT id, username, role, created_at, updated_at FROM users').all();
+  const users = db.prepare(`
+    SELECT 
+      id, username, role, minecraft_username, minecraft_uuid,
+      total_donated, donation_rank_id, created_at, updated_at 
+    FROM users
+  `).all();
   res.json(users);
 });
 
@@ -21,6 +26,7 @@ router.get('/discover', authenticateToken, (req, res) => {
     const users = db.prepare(`
       SELECT 
         u.id, u.username, u.minecraft_username, u.minecraft_uuid, u.created_at,
+        u.total_donated, u.donation_rank_id,
         CASE 
           WHEN f.id IS NOT NULL THEN 1 
           ELSE 0 

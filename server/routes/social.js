@@ -5,6 +5,50 @@ const rateLimit = require('express-rate-limit');
 const { body, param, query, validationResult } = require('express-validator');
 const DOMPurify = require('isomorphic-dompurify');
 
+// Donation rank system constants
+const DONATION_RANKS = {
+  SUPPORTER: { 
+    id: 'supporter', 
+    name: 'Supporter', 
+    minAmount: 5, 
+    color: '#10b981',
+    textColor: '#ffffff',
+    icon: '🌟',
+    badge: 'SUP',
+    glow: false
+  },
+  PATRON: { 
+    id: 'patron', 
+    name: 'Patron', 
+    minAmount: 10, 
+    color: '#3b82f6',
+    textColor: '#ffffff',
+    icon: '💎',
+    badge: 'PAT',
+    glow: true
+  },
+  CHAMPION: { 
+    id: 'champion', 
+    name: 'Champion', 
+    minAmount: 15, 
+    color: '#8b5cf6',
+    textColor: '#ffffff',
+    icon: '👑',
+    badge: 'CHA',
+    glow: true
+  },
+  LEGEND: { 
+    id: 'legend', 
+    name: 'Legend', 
+    minAmount: 20, 
+    color: '#f59e0b',
+    textColor: '#000000',
+    icon: '🏆',
+    badge: 'LEG',
+    glow: true
+  }
+};
+
 const router = express.Router();
 
 // Rate limiting middleware
@@ -59,6 +103,7 @@ router.get('/profile/:userId', authenticateToken, (req, res) => {
     
     const user = db.prepare(`
       SELECT u.id, u.username, u.minecraft_username, u.minecraft_uuid, u.created_at,
+             u.total_donated, u.donation_rank_id,
              p.bio, p.location, p.website, p.banner_image
       FROM users u
       LEFT JOIN user_profiles p ON p.user_id = u.id
@@ -98,8 +143,18 @@ router.get('/profile/:userId', authenticateToken, (req, res) => {
     `).get(userId, req.user.id);
     const friend_request_received = !!receivedRequest;
     
+    // Add donation rank information
+    let donationRank = null;
+    if (user.donation_rank_id) {
+      const rank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+      if (rank) {
+        donationRank = rank;
+      }
+    }
+
     res.json({
       ...user,
+      donation_rank: donationRank,
       followerCount,
       followingCount,
       postCount,
@@ -258,6 +313,7 @@ router.get('/posts/user/:userId', (req, res) => {
       SELECT 
         p.id, p.content, p.image_url, p.created_at, p.updated_at,
         u.id as user_id, u.username, u.minecraft_username, u.minecraft_uuid,
+        u.total_donated, u.donation_rank_id,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
         (SELECT id FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked
@@ -268,9 +324,22 @@ router.get('/posts/user/:userId', (req, res) => {
       LIMIT ? OFFSET ?
     `).all(req.user?.id || 0, userId, limit, offset);
     
+    // Add donation rank information to posts
+    const postsWithRanks = posts.map(post => {
+      let donationRank = null;
+      if (post.donation_rank_id) {
+        const rank = DONATION_RANKS[post.donation_rank_id.toUpperCase()];
+        if (rank) {
+          donationRank = rank;
+        }
+      }
+      return {
+        ...post,
+        donation_rank: donationRank
+      };
+    });
     
-    
-    res.json(posts);
+    res.json(postsWithRanks);
   } catch (error) {
     console.error('Error loading user posts:', error);
     res.status(500).json({ error: 'Failed to load posts' });

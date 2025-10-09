@@ -1,0 +1,42 @@
+.user-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-display--small {
+  gap: 0.25rem;
+}
+
+.user-display--medium {
+  gap: 0.5rem;
+}
+
+.user-display--large {
+  gap: 0.75rem;
+}
+
+.user-display__username {
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.user-display__username--glow {
+  text-shadow: 
+    0 0 5px var(--rank-color),
+    0 0 10px var(--rank-color);
+  animation: username-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes username-glow {
+  from {
+    text-shadow: 
+      0 0 5px var(--rank-color),
+      0 0 10px var(--rank-color);
+  }
+  to {
+    text-shadow: 
+      0 0 8px var(--rank-color),
+      0 0 15px var(--rank-color);
+  }
+}
