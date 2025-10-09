@@ -22,15 +22,10 @@
   z-index: 0;
 }
 
-.hero-background::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at bottom left, rgba(0, 217, 126, 0.15) 0%, transparent 50%);
-  animation: subtleGlow 6s ease-in-out infinite;
+.hero .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-8);
 }
 
 @keyframes subtleGlow {
@@ -54,19 +49,18 @@
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: var(--space-xl);
+  padding-bottom:50px;
 }
 
-.gradient-text {
-  color: var(--accent-primary);
-  text-shadow: 0 0 30px rgba(0, 217, 126, 0.5);
-}
 
 .hero-subtitle {
+  display: flex;
+  justify-content: center;
   font-size: clamp(1.125rem, 4vw, 1.5rem);
   color: var(--text-secondary);
-  max-width: 700px;
   margin: 0 auto var(--space-2xl);
   line-height: 1.6;
+  padding-bottom: 60px;
 }
 
 .hero-actions {
@@ -250,7 +244,7 @@
     width: 100%;
     max-width: 280px;
   }
-}
+}   
 
 @media (max-width: 1024px) {
   .chat-wrapper {
@@ -318,7 +312,7 @@
     gap: var(--space-lg);
     text-align: center;
   }
-}
+}   
 
 @media (max-width: 480px) {
   .hero {
@@ -348,4 +342,4 @@
   .cta-card {
     padding: var(--space-xl) var(--space-md);
   }
-}
+}   
