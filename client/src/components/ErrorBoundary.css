@@ -1,0 +1,135 @@
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  background: var(--bg-primary, #1a1a1a);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #333);
+}
+
+.error-boundary-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.error-boundary-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.error-boundary-title {
+  color: var(--text-primary, #ffffff);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.error-boundary-message {
+  color: var(--text-secondary, #cccccc);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.error-boundary-details {
+  text-align: left;
+  margin: 1.5rem 0;
+  background: var(--bg-secondary, #2a2a2a);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #333);
+}
+
+.error-boundary-details summary {
+  color: var(--text-primary, #ffffff);
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.error-boundary-details summary:hover {
+  color: var(--accent-primary, #00d4ff);
+}
+
+.error-boundary-stack {
+  background: var(--bg-tertiary, #1a1a1a);
+  color: var(--text-secondary, #cccccc);
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 0.5rem;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-boundary-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.error-boundary-btn-primary {
+  background: var(--accent-primary, #00d4ff);
+  color: var(--bg-primary, #1a1a1a);
+}
+
+.error-boundary-btn-primary:hover {
+  background: var(--accent-secondary, #00b8e6);
+  transform: translateY(-1px);
+}
+
+.error-boundary-btn-secondary {
+  background: var(--bg-secondary, #2a2a2a);
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-color, #333);
+}
+
+.error-boundary-btn-secondary:hover {
+  background: var(--bg-tertiary, #333333);
+  border-color: var(--accent-primary, #00d4ff);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .error-boundary {
+    padding: 1rem;
+    min-height: 300px;
+  }
+
+  .error-boundary-icon {
+    font-size: 3rem;
+  }
+
+  .error-boundary-title {
+    font-size: 1.25rem;
+  }
+
+  .error-boundary-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .error-boundary-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+}

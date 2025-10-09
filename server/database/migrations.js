@@ -282,6 +282,40 @@ function runMigrations(db) {
 
     logger.info('✅ Moderator system tables ready');
 
+    // Create donation_ranks table if it doesn't exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS donation_ranks (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        min_amount REAL NOT NULL,
+        color TEXT NOT NULL,
+        text_color TEXT NOT NULL,
+        icon TEXT,
+        badge TEXT,
+        glow INTEGER DEFAULT 0,
+        duration INTEGER DEFAULT 30,
+        subtitle TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert default donation ranks if they don't exist
+    const rankCount = db.prepare('SELECT COUNT(*) as count FROM donation_ranks').get().count;
+    if (rankCount === 0) {
+      const rankStmt = db.prepare(`
+        INSERT INTO donation_ranks (id, name, min_amount, color, text_color, icon, badge, glow, duration, subtitle)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      rankStmt.run('supporter', 'Supporter', 5, '#10b981', '#ffffff', '🌟', 'SUP', 0, 30, 'Supporting the community');
+      rankStmt.run('patron', 'Patron', 10, '#3b82f6', '#ffffff', '💎', 'PAT', 1, 30, 'Covers Pixelmon server costs');
+      rankStmt.run('champion', 'Champion', 15, '#8b5cf6', '#ffffff', '👑', 'CHA', 1, 30, 'Premium supporter');
+      rankStmt.run('legend', 'Legend', 20, '#f59e0b', '#000000', '🏆', 'LEG', 1, 30, 'Covers full BMC5 server costs');
+      
+      logger.info('✅ Default donation ranks created');
+    }
+
     // Migration: Add donation tracking columns to users table
     const donationColumns = ['total_donated', 'donation_rank_id'];
     donationColumns.forEach(column => {
@@ -361,18 +395,50 @@ function runMigrations(db) {
       )
     `);
 
-    // Create indexes for donation tables
-    db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_donations_user ON donations(user_id);
-      CREATE INDEX IF NOT EXISTS idx_donations_minecraft_uuid ON donations(minecraft_uuid);
-      CREATE INDEX IF NOT EXISTS idx_donation_transactions_user ON donation_transactions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_donation_transactions_status ON donation_transactions(status);
-      CREATE INDEX IF NOT EXISTS idx_users_total_donated ON users(total_donated DESC);
-      CREATE INDEX IF NOT EXISTS idx_users_donation_rank ON users(donation_rank_id);
-      CREATE INDEX IF NOT EXISTS idx_users_donation_rank_expires ON users(donation_rank_expires_at);
-      CREATE INDEX IF NOT EXISTS idx_donation_rank_history_user ON donation_rank_history(user_id);
-      CREATE INDEX IF NOT EXISTS idx_donation_rank_history_action ON donation_rank_history(action_type);
-    `);
+    // Create comprehensive indexes for performance optimization
+    const performanceIndexes = [
+      // Donation system indexes
+      'CREATE INDEX IF NOT EXISTS idx_donations_user ON donations(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_donations_minecraft_uuid ON donations(minecraft_uuid)',
+      'CREATE INDEX IF NOT EXISTS idx_donation_transactions_user ON donation_transactions(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_donation_transactions_status ON donation_transactions(status)',
+      'CREATE INDEX IF NOT EXISTS idx_users_total_donated ON users(total_donated DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_users_donation_rank ON users(donation_rank_id)',
+      'CREATE INDEX IF NOT EXISTS idx_users_donation_rank_expires ON users(donation_rank_expires_at)',
+      'CREATE INDEX IF NOT EXISTS idx_donation_rank_history_user ON donation_rank_history(user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_donation_rank_history_action ON donation_rank_history(action_type)',
+      
+      // Social platform performance indexes
+      'CREATE INDEX IF NOT EXISTS idx_posts_user_created ON posts(user_id, created_at DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_comments_post_created ON comments(post_id, created_at ASC)',
+      'CREATE INDEX IF NOT EXISTS idx_post_reactions_post_user ON post_reactions(post_id, user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_post_reactions_type ON post_reactions(reaction_type)',
+      'CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_user ON comment_likes(comment_id, user_id)',
+      'CREATE INDEX IF NOT EXISTS idx_friends_user1_user2 ON friends(user1_id, user2_id)',
+      'CREATE INDEX IF NOT EXISTS idx_friends_user2_user1 ON friends(user2_id, user1_id)',
+      
+      // Forum performance indexes
+      'CREATE INDEX IF NOT EXISTS idx_forum_posts_topic_created ON forum_posts(topic_id, created_at ASC)',
+      'CREATE INDEX IF NOT EXISTS idx_forum_topics_forum_updated ON forum_topics(forum_id, updated_at DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_forum_subscriptions_user ON forum_subscriptions(user_id)',
+      
+      // User activity indexes
+      'CREATE INDEX IF NOT EXISTS idx_users_last_seen ON users(last_seen_at DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)',
+      
+      // Private messages indexes
+      'CREATE INDEX IF NOT EXISTS idx_private_messages_recipient_read ON private_messages(recipient_id, read, created_at DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_private_messages_sender_created ON private_messages(sender_id, created_at DESC)'
+    ];
+
+    performanceIndexes.forEach(indexSql => {
+      try {
+        db.exec(indexSql);
+      } catch (indexError) {
+        logger.warn(`Index creation warning: ${indexError.message}`);
+      }
+    });
 
     logger.info('✅ Donation system tables ready');
     logger.info('✅ All migrations completed successfully');

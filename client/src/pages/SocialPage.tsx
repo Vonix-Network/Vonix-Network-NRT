@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import UserDisplay from '../components/UserDisplay';
 import DonationRank from '../components/DonationRank';
+import { parsePostContent, formatTimeAgo } from '../utils/bbCodeParser';
 import './SocialPage.css';
 
 interface User {
@@ -34,6 +35,15 @@ interface Post {
   reactions: { [key: string]: number };
   shared_from?: Post;
   tagged_users?: User[];
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface Comment {
@@ -46,6 +56,15 @@ interface Comment {
   minecraft_uuid?: string;
   like_count: number;
   user_liked: boolean;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface Story {
@@ -292,20 +311,12 @@ const SocialPage: React.FC = () => {
       setPosts(posts.map(p => 
         p.id === postId ? { ...p, ...response.data } : p
       ));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error reacting to post:', error);
+      alert(error.response?.data?.error || 'Failed to react to post');
     }
   };
 
-  const sharePost = async (postId: number, content?: string) => {
-    try {
-      await api.post(`/social/posts/${postId}/share`, { content });
-      await loadFeed();
-    } catch (error: any) {
-      console.error('Error sharing post:', error);
-      alert(error.response?.data?.error || 'Failed to share post');
-    }
-  };
 
   const sendFriendRequest = async (userId: number) => {
     try {
@@ -581,47 +592,19 @@ const SocialPage: React.FC = () => {
     }
   };
 
-  const getUserAvatar = (u: User | Post | Comment | Story | FriendRequest) => {
-    // Determine the username to use
-    let username: string;
-    if ('sender_minecraft_username' in u && u.sender_minecraft_username) {
-      username = u.sender_minecraft_username;
-    } else if ('sender_username' in u) {
-      username = u.sender_username;
-    } else if ('minecraft_username' in u && u.minecraft_username) {
+  // Memoized user avatar helper
+  const getUserAvatar = useCallback((u: any) => {
+    let username;
+    if (u?.minecraft_username) {
       username = u.minecraft_username;
     } else {
-      username = u.username;
+      username = u?.username || 'steve';
     }
     
     // Use "maid" if the username is "admin"
     const displayUsername = username === 'admin' ? 'maid' : username;
     return `https://mc-heads.net/head/${displayUsername}`;
-  };
-
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
-  };
-
-  const parsePostContent = (content: string) => {
-    return content.split('\n').map((line, index) => (
-      <React.Fragment key={index}>
-        {line}
-        {index < content.split('\n').length - 1 && <br />}
-      </React.Fragment>
-    ));
-  };
+  }, []);
 
   if (!user) return null;
 
@@ -787,10 +770,17 @@ const SocialPage: React.FC = () => {
                       <Link to={`/users/${post.user_id}`} className="post-author-link">
                         <img src={getUserAvatar(post)} alt={post.username} className="post-avatar" />
                         <div className="post-author-info">
-                          <span className="post-author-name">
-                            {post.minecraft_username || post.username}
-                          </span>
-                          <span className="post-time">{formatTime(post.created_at)}</span>
+                          <div className="post-author-name">
+                            <UserDisplay
+                              username={post.username}
+                              minecraftUsername={post.minecraft_username}
+                              donationRank={post.donation_rank}
+                              size="small"
+                              showIcon={true}
+                              showBadge={false}
+                            />
+                          </div>
+                          <span className="post-time">{formatTimeAgo(post.created_at)}</span>
                         </div>
                       </Link>
                       {(post.user_id === user.id || user.role === 'admin') && (
@@ -822,22 +812,24 @@ const SocialPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Reaction Summary */}
-                    <div className="post-stats">
-                      <div className="reaction-summary">
-                        {Object.entries(post.reactions || {}).map(([reaction, count]) => (
-                          count > 0 && (
-                            <span key={reaction} className="reaction-count">
-                              {reactionEmojis[reaction as keyof typeof reactionEmojis]} {count}
-                            </span>
-                          )
-                        ))}
+                    {/* Post Stats Row */}
+                    {(Object.values(post.reactions || {}).some(count => count > 0) || post.comment_count > 0 || post.share_count > 0) && (
+                      <div className="post-stats">
+                        <div className="reaction-summary">
+                          {Object.entries(post.reactions || {}).map(([reaction, count]) => (
+                            count > 0 && (
+                              <span key={reaction} className="reaction-count">
+                                {reactionEmojis[reaction as keyof typeof reactionEmojis]} {count}
+                              </span>
+                            )
+                          ))}
+                        </div>
+                        <div className="engagement-stats">
+                          {post.comment_count > 0 && <span>{post.comment_count} comments</span>}
+                          {post.share_count > 0 && <span>{post.share_count} shares</span>}
+                        </div>
                       </div>
-                      <div className="engagement-stats">
-                        <span>{post.comment_count} comments</span>
-                        <span>{post.share_count} shares</span>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="post-actions-bar">
@@ -853,12 +845,11 @@ const SocialPage: React.FC = () => {
                           </button>
                         ))}
                       </div>
-                      <button className="action-btn" onClick={() => toggleComments(post.id)}>
-                        💬 Comment
-                      </button>
-                      <button className="action-btn" onClick={() => sharePost(post.id)}>
-                        🔄 Share
-                      </button>
+                      <div className="post-action-buttons">
+                        <button className="action-btn" onClick={() => toggleComments(post.id)}>
+                          💬 Comment
+                        </button>
+                      </div>
                     </div>
 
                     {/* Comments Section */}
@@ -873,7 +864,14 @@ const SocialPage: React.FC = () => {
                               <div className="comment-bubble">
                                 <div className="comment-header">
                                   <Link to={`/users/${comment.user_id}`} className="comment-author">
-                                    {comment.minecraft_username || comment.username}
+                                    <UserDisplay
+                                      username={comment.username}
+                                      minecraftUsername={comment.minecraft_username}
+                                      donationRank={comment.donation_rank}
+                                      size="small"
+                                      showIcon={true}
+                                      showBadge={false}
+                                    />
                                   </Link>
                                   {(comment.user_id === user.id || user.role === 'admin') && (
                                     <button 
@@ -885,7 +883,7 @@ const SocialPage: React.FC = () => {
                                     </button>
                                   )}
                                 </div>
-                                <p>{comment.content}</p>
+                                <div className="comment-text">{parsePostContent(comment.content)}</div>
                               </div>
                               <div className="comment-actions">
                                 <button 
@@ -894,7 +892,7 @@ const SocialPage: React.FC = () => {
                                 >
                                   👍 {comment.like_count > 0 && comment.like_count}
                                 </button>
-                                <span className="comment-time">{formatTime(comment.created_at)}</span>
+                                <span className="comment-time">{formatTimeAgo(comment.created_at)}</span>
                               </div>
                             </div>
                           </div>
@@ -981,7 +979,7 @@ const SocialPage: React.FC = () => {
                       <img src={getUserAvatar(request)} alt={request.sender_username} className="friend-avatar" />
                       <div className="friend-info">
                         <span className="friend-name">{request.sender_minecraft_username || request.sender_username}</span>
-                        <span className="request-time">{formatTime(request.created_at)}</span>
+                        <span className="request-time">{formatTimeAgo(request.created_at)}</span>
                       </div>
                       <div className="friend-actions">
                         <button 

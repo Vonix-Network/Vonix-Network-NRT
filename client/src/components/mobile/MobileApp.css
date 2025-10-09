@@ -1,0 +1,176 @@
+.mobile-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+.mobile-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Global mobile styles */
+.mobile-content {
+  padding-top: 60px;
+  padding-bottom: 70px;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Loading states */
+.mobile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.mobile-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mobile-loading p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Touch-friendly interactions */
+.mobile-app * {
+  -webkit-tap-highlight-color: rgba(0, 217, 126, 0.2);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for content areas */
+.mobile-app p,
+.mobile-app span,
+.mobile-app h1,
+.mobile-app h2,
+.mobile-app h3,
+.mobile-app h4,
+.mobile-app h5,
+.mobile-app h6,
+.mobile-app input,
+.mobile-app textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Smooth scrolling */
+.mobile-app {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent zoom on input focus */
+.mobile-app input,
+.mobile-app textarea,
+.mobile-app select {
+  font-size: 16px;
+}
+
+/* Safe area support */
+@supports (padding: max(0px)) {
+  .mobile-content {
+    padding-top: calc(60px + env(safe-area-inset-top));
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 480px) {
+  .mobile-content {
+    padding-top: 56px;
+    padding-bottom: 65px;
+  }
+  
+  @supports (padding: max(0px)) {
+    .mobile-content {
+      padding-top: calc(56px + env(safe-area-inset-top));
+      padding-bottom: calc(65px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-content {
+    padding-top: 50px;
+    padding-bottom: 60px;
+  }
+  
+  @supports (padding: max(0px)) {
+    .mobile-content {
+      padding-top: calc(50px + env(safe-area-inset-top));
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .mobile-app {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-app,
+  .mobile-app * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .mobile-app {
+    background: var(--bg-primary);
+  }
+}
+
+/* Focus styles for accessibility */
+.mobile-app button:focus,
+.mobile-app a:focus,
+.mobile-app input:focus,
+.mobile-app textarea:focus,
+.mobile-app select:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Hide focus outline for mouse users */
+.mobile-app button:focus:not(:focus-visible),
+.mobile-app a:focus:not(:focus-visible) {
+  outline: none;
+}

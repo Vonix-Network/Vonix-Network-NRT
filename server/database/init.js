@@ -28,8 +28,10 @@ function initializeDatabase() {
       minecraft_username TEXT UNIQUE,
       minecraft_uuid TEXT UNIQUE,
       must_change_password INTEGER DEFAULT 0,
+      donation_rank_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (donation_rank_id) REFERENCES donation_ranks(id)
     );
 
     CREATE TABLE IF NOT EXISTS servers (
@@ -112,6 +114,21 @@ function initializeDatabase() {
       method TEXT, -- e.g., paypal, crypto
       message TEXT,
       displayed INTEGER DEFAULT 1, -- whether to show on public list
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS donation_ranks (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      min_amount REAL NOT NULL,
+      color TEXT NOT NULL,
+      text_color TEXT NOT NULL,
+      icon TEXT,
+      badge TEXT,
+      glow INTEGER DEFAULT 0,
+      duration INTEGER DEFAULT 30,
+      subtitle TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -777,6 +794,22 @@ function initializeDatabase() {
     forumStmt.run(3, 'Ban Appeals', 'Appeal your ban here', 2);
     
     console.log('✅ Sample forum structure created');
+  }
+
+  // Create default donation ranks
+  const rankCount = db.prepare('SELECT COUNT(*) as count FROM donation_ranks').get().count;
+  if (rankCount === 0) {
+    const rankStmt = db.prepare(`
+      INSERT INTO donation_ranks (id, name, min_amount, color, text_color, icon, badge, glow, duration, subtitle)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    rankStmt.run('supporter', 'Supporter', 5, '#10b981', '#ffffff', '🌟', 'SUP', 0, 30, 'Supporting the community');
+    rankStmt.run('patron', 'Patron', 10, '#3b82f6', '#ffffff', '💎', 'PAT', 1, 30, 'Covers Pixelmon server costs');
+    rankStmt.run('champion', 'Champion', 15, '#8b5cf6', '#ffffff', '👑', 'CHA', 1, 30, 'Premium supporter');
+    rankStmt.run('legend', 'Legend', 20, '#f59e0b', '#000000', '🏆', 'LEG', 1, 30, 'Covers full BMC5 server costs');
+    
+    console.log('✅ Default donation ranks created');
   }
 
   // Run migrations for new features

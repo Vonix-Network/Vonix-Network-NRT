@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import UserDisplay from '../components/UserDisplay';
 import DonationSubscription from '../components/DonationSubscription';
+import { parsePostContent, formatTimeAgo } from '../utils/bbCodeParser';
 import './UserProfilePage.css';
 
 interface UserProfile {
@@ -89,6 +90,15 @@ interface Post {
   comment_count: number;
   share_count?: number;
   user_liked: boolean;
+  donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 const UserProfilePage: React.FC = () => {
@@ -253,48 +263,6 @@ const UserProfilePage: React.FC = () => {
     return { tier: 'Newcomer', icon: '🌱', color: '#10b981' };
   };
 
-  const parsePostContent = (content: string) => {
-    // Parse [img=url] syntax and convert to actual images
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    const imgRegex = /\[img=([^\]]+)\]/g;
-    let match;
-
-    while ((match = imgRegex.exec(content)) !== null) {
-      // Add text before the image
-      if (match.index > lastIndex) {
-        parts.push(content.substring(lastIndex, match.index));
-      }
-
-      // Validate URL to prevent XSS
-      const url = match[1].trim();
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        parts.push(
-          <img 
-            key={match.index} 
-            src={url} 
-            alt="Embedded" 
-            className="embedded-post-image"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        );
-      } else {
-        // If invalid URL, show the original text
-        parts.push(match[0]);
-      }
-
-      lastIndex = imgRegex.lastIndex;
-    }
-
-    // Add remaining text
-    if (lastIndex < content.length) {
-      parts.push(content.substring(lastIndex));
-    }
-
-    return parts.length > 0 ? parts : content;
-  };
 
   if (loading) {
     return (
@@ -521,9 +489,16 @@ const UserProfilePage: React.FC = () => {
                             className="post-author-avatar"
                           />
                           <div className="post-author-info">
-                            <span className="post-author-name">
-                              {post.minecraft_username || post.username}
-                            </span>
+                            <div className="post-author-name">
+                              <UserDisplay
+                                username={post.username}
+                                minecraftUsername={post.minecraft_username}
+                                donationRank={post.donation_rank}
+                                size="small"
+                                showIcon={true}
+                                showBadge={false}
+                              />
+                            </div>
                             <time className="post-timestamp" dateTime={post.created_at}>
                               {formatTime(post.created_at)}
                             </time>

@@ -51,6 +51,18 @@ const DONATION_RANKS = {
 
 const router = express.Router();
 
+// Validate user ownership or admin privileges
+const validateOwnership = (req, res, next) => {
+  const { user } = req;
+  const resourceUserId = parseInt(req.params.userId || req.body.user_id);
+  
+  if (user.id !== resourceUserId && user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  
+  next();
+};
+
 // Rate limiting middleware
 const createPostLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -85,14 +97,63 @@ const validateErrors = (req, res, next) => {
   next();
 };
 
-// Content sanitization
+// Enhanced content sanitization with caching
+const contentCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 const sanitizeContent = (content) => {
-  if (!content) return content;
-  // Remove potentially dangerous HTML/JS while preserving basic formatting
-  return DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
+  if (!content || typeof content !== 'string') return '';
+  
+  // Check cache first
+  const cacheKey = `sanitize_${content.substring(0, 50)}_${content.length}`;
+  const cached = contentCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) {
+    return cached.content;
+  }
+  
+  // First pass: Remove dangerous HTML/JS
+  let sanitized = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [], // No HTML tags allowed, only BB codes
     ALLOWED_ATTR: []
-  }).trim();
+  });
+  
+  // Second pass: Additional security measures for BB codes
+  sanitized = sanitized
+    // Remove javascript: protocols from BB code URLs
+    .replace(/\[url[^\]]*javascript:/gi, '[url=blocked:')
+    .replace(/\[img[^\]]*javascript:/gi, '[img=blocked:')
+    // Remove data: URLs (except safe image types)
+    .replace(/\[url[^\]]*data:(?!image\/(png|jpg|jpeg|gif|webp))/gi, '[url=blocked:')
+    .replace(/\[img[^\]]*data:(?!image\/(png|jpg|jpeg|gif|webp))/gi, '[img=blocked:')
+    // Limit URL length in BB codes to prevent DoS
+    .replace(/\[url=([^\]]{200,})\]/gi, '[url=blocked-too-long]')
+    .replace(/\[img=([^\]]{200,})\]/gi, '[img=blocked-too-long]')
+    // Remove nested BB codes to prevent parsing issues
+    .replace(/\[([a-z]+)[^\]]*\[([a-z]+)/gi, '[$1][$2')
+    .trim();
+    
+  // Limit total length
+  if (sanitized.length > 2000) {
+    sanitized = sanitized.substring(0, 2000);
+  }
+  
+  // Cache the result
+  contentCache.set(cacheKey, {
+    content: sanitized,
+    expires: Date.now() + CACHE_TTL
+  });
+  
+  // Clean old cache entries periodically
+  if (contentCache.size > 1000) {
+    const now = Date.now();
+    for (const [key, value] of contentCache.entries()) {
+      if (value.expires <= now) {
+        contentCache.delete(key);
+      }
+    }
+  }
+  
+  return sanitized;
 };
 
 // Get user profile (auth required so we can compute isFollowing)
@@ -254,12 +315,15 @@ router.get('/feed', authenticateToken, (req, res) => {
       SELECT 
         p.id, p.content, p.image_url, p.created_at, p.updated_at,
         u.id as user_id, u.username, u.minecraft_username, u.minecraft_uuid,
+        u.donation_rank_id, dr.name as rank_name, dr.color as rank_color, 
+        dr.text_color as rank_text_color, dr.icon as rank_icon, dr.badge as rank_badge, dr.glow as rank_glow,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
         (SELECT COUNT(*) FROM post_shares WHERE original_post_id = p.id) as share_count,
         (SELECT id FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked
       FROM posts p
       JOIN users u ON u.id = p.user_id
+      LEFT JOIN donation_ranks dr ON u.donation_rank_id = dr.id
       WHERE p.user_id IN (
         SELECT CASE WHEN f.user1_id = ? THEN f.user2_id ELSE f.user1_id END
         FROM friends f WHERE f.user1_id = ? OR f.user2_id = ?
@@ -291,6 +355,28 @@ router.get('/feed', authenticateToken, (req, res) => {
       userReactions.forEach(r => {
         post.user_reactions[r.reaction_type] = true;
       });
+      
+      // Format donation rank data
+      if (post.donation_rank_id && post.rank_name) {
+        post.donation_rank = {
+          id: String(post.donation_rank_id),
+          name: post.rank_name,
+          color: post.rank_color,
+          textColor: post.rank_text_color,
+          icon: post.rank_icon || '',
+          badge: post.rank_badge || '',
+          glow: Boolean(post.rank_glow)
+        };
+      }
+      
+      // Clean up the raw rank fields
+      delete post.donation_rank_id;
+      delete post.rank_name;
+      delete post.rank_color;
+      delete post.rank_text_color;
+      delete post.rank_icon;
+      delete post.rank_badge;
+      delete post.rank_glow;
     }
     
     res.json(posts);
@@ -313,33 +399,44 @@ router.get('/posts/user/:userId', (req, res) => {
       SELECT 
         p.id, p.content, p.image_url, p.created_at, p.updated_at,
         u.id as user_id, u.username, u.minecraft_username, u.minecraft_uuid,
-        u.total_donated, u.donation_rank_id,
+        u.donation_rank_id, dr.name as rank_name, dr.color as rank_color, 
+        dr.text_color as rank_text_color, dr.icon as rank_icon, dr.badge as rank_badge, dr.glow as rank_glow,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
         (SELECT id FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked
       FROM posts p
       JOIN users u ON u.id = p.user_id
+      LEFT JOIN donation_ranks dr ON u.donation_rank_id = dr.id
       WHERE p.user_id = ?
       ORDER BY p.created_at DESC
       LIMIT ? OFFSET ?
     `).all(req.user?.id || 0, userId, limit, offset);
     
-    // Add donation rank information to posts
-    const postsWithRanks = posts.map(post => {
-      let donationRank = null;
-      if (post.donation_rank_id) {
-        const rank = DONATION_RANKS[post.donation_rank_id.toUpperCase()];
-        if (rank) {
-          donationRank = rank;
-        }
+    // Format donation rank data for posts
+    for (let post of posts) {
+      if (post.donation_rank_id && post.rank_name) {
+        post.donation_rank = {
+          id: String(post.donation_rank_id),
+          name: post.rank_name,
+          color: post.rank_color,
+          textColor: post.rank_text_color,
+          icon: post.rank_icon || '',
+          badge: post.rank_badge || '',
+          glow: Boolean(post.rank_glow)
+        };
       }
-      return {
-        ...post,
-        donation_rank: donationRank
-      };
-    });
+      
+      // Clean up the raw rank fields
+      delete post.donation_rank_id;
+      delete post.rank_name;
+      delete post.rank_color;
+      delete post.rank_text_color;
+      delete post.rank_icon;
+      delete post.rank_badge;
+      delete post.rank_glow;
+    }
     
-    res.json(postsWithRanks);
+    res.json(posts);
   } catch (error) {
     console.error('Error loading user posts:', error);
     res.status(500).json({ error: 'Failed to load posts' });
@@ -413,13 +510,40 @@ router.get('/posts/:postId/comments', (req, res) => {
       SELECT 
         c.id, c.content, c.created_at,
         u.id as user_id, u.username, u.minecraft_username, u.minecraft_uuid,
+        u.donation_rank_id, dr.name as rank_name, dr.color as rank_color, 
+        dr.text_color as rank_text_color, dr.icon as rank_icon, dr.badge as rank_badge, dr.glow as rank_glow,
         (SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id) as like_count,
         (SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id AND user_id = ?) > 0 as user_liked
       FROM comments c
       JOIN users u ON u.id = c.user_id
+      LEFT JOIN donation_ranks dr ON u.donation_rank_id = dr.id
       WHERE c.post_id = ?
       ORDER BY c.created_at ASC
     `).all(req.user?.id || 0, postId);
+    
+    // Format donation rank data for comments
+    for (let comment of comments) {
+      if (comment.donation_rank_id && comment.rank_name) {
+        comment.donation_rank = {
+          id: String(comment.donation_rank_id),
+          name: comment.rank_name,
+          color: comment.rank_color,
+          textColor: comment.rank_text_color,
+          icon: comment.rank_icon || '',
+          badge: comment.rank_badge || '',
+          glow: Boolean(comment.rank_glow)
+        };
+      }
+      
+      // Clean up the raw rank fields
+      delete comment.donation_rank_id;
+      delete comment.rank_name;
+      delete comment.rank_color;
+      delete comment.rank_text_color;
+      delete comment.rank_icon;
+      delete comment.rank_badge;
+      delete comment.rank_glow;
+    }
     
     res.json(comments);
   } catch (error) {
@@ -1266,7 +1390,12 @@ router.get('/events/:eventId', authenticateToken, (req, res) => {
 // ========================================
 
 // React to post (extended reactions)
-router.post('/posts/:postId/react', authenticateToken, (req, res) => {
+router.post('/posts/:postId/react', [
+  authenticateToken,
+  param('postId').isInt({ min: 1 }).withMessage('Invalid post ID'),
+  body('reaction').isIn(['like', 'love', 'laugh', 'wow', 'sad', 'angry']).withMessage('Invalid reaction type'),
+  validateErrors
+], (req, res) => {
   try {
     const postId = parseInt(req.params.postId);
     const { reaction } = req.body;

@@ -30,8 +30,12 @@ import ForumNewTopicPage from './pages/ForumNewTopicPage';
 import ProfilePage from './pages/ProfilePage';
 import ReputationLeaderboard from './pages/ReputationLeaderboard';
 
+// Mobile Components
+import MobileApp from './components/mobile/MobileApp';
+
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FeatureProvider } from './context/FeatureContext';
+import { DeviceProvider, useDevice } from './context/DeviceContext';
 import { useFeatures } from './context/FeatureContext';
 import SetupPage from './pages/SetupPage';
 import api from './services/api';
@@ -44,6 +48,16 @@ const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) 
   }
 
   return user ? children : <Navigate to="/login" />;
+};
+
+const PublicRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading-container">Loading...</div>;
+  }
+
+  return !user ? children : <Navigate to="/" />;
 };
 
 const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
@@ -83,6 +97,18 @@ const ModeratorRoute: React.FC<{ children: React.ReactElement }> = ({ children }
 };
 
 function AppContent() {
+  const { isMobile } = useDevice();
+  
+  // Route to mobile app if on mobile device
+  if (isMobile) {
+    return <MobileApp />;
+  }
+
+  // Desktop/tablet experience
+  return <DesktopApp />;
+}
+
+function DesktopApp() {
   const { user, loading } = useAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [setupLoading, setSetupLoading] = useState(true);
@@ -140,9 +166,17 @@ function AppContent() {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/donations" element={<DonationsPage />} />
         <Route path="/ranks" element={<DonationRanks />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register" element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        } />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } />
         {flags.forum && <Route path="/forum" element={<ForumListPage />} />}
         {flags.forum && <Route path="/forum/:id" element={<ForumViewPage />} />}
         {flags.forum && <Route path="/forum/:id/new-topic" element={
@@ -239,7 +273,9 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <FeatureProvider>
-          <AppContent />
+          <DeviceProvider>
+            <AppContent />
+          </DeviceProvider>
         </FeatureProvider>
       </AuthProvider>
     </Router>
