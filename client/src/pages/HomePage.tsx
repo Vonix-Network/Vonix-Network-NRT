@@ -8,7 +8,7 @@ import { useFeatures } from '../context/FeatureContext';
 const HomePage: React.FC = () => {
   const { flags } = useFeatures();
   return (
-    <div className="home-page">
+    <div className="home-page mobile-content">
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-background"></div>

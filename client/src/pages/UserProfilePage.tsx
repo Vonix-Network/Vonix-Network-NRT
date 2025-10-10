@@ -266,18 +266,22 @@ const UserProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="profile-loading">
-        <div className="spinner"></div>
-        <p>Loading profile...</p>
+      <div className="user-profile-page mobile-content">
+        <div className="profile-loading">
+          <div className="spinner"></div>
+          <p>Loading profile...</p>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="profile-not-found">
-        <h2>User not found</h2>
-        <Link to="/social" className="btn btn-primary">Back to Feed</Link>
+      <div className="user-profile-page mobile-content">
+        <div className="profile-not-found">
+          <h2>User not found</h2>
+          <Link to="/social" className="btn btn-primary">Back to Feed</Link>
+        </div>
       </div>
     );
   }
@@ -285,7 +289,7 @@ const UserProfilePage: React.FC = () => {
   const isOwnProfile = currentUser && currentUser.id === profile.id;
 
   return (
-    <div className="user-profile-page">
+    <div className="user-profile-page mobile-content">
       <div className="profile-container">
         <div className="profile-header">
           <div className="profile-avatar-wrapper">

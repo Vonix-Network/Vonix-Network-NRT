@@ -61,7 +61,7 @@ const DonationsPage: React.FC = () => {
   };
 
   return (
-    <div className="donations-page">
+    <div className="donations-page mobile-content">
       <div className="donations-container">
         <div className="donations-header">
           <h1 className="donations-title">💖 Support Vonix.Network</h1>

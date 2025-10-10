@@ -45,17 +45,19 @@ const BlogPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading blog posts...</p>
+      <div className="blog-page mobile-content">
+        <div className="container">
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Loading blog posts...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="blog-page">
+    <div className="blog-page mobile-content">
       <div className="container">
         <div className="page-header animate-fadeIn">
           <div>
