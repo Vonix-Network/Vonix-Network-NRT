@@ -87,7 +87,7 @@ const ReputationLeaderboard: React.FC = () => {
 
   if (loading && page === 1) {
     return (
-      <div className="leaderboard-page">
+      <div className="leaderboard-page mobile-content">
         <div className="leaderboard-loading">
           <div className="spinner"></div>
           <p>Loading leaderboard...</p>
@@ -97,7 +97,7 @@ const ReputationLeaderboard: React.FC = () => {
   }
 
   return (
-    <div className="leaderboard-page">
+    <div className="leaderboard-page mobile-content">
       <div className="leaderboard-header">
         <h1 className="leaderboard-title">Reputation Leaderboard</h1>
         <p className="leaderboard-subtitle">Top players ranked by community reputation</p>

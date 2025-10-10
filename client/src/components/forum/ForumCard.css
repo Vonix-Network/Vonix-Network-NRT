@@ -1,0 +1,225 @@
+/* Base Forum Card Styles */
+.forum-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-12);
+  transition: all var(--transition-base);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  will-change: transform, box-shadow;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  padding: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+.forum-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-primary), var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.forum-card__content-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-6);
+  min-height: 80px;
+}
+
+.forum-card__main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.forum-card__icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.forum-card__avatar {
+  width: 56px;
+  height: 56px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+}
+
+.forum-card__letter {
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.forum-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.forum-card__link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.forum-card__name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  line-height: var(--leading-tight);
+}
+
+.forum-card__name:hover {
+  color: var(--accent-primary);
+}
+
+.forum-card__locked {
+  font-size: 0.9rem;
+}
+
+.forum-card__description {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  margin: 0 0 var(--space-3) 0;
+  line-height: var(--leading-relaxed);
+  max-width: 600px;
+}
+
+.forum-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--space-2);
+}
+
+.forum-card__time {
+  color: var(--text-secondary);
+}
+
+.forum-card__stats-container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  flex-shrink: 0;
+}
+
+.forum-card__engagement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  min-width: 80px;
+}
+
+.forum-card__engagement-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.forum-card__engagement-count {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.forum-card__engagement-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-medium);
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .forum-card {
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  
+  .forum-card__content-wrapper {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  
+  .forum-card__main {
+    gap: var(--space-3);
+  }
+  
+  .forum-card__avatar {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .forum-card__name {
+    font-size: var(--text-lg);
+  }
+  
+  .forum-card__description {
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-2);
+  }
+  
+  .forum-card__stats-container {
+    align-self: stretch;
+  }
+  
+  .forum-card__engagement {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .forum-card {
+    padding: var(--space-3);
+  }
+  
+  .forum-card__main {
+    gap: var(--space-2);
+  }
+  
+  .forum-card__avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .forum-card__name {
+    font-size: var(--text-base);
+  }
+  
+  .forum-card__description {
+    font-size: var(--text-xs);
+  }
+}
+
+/* Touch feedback for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  .forum-card:hover {
+    transform: none;
+  }
+  
+  .forum-card:active {
+    transform: scale(0.98);
+  }
+}

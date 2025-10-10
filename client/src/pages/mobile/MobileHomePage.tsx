@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useFeatures } from '../../context/FeatureContext';
 import { DISCORD_INVITE_URL } from '../../config/appConfig';
 import api from '../../services/api';
+import TopicCard from '../../components/forum/TopicCard';
 import './MobileHomePage.css';
 
 interface Stats {
@@ -39,6 +40,7 @@ interface ForumTopic {
   author: string;
   reply_count: number;
   created_at: string;
+  forum_name: string;
 }
 
 const MobileHomePage: React.FC = () => {
@@ -258,20 +260,11 @@ const MobileHomePage: React.FC = () => {
             </div>
             <div className="mobile-topics-list">
               {forumTopics.map((topic) => (
-                <Link
+                <TopicCard
                   key={topic.id}
-                  to={`/forum/topic/${topic.slug}`}
-                  className="mobile-topic-card"
-                >
-                  <div className="mobile-topic-content">
-                    <h3 className="mobile-topic-title">{topic.title}</h3>
-                    <div className="mobile-topic-meta">
-                      <span className="mobile-topic-author">By {topic.author}</span>
-                      <span className="mobile-topic-replies">💬 {topic.reply_count}</span>
-                    </div>
-                  </div>
-                  <div className="mobile-topic-arrow">→</div>
-                </Link>
+                  topic={topic}
+                  showForum={false}
+                />
               ))}
             </div>
           </section>

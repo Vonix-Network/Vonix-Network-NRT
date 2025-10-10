@@ -24,6 +24,28 @@
   overflow-x: hidden;
 }
 
+/* Fallback for pages that might not have mobile-content class */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 70px;
+  }
+  
+  /* Ensure all page containers have proper bottom spacing on mobile */
+  .leaderboard-page,
+  .forum-view-page,
+  .forum-list-page,
+  .donation-ranks-page,
+  .servers-page,
+  .profile-page,
+  .user-profile-page,
+  .social-page,
+  .messages-page,
+  .home-page {
+    padding-bottom: 70px;
+    min-height: calc(100vh - 70px);
+  }
+}
+
 /* Loading states */
 .mobile-loading {
   display: flex;

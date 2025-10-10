@@ -48,7 +48,7 @@ const DonationRanks: React.FC = () => {
   };
 
   return (
-    <div className="donation-ranks-page">
+    <div className="donation-ranks-page mobile-content">
       {/* Hero Section */}
       <section className="ranks-hero">
         <div className="ranks-hero-background"></div>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import ForumCard from '../../components/forum/ForumCard';
+import TopicCard from '../../components/forum/TopicCard';
 import './MobileForumPage.css';
 
 interface Forum {
@@ -10,9 +12,26 @@ interface Forum {
   description: string;
   topic_count: number;
   post_count: number;
+  locked: number;
   last_post_title?: string;
   last_post_author?: string;
   last_post_created_at?: string;
+  last_post_username?: string;
+  last_post_minecraft_username?: string;
+  last_post_user_uuid?: string;
+  last_post_topic_title?: string;
+  last_post_topic_slug?: string;
+  last_post_time?: string;
+  last_post_total_donated?: number;
+  last_post_donation_rank?: {
+    id: string;
+    name: string;
+    color: string;
+    textColor: string;
+    icon: string;
+    badge: string;
+    glow: boolean;
+  };
 }
 
 interface RecentTopic {
@@ -34,15 +53,21 @@ const MobileForumPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('📱 Fetching mobile forum data...');
+        
         const [forumsRes, topicsRes] = await Promise.all([
-          api.get('/forum'),
+          api.get('/forum/mobile'),
           api.get('/forum/recent-topics?limit=5')
         ]);
         
-        setForums(forumsRes.data);
+        console.log('📱 Forums response:', forumsRes.data);
+        console.log('📱 Topics response:', topicsRes.data);
+        
+        setForums(forumsRes.data || []);
         setRecentTopics(topicsRes.data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching forum data:', error);
+        console.error('Error details:', error.response?.data || error.message);
       } finally {
         setLoading(false);
       }
@@ -89,28 +114,11 @@ const MobileForumPage: React.FC = () => {
             <h2 className="mobile-section-title">Recent Discussions</h2>
             <div className="mobile-topics-list">
               {recentTopics.map((topic) => (
-                <Link
+                <TopicCard
                   key={topic.id}
-                  to={`/forum/topic/${topic.slug}`}
-                  className="mobile-topic-card"
-                >
-                  <div className="mobile-topic-content">
-                    <h3 className="mobile-topic-title">{topic.title}</h3>
-                    <div className="mobile-topic-meta">
-                      <span className="mobile-topic-forum">{topic.forum_name}</span>
-                      <span className="mobile-topic-author">by {topic.author}</span>
-                    </div>
-                    <div className="mobile-topic-stats">
-                      <span className="mobile-topic-replies">
-                        💬 {topic.reply_count} replies
-                      </span>
-                      <span className="mobile-topic-date">
-                        {new Date(topic.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mobile-topic-arrow">→</div>
-                </Link>
+                  topic={topic}
+                  showForum={true}
+                />
               ))}
             </div>
           </section>
@@ -120,38 +128,22 @@ const MobileForumPage: React.FC = () => {
         <section className="mobile-forum-categories">
           <h2 className="mobile-section-title">Categories</h2>
           <div className="mobile-forums-list">
-            {forums.map((forum) => (
-              <Link
-                key={forum.id}
-                to={`/forum/${forum.id}`}
-                className="mobile-forum-card"
-              >
-                <div className="mobile-forum-icon">📁</div>
-                <div className="mobile-forum-content">
-                  <h3 className="mobile-forum-name">{forum.name}</h3>
-                  <p className="mobile-forum-description">{forum.description}</p>
-                  <div className="mobile-forum-stats">
-                    <span className="mobile-forum-topics">
-                      📝 {forum.topic_count} topics
-                    </span>
-                    <span className="mobile-forum-posts">
-                      💬 {forum.post_count} posts
-                    </span>
-                  </div>
-                  {forum.last_post_title && (
-                    <div className="mobile-forum-last-post">
-                      <span className="mobile-last-post-title">
-                        Latest: {forum.last_post_title}
-                      </span>
-                      <span className="mobile-last-post-author">
-                        by {forum.last_post_author}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="mobile-forum-arrow">→</div>
-              </Link>
-            ))}
+            {forums.length > 0 ? (
+              forums.map((forum) => (
+                <ForumCard
+                  key={forum.id}
+                  forum={forum}
+                  showStats={true}
+                  showLastPost={true}
+                />
+              ))
+            ) : (
+              <div className="mobile-no-forums">
+                <div className="mobile-no-content-icon">📭</div>
+                <h3>No Forums Available</h3>
+                <p>Forum categories are being set up. Check back soon!</p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -161,13 +153,13 @@ const MobileForumPage: React.FC = () => {
           <div className="mobile-stats-grid">
             <div className="mobile-stat-item">
               <div className="mobile-stat-number">
-                {forums.reduce((sum, forum) => sum + forum.topic_count, 0)}
+                {forums.reduce((sum, forum) => sum + (forum.topic_count || 0), 0)}
               </div>
               <div className="mobile-stat-label">Total Topics</div>
             </div>
             <div className="mobile-stat-item">
               <div className="mobile-stat-number">
-                {forums.reduce((sum, forum) => sum + forum.post_count, 0)}
+                {forums.reduce((sum, forum) => sum + (forum.post_count || 0), 0)}
               </div>
               <div className="mobile-stat-label">Total Posts</div>
             </div>

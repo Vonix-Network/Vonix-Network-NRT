@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import UserDisplay from '../components/UserDisplay';
+import ForumCard from '../components/forum/ForumCard';
 import './ForumListPage.css';
 
 interface LastPost {
@@ -78,7 +79,7 @@ const ForumListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="forum-list-page">
+      <div className="forum-list-page mobile-content">
         <div className="container">
           <div className="loading">Loading forums...</div>
         </div>
@@ -88,7 +89,7 @@ const ForumListPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="forum-list-page">
+      <div className="forum-list-page mobile-content">
         <div className="container">
           <div className="error">{error}</div>
         </div>
@@ -97,7 +98,7 @@ const ForumListPage: React.FC = () => {
   }
 
   return (
-    <div className="forum-list-page">
+    <div className="forum-list-page mobile-content">
       <div className="container">
         <div className="forum-header">
           <div className="header-content">
@@ -132,65 +133,12 @@ const ForumListPage: React.FC = () => {
                 <p className="category-description">{category.description}</p>
               </div>
               {category.forums.map(forum => (
-                <div key={forum.id} className="forum-card">
-                  <div className="forum-card-content">
-                    <div className="forum-main">
-                      <div className="forum-icon-container">
-                        <div className="forum-avatar">
-                          <span className="forum-letter">
-                            {forum.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="forum-content">
-                        <Link to={`/forum/${forum.id}`} className="forum-link">
-                          <h3 className="forum-name">
-                            {forum.name}
-                            {forum.locked === 1 && (
-                              <span className="forum-locked" title="This forum is locked">🔒</span>
-                            )}
-                          </h3>
-                        </Link>
-                        <p className="forum-description">
-                          {forum.description || 'Join the discussion and share your thoughts'}
-                        </p>
-                        <div className="forum-meta">
-                          <span className="forum-author">
-                            by{' '}
-                            {forum.last_post_username ? (
-                              <UserDisplay
-                                username={forum.last_post_username}
-                                minecraftUsername={forum.last_post_minecraft_username}
-                                totalDonated={forum.last_post_total_donated}
-                                donationRank={forum.last_post_donation_rank}
-                                size="small"
-                                showIcon={false}
-                                showBadge={true}
-                              />
-                            ) : (
-                              'Admin'
-                            )}
-                          </span>
-                          <span className="forum-time">Last reply {formatDate(forum.last_post_time)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="forum-stats-container">
-                      <div className="forum-engagement">
-                        <div className="engagement-item">
-                          <span className="engagement-count">{forum.topics_count || 0}</span>
-                          <span className="engagement-label">Topics</span>
-                        </div>
-                        <div className="engagement-item">
-                          <span className="engagement-count">{forum.posts_count || 0}</span>
-                          <span className="engagement-label">Posts</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <ForumCard
+                  key={forum.id}
+                  forum={forum}
+                  showStats={true}
+                  showLastPost={true}
+                />
               ))}
             </div>
           ))}

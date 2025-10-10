@@ -951,6 +951,71 @@ router.post('/post/:postId/vote', authenticateToken, (req, res) => {
   }
 });
 
+// GET /api/forum/mobile - flat list of forums for mobile
+router.get('/mobile', cacheMiddleware(60), async (req, res) => {
+  try {
+    const db = getDatabase();
+    
+    console.log('📱 Mobile forum request received');
+    
+    const forums = db.prepare(`
+      SELECT 
+        f.id,
+        f.name,
+        f.description,
+        f.topics_count as topic_count,
+        f.posts_count as post_count,
+        t.title as last_post_title,
+        u.username as last_post_author,
+        f.last_post_time as last_post_created_at
+      FROM forums f
+      LEFT JOIN users u ON f.last_post_user_id = u.id
+      LEFT JOIN forum_topics t ON f.last_post_topic_id = t.id
+      ORDER BY f.order_index ASC, f.id ASC
+    `).all();
+
+    console.log(`📱 Found ${forums.length} forums for mobile`);
+    
+    res.json(forums);
+  } catch (error) {
+    console.error('Error fetching mobile forums:', error);
+    res.status(500).json({ error: 'Failed to fetch forums' });
+  }
+});
+
+// GET /api/forum/recent-topics - recent topics for mobile
+router.get('/recent-topics', cacheMiddleware(30), async (req, res) => {
+  try {
+    const db = getDatabase();
+    const limit = parseInt(req.query.limit) || 10;
+    
+    console.log('📱 Recent topics request received, limit:', limit);
+    
+    const topics = db.prepare(`
+      SELECT 
+        t.id,
+        t.title,
+        t.slug,
+        u.username as author,
+        t.replies,
+        t.created_at,
+        f.name as forum_name
+      FROM forum_topics t
+      JOIN users u ON t.user_id = u.id
+      JOIN forums f ON t.forum_id = f.id
+      ORDER BY t.created_at DESC
+      LIMIT ?
+    `).all(limit);
+
+    console.log(`📱 Found ${topics.length} recent topics`);
+
+    res.json(topics);
+  } catch (error) {
+    console.error('Error fetching recent topics:', error);
+    res.status(500).json({ error: 'Failed to fetch recent topics' });
+  }
+});
+
 module.exports = router;
 
 

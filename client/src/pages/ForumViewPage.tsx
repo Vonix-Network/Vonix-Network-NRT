@@ -131,7 +131,7 @@ const ForumViewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="forum-view-page">
+      <div className="forum-view-page mobile-content">
         <div className="container">
           <div className="loading">Loading forum...</div>
         </div>
@@ -141,7 +141,7 @@ const ForumViewPage: React.FC = () => {
 
   if (error || !forum) {
     return (
-      <div className="forum-view-page">
+      <div className="forum-view-page mobile-content">
         <div className="container">
           <div className="error">{error || 'Forum not found'}</div>
           <Link to="/forum" className="btn-back">← Back to Forums</Link>
@@ -151,7 +151,7 @@ const ForumViewPage: React.FC = () => {
   }
 
   return (
-    <div className="forum-view-page">
+    <div className="forum-view-page mobile-content">
       <div className="container">
         <div className="forum-breadcrumb">
           <Link to="/forum">Forums</Link>
@@ -195,6 +195,7 @@ const ForumViewPage: React.FC = () => {
 
         {topics.length > 0 ? (
           <>
+            {/* Topics List */}
             <div className="topics-list">
               <div className="topics-header">
                 <div className="topic-title-col">Topic</div>
@@ -288,6 +289,7 @@ const ForumViewPage: React.FC = () => {
               ))}
             </div>
 
+
             {pagination && pagination.pages > 1 && (
               <div className="pagination">
                 <button 
@@ -306,6 +308,18 @@ const ForumViewPage: React.FC = () => {
                   className="btn-page"
                 >
                   Next
+                </button>
+              </div>
+            )}
+
+            {/* Mobile Floating Reply Button */}
+            {user && forum.locked === 0 && (
+              <div className="mobile-reply-button">
+                <button 
+                  className="mobile-reply-btn"
+                  onClick={() => navigate(`/forum/${id}/new-topic`)}
+                >
+                  New Topic
                 </button>
               </div>
             )}
