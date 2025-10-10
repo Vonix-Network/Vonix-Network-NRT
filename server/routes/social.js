@@ -974,7 +974,10 @@ router.get('/suggested-friends', authenticateToken, (req, res) => {
     const suggestions = db.prepare(`
       SELECT 
         u.id, u.username, u.minecraft_username, u.minecraft_uuid,
-        COUNT(DISTINCT f2.user1_id, f2.user2_id) as mutual_friends
+        COUNT(DISTINCT CASE
+          WHEN f2.user1_id = u.id THEN f2.user2_id
+          WHEN f2.user2_id = u.id THEN f2.user1_id
+        END) as mutual_friends
       FROM users u
       LEFT JOIN friends f2 ON (
         (f2.user1_id = u.id AND f2.user2_id IN (
