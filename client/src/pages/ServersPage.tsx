@@ -45,17 +45,19 @@ const ServersPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading servers...</p>
+      <div className="servers-page mobile-content">
+        <div className="container">
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Loading servers...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="servers-page">
+    <div className="servers-page mobile-content">
       <div className="container">
         <div className="page-header animate-fadeIn">
           <h1 className="page-title">Game Servers</h1>
