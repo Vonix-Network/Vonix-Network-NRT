@@ -71,21 +71,33 @@ export default defineConfig({
           ]
         },
         // Optimize chunk file names for caching
-        chunkFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split('/').pop().replace(/\.\w+$/, '')
+            : 'chunk';
+          return `assets/${facadeModuleId}-[hash].js`;
+        },
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    // Performance optimizations
+    // Performance optimizations for low-end servers
     chunkSizeWarningLimit: 600, // Warn if chunks > 600KB
     reportCompressedSize: true,
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true
+        drop_console: process.env.NODE_ENV === 'production', // Remove console.logs in production
+        drop_debugger: true,
+        // Safe optimizations that work on all devices
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      },
+      mangle: {
+        safari10: true // Safari 10 compatibility
       }
-    }
+    },
+    // Ensure compatibility with older browsers/devices
+    target: 'es2015' // Compatible with most modern devices
   },
   // Image optimization
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],

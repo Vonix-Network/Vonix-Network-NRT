@@ -16,23 +16,23 @@ async function optimizeDatabase() {
   console.log('🚀 Starting database optimization...');
 
   try {
-    // Enable WAL mode for better concurrency
-    db.pragma('journal_mode = WAL');
+    // Optimize cache size - conservative for low-end servers
+    db.pragma('cache_size = -16000'); // 16MB cache (conservative for t3.small)
 
     // Enable foreign key constraints
     db.pragma('foreign_keys = ON');
 
-    // Optimize cache size
-    db.pragma('cache_size = -64000'); // 64MB cache
+    // Synchronous mode for data safety on low-end servers
+    db.pragma('synchronous = FULL');
 
-    // Synchronous mode for better performance (safe with WAL)
-    db.pragma('synchronous = NORMAL');
+    // Conservative mmap size for low-memory servers
+    db.pragma('mmap_size = 134217728'); // 128MB (conservative)
 
-    // Temp store in memory
+    // Temp store in memory for better performance
     db.pragma('temp_store = MEMORY');
 
-    // Mmap size for better performance
-    db.pragma('mmap_size = 268435456'); // 256MB
+    // Journal mode - WAL is good but can be memory intensive
+    db.pragma('journal_mode = WAL');
 
     // Create indexes for better query performance
     console.log('📊 Creating performance indexes...');

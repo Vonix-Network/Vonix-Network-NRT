@@ -1,29 +1,117 @@
 /* Performance Optimizations & Modern Patterns */
 
-/* GPU Acceleration for Smooth Animations */
+/* GPU Acceleration - Graceful Degradation for Low-End Devices */
 .gpu-accelerated {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
+  /* Only apply hardware acceleration if device supports it */
+  @supports (transform: translateZ(0)) {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
 }
 
-/* Modern Optimized Card Pattern */
+/* Safe GPU acceleration that works on all devices */
+.safe-gpu {
+  /* Basic hardware acceleration without heavy effects */
+  transform: translateZ(0);
+  /* Fallback for older devices */
+  -webkit-transform: translateZ(0);
+}
+
+/* Modern Optimized Card Pattern - Device Aware */
 .card-optimized {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-8);
   padding: var(--space-6);
   transition: all var(--transition-base);
-  will-change: transform, box-shadow;
-  contain: layout style paint;
-  backdrop-filter: blur(10px);
+
+  /* Hardware acceleration only on capable devices */
+  @supports (backdrop-filter: blur(10px)) {
+    backdrop-filter: blur(10px);
+    will-change: transform, box-shadow;
+  }
+
+  /* Fallback for devices without backdrop-filter */
+  @supports not (backdrop-filter: blur(10px)) {
+    background: rgba(255, 255, 255, 0.95);
+  }
 }
 
 .card-optimized:hover {
   transform: translateY(-2px);
   border-color: var(--accent-primary);
-  box-shadow: var(--glow-primary);
+
+  /* Enhanced shadows only on capable devices */
+  @supports (filter: drop-shadow(0 0 10px rgba(0,0,0,0.1))) {
+    box-shadow: var(--glow-primary);
+  }
+}
+
+/* Modern Optimized Button - Device Aware */
+.btn-optimized {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-6);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  will-change: transform, box-shadow;
+  user-select: none;
+  white-space: nowrap;
+  contain: layout style;
+  min-height: 44px; /* Touch target size */
+
+  /* Enhanced effects only on capable devices */
+  @supports (backdrop-filter: blur(5px)) {
+    backdrop-filter: blur(5px);
+  }
+}
+
+.btn-optimized:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 217, 166, 0.3);
+}
+
+.btn-optimized:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Device-Specific Optimizations */
+@media (max-width: 768px) {
+  /* Reduce GPU-intensive effects on mobile */
+  .gpu-accelerated {
+    will-change: auto; /* Disable on mobile for battery life */
+  }
+
+  .card-optimized {
+    backdrop-filter: none; /* Disable blur on mobile for performance */
+    background: var(--bg-card);
+  }
+}
+
+/* Low-End Device Detection */
+@media (max-resolution: 150dpi) {
+  /* Reduce animations on low-resolution displays */
+  .gpu-accelerated,
+  .safe-gpu {
+    will-change: auto;
+    transform: none;
+  }
+
+  .card-optimized,
+  .btn-optimized {
+    transition: opacity 0.2s ease; /* Simple transitions only */
+  }
 }
 
 /* Modern Optimized Button Base */
