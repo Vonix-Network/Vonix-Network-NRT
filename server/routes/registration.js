@@ -315,6 +315,69 @@ router.get('/stats', (req, res) => {
   }
 });
 
+// Check if user is registered (for mod to determine flow)
+// Protected by API key to prevent abuse
+router.post('/check-registration', validateRegistrationApiKey, (req, res) => {
+  const { minecraft_uuid } = req.body;
+
+  // Validate input
+  if (!minecraft_uuid) {
+    return res.status(400).json({ 
+      error: 'Minecraft UUID required' 
+    });
+  }
+
+  if (!isValidMinecraftUUID(minecraft_uuid)) {
+    return res.status(400).json({ 
+      error: 'Invalid Minecraft UUID format' 
+    });
+  }
+
+  const db = getDatabase();
+
+  try {
+    // Check if user exists with this UUID
+    const user = db.prepare(`
+      SELECT id, username, minecraft_username, minecraft_uuid, role, 
+             total_donated, donation_rank_id, donation_rank_expires_at
+      FROM users 
+      WHERE minecraft_uuid = ?
+    `).get(minecraft_uuid);
+
+    if (!user) {
+      // User not registered
+      return res.json({
+        registered: false,
+        message: 'User not registered'
+      });
+    }
+
+    // User is registered
+    res.json({
+      registered: true,
+      message: 'User is registered',
+      user: {
+        id: user.id,
+        username: user.username,
+        minecraft_username: user.minecraft_username,
+        minecraft_uuid: user.minecraft_uuid,
+        role: user.role,
+        total_donated: user.total_donated || 0,
+        donation_rank_id: user.donation_rank_id || null,
+        donation_rank_expires_at: user.donation_rank_expires_at || null
+      }
+    });
+
+    console.log(`✅ Registration check for ${minecraft_uuid}: User found (${user.minecraft_username})`);
+
+  } catch (error) {
+    console.error('Error checking registration:', error);
+    res.status(500).json({ 
+      error: 'Failed to check registration status' 
+    });
+  }
+});
+
 // Minecraft mod login endpoint
 // Protected by API key to prevent abuse
 router.post('/minecraft-login', validateRegistrationApiKey, async (req, res) => {

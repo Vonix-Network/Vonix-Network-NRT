@@ -254,6 +254,65 @@ Complete registration using a generated code.
 
 ---
 
+### Check Registration Status
+
+Check if a Minecraft user is registered without attempting login.
+
+**Endpoint**: `POST /api/registration/check-registration`
+
+**Headers**: 
+```
+X-API-Key: your-registration-api-key
+Content-Type: application/json
+```
+
+**Request Body**:
+```json
+{
+  "minecraft_uuid": "string (Minecraft UUID)"
+}
+```
+
+**Response**: `200 OK`
+
+**If Not Registered**:
+```json
+{
+  "registered": false,
+  "message": "User not registered"
+}
+```
+
+**If Registered**:
+```json
+{
+  "registered": true,
+  "message": "User is registered",
+  "user": {
+    "id": 1,
+    "username": "PlayerName",
+    "minecraft_username": "PlayerName",
+    "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "role": "user",
+    "total_donated": 0,
+    "donation_rank_id": null,
+    "donation_rank_expires_at": null
+  }
+}
+```
+
+**Errors**:
+- `400` - Missing UUID or invalid format
+- `403` - Invalid API key
+- `500` - Server error
+
+**Notes**:
+- Use this on player join to determine whether to show registration or login instructions
+- Does not require authentication, only checks if account exists
+- Returns full user info if registered (useful for applying ranks immediately)
+
+---
+
 ### Minecraft Login
 
 Authenticate Minecraft users directly with their password.

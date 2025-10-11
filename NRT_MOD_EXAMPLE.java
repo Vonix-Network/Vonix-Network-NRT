@@ -159,6 +159,38 @@ public class VonixNetworkCommands extends CommandBase {
     }
 
     /**
+     * Check if player is registered
+     */
+    private RegistrationStatus checkRegistrationStatus(String uuid) throws IOException, InterruptedException {
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("minecraft_uuid", uuid);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE_URL + "/registration/check-registration"))
+                .header("Content-Type", "application/json")
+                .header("X-API-Key", REGISTRATION_API_KEY)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestBody)))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JsonObject result = gson.fromJson(response.body(), JsonObject.class);
+            boolean registered = result.get("registered").getAsBoolean();
+            
+            if (registered) {
+                UserInfo user = gson.fromJson(result.get("user"), UserInfo.class);
+                return new RegistrationStatus(true, user);
+            } else {
+                return new RegistrationStatus(false, null);
+            }
+        } else {
+            JsonObject error = gson.fromJson(response.body(), JsonObject.class);
+            throw new RuntimeException(error.get("error").getAsString());
+        }
+    }
+
+    /**
      * Generate registration code via API
      */
     private String generateRegistrationCode(String username, String uuid) throws IOException, InterruptedException {
@@ -259,6 +291,16 @@ public class VonixNetworkCommands extends CommandBase {
     }
 
     // Data classes
+    private static class RegistrationStatus {
+        final boolean registered;
+        final UserInfo user;
+
+        RegistrationStatus(boolean registered, UserInfo user) {
+            this.registered = registered;
+            this.user = user;
+        }
+    }
+
     private static class LoginResult {
         final boolean success;
         final String message;
