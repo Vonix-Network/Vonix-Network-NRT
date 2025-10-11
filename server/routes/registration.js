@@ -317,7 +317,7 @@ router.get('/stats', (req, res) => {
 
 // Check if user is registered (for mod to determine flow)
 // Protected by API key to prevent abuse
-router.post('/check-registration', validateRegistrationApiKey, (req, res) => {
+router.post('/check-registration', validateRegistrationApiKey, async (req, res) => {
   const { minecraft_uuid } = req.body;
 
   // Validate input
