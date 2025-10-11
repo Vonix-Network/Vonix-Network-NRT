@@ -315,4 +315,92 @@ router.get('/stats', (req, res) => {
   }
 });
 
+// Login with Minecraft UUID (called by Minecraft mod after web registration)
+// Protected by API key to prevent abuse
+router.post('/login', validateRegistrationApiKey, (req, res) => {
+  const { minecraft_uuid, password } = req.body;
+
+  console.log('🔐 Minecraft mod login attempt for UUID:', minecraft_uuid);
+
+  // Validate input
+  if (!minecraft_uuid || !password) {
+    return res.status(400).json({ 
+      error: 'Minecraft UUID and password required' 
+    });
+  }
+
+  if (!isValidMinecraftUUID(minecraft_uuid)) {
+    return res.status(400).json({ 
+      error: 'Invalid Minecraft UUID format' 
+    });
+  }
+
+  const db = getDatabase();
+
+  try {
+    // Find user by Minecraft UUID
+    const user = db.prepare(
+      'SELECT * FROM users WHERE minecraft_uuid = ?'
+    ).get(minecraft_uuid);
+
+    if (!user) {
+      console.log('❌ User not found for UUID:', minecraft_uuid);
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        message: 'No account found for this Minecraft UUID. Please register on the website first.'
+      });
+    }
+
+    console.log('✅ User found:', user.username, 'Role:', user.role);
+
+    // Verify password (password should be pre-hashed on client side using bcrypt)
+    // The mod should send the raw password, and we'll validate it here
+    const validPassword = bcrypt.compareSync(password, user.password);
+    if (!validPassword) {
+      console.log('❌ Invalid password for user:', user.username);
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        message: 'Incorrect password'
+      });
+    }
+
+    console.log('✅ Password valid for user:', user.username);
+
+    // Generate JWT token for the session
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        minecraft_uuid: user.minecraft_uuid
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' } // Longer expiry for Minecraft mod sessions
+    );
+
+    console.log(`✅ Minecraft mod login successful: ${user.username} (${user.minecraft_uuid})`);
+
+    // Return success with user info and token
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        minecraft_username: user.minecraft_username,
+        minecraft_uuid: user.minecraft_uuid,
+        role: user.role,
+        donation_rank_id: user.donation_rank_id || null
+      }
+    });
+  } catch (error) {
+    console.error('❌ Minecraft mod login error:', error);
+    res.status(500).json({ 
+      error: 'Login failed. Please try again.' 
+    });
+  } finally {
+    
+  }
+});
+
 module.exports = router;
