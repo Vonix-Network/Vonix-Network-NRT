@@ -154,6 +154,63 @@ Authenticate and receive JWT token.
 
 ---
 
+### Encrypted Mod Login (Minecraft)
+
+Secure login for the Minecraft mod using RSA-encrypted passwords and X-API-Key.
+
+1) Create session and get RSA public key
+
+**Endpoint**: `POST /api/registration/login/session`
+
+**Headers**:
+- `X-API-Key: <registration-api-key>`
+
+**Response**: `200 OK`
+```json
+{
+  "session_id": "string",
+  "public_key": "-----BEGIN PUBLIC KEY-----...",
+  "algorithm": "RSA-OAEP-256",
+  "expires_in": 300
+}
+```
+
+2) Submit RSA-encrypted password
+
+Encrypt the plain password using the provided `public_key` with RSA-OAEP and SHA-256, base64-encode the ciphertext and submit:
+
+**Endpoint**: `POST /api/registration/login-encrypted`
+
+**Headers**:
+- `X-API-Key: <registration-api-key>`
+
+**Request Body**:
+```json
+{
+  "session_id": "string",
+  "username": "string",
+  "encrypted_password": "base64"
+}
+```
+
+Alternatively supply `minecraft_username` or `minecraft_uuid` instead of `username`.
+
+**Response**: `200 OK`
+```json
+{
+  "token": "jwt-token",
+  "user": { "id": 1, "username": "PlayerName", "role": "user" }
+}
+```
+
+**Errors**:
+- `400` - Missing `session_id` or `encrypted_password`, invalid session or payload
+- `401` - Invalid credentials
+- `403` - Missing/invalid `X-API-Key`
+- `500` - Server error
+
+---
+
 ### Get Current User
 
 Get authenticated user information.

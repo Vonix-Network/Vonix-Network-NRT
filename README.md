@@ -336,6 +336,8 @@ The API is accessible at `http://localhost:5000/api`
 - `POST /api/registration/generate-code` - Generate registration code (called by Minecraft mod/plugin)
 - `POST /api/registration/register` - Complete registration with code
 - `GET /api/registration/check-code/:code` - Validate registration code
+- `POST /api/registration/login/session` - Create one-time RSA session for encrypted login (requires `X-API-Key`)
+- `POST /api/registration/login-encrypted` - Login with RSA-encrypted password using session (requires `X-API-Key`)
 - `GET /api/registration/stats` - Get registration statistics
 
 #### Setup & Admin

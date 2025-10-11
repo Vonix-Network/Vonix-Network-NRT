@@ -8,6 +8,31 @@ const crypto = require('crypto');
 
 const router = express.Router();
 
+// Ephemeral RSA sessions for encrypted mod login
+const loginSessions = new Map();
+const LOGIN_SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function createLoginSession() {
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  });
+  const sessionId = crypto.randomBytes(16).toString('hex');
+  const expiresAt = Date.now() + LOGIN_SESSION_TTL_MS;
+  loginSessions.set(sessionId, { privateKey, expiresAt });
+  return { sessionId, publicKey, expiresAt };
+}
+
+function getAndConsumeSession(sessionId) {
+  const entry = loginSessions.get(sessionId);
+  if (!entry) return null;
+  // Always consume to enforce one-time usage
+  loginSessions.delete(sessionId);
+  if (Date.now() > entry.expiresAt) return null;
+  return entry;
+}
+
 // Constants
 const CODE_EXPIRY_MINUTES = 10;
 const CODE_LENGTH = 6;
@@ -114,6 +139,126 @@ router.post('/generate-code', validateRegistrationApiKey, (req, res) => {
     });
   } finally {
     
+  }
+});
+
+// Create a one-time RSA public key for encrypted login (used by Minecraft mod)
+router.post('/login/session', validateRegistrationApiKey, (req, res) => {
+  try {
+    const { sessionId, publicKey, expiresAt } = createLoginSession();
+    res.json({
+      session_id: sessionId,
+      public_key: publicKey,
+      algorithm: 'RSA-OAEP-256',
+      expires_in: Math.floor((expiresAt - Date.now()) / 1000)
+    });
+  } catch (error) {
+    console.error('Error creating login session:', error);
+    res.status(500).json({ error: 'Failed to create login session' });
+  }
+});
+
+// Login using RSA-encrypted password from mod
+router.post('/login-encrypted', validateRegistrationApiKey, (req, res) => {
+  const { session_id: sessionId, username, minecraft_username, minecraft_uuid, encrypted_password: encryptedPasswordBase64 } = req.body;
+
+  if (!sessionId || !encryptedPasswordBase64) {
+    return res.status(400).json({ error: 'session_id and encrypted_password required' });
+  }
+
+  // Accept either username or minecraft identifiers
+  const loginIdentifier = username || minecraft_username || minecraft_uuid;
+  if (!loginIdentifier) {
+    return res.status(400).json({ error: 'username or minecraft_username or minecraft_uuid required' });
+  }
+
+  // Retrieve and consume the session
+  const session = getAndConsumeSession(sessionId);
+  if (!session) {
+    return res.status(400).json({ error: 'Invalid or expired session_id' });
+  }
+
+  let decryptedPassword;
+  try {
+    const encryptedBuffer = Buffer.from(encryptedPasswordBase64, 'base64');
+    decryptedPassword = crypto.privateDecrypt(
+      {
+        key: session.privateKey,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: 'sha256'
+      },
+      encryptedBuffer
+    ).toString('utf8');
+  } catch (error) {
+    console.error('Password decryption failed:', error);
+    return res.status(400).json({ error: 'Invalid encrypted payload' });
+  }
+
+  const db = getDatabase();
+  try {
+    // Find user by username or Minecraft identifiers
+    let user = null;
+    if (minecraft_uuid) {
+      user = db.prepare('SELECT * FROM users WHERE minecraft_uuid = ?').get(minecraft_uuid);
+    }
+    if (!user && minecraft_username) {
+      user = db.prepare('SELECT * FROM users WHERE minecraft_username = ?').get(minecraft_username);
+    }
+    if (!user) {
+      user = db.prepare('SELECT * FROM users WHERE username = ? OR minecraft_username = ?').get(loginIdentifier, loginIdentifier);
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const validPassword = bcrypt.compareSync(decryptedPassword, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        minecraft_uuid: user.minecraft_uuid || null
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Donation rank shaping (mirrors /api/auth/login)
+    let donationRank = null;
+    if (user.donation_rank_id) {
+      const DONATION_RANKS = {
+        SUPPORTER: { id: 'supporter', name: 'Supporter', minAmount: 5, color: '#10b981', textColor: '#ffffff', icon: '🌟', badge: 'SUP', glow: false },
+        PATRON: { id: 'patron', name: 'Patron', minAmount: 10, color: '#3b82f6', textColor: '#ffffff', icon: '💎', badge: 'PAT', glow: true },
+        CHAMPION: { id: 'champion', name: 'Champion', minAmount: 15, color: '#8b5cf6', textColor: '#ffffff', icon: '👑', badge: 'CHA', glow: true },
+        LEGEND: { id: 'legend', name: 'Legend', minAmount: 20, color: '#f59e0b', textColor: '#000000', icon: '🏆', badge: 'LEG', glow: true }
+      };
+      const rank = DONATION_RANKS[(user.donation_rank_id || '').toUpperCase()];
+      if (rank) donationRank = rank;
+    }
+
+    return res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        mustChangePassword: user.must_change_password === 1,
+        minecraft_username: user.minecraft_username || null,
+        minecraft_uuid: user.minecraft_uuid || null,
+        total_donated: user.total_donated || 0,
+        donation_rank_id: user.donation_rank_id || null,
+        donation_rank_expires_at: user.donation_rank_expires_at || null,
+        donation_rank: donationRank
+      }
+    });
+  } catch (error) {
+    console.error('Encrypted login error:', error);
+    return res.status(500).json({ error: 'Internal server error during login' });
   }
 });
 
