@@ -181,6 +181,164 @@ Get authenticated user information.
 
 ---
 
+## Minecraft Registration
+
+These endpoints are used by the Minecraft mod/plugin for player registration and authentication. All endpoints require the `X-API-Key` header for security.
+
+### Generate Registration Code
+
+Generate a registration code for Minecraft players (called by mod/plugin).
+
+**Endpoint**: `POST /api/registration/generate-code`
+
+**Headers**: 
+- `X-API-Key: <registration-api-key>`
+
+**Request Body**:
+```json
+{
+  "minecraft_username": "string (3-16 chars, alphanumeric)",
+  "minecraft_uuid": "string (UUID format)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "code": "A3F5D9",
+  "expires_in": 600,
+  "minecraft_username": "PlayerName"
+}
+```
+
+**Errors**:
+- `400` - Invalid username/UUID format or account already registered
+- `401` - Missing or invalid API key
+- `500` - Server error
+
+---
+
+### Register with Code
+
+Complete registration using the code on the website.
+
+**Endpoint**: `POST /api/registration/register`
+
+**Request Body**:
+```json
+{
+  "code": "string (6 chars)",
+  "password": "string (min 6 chars, letters and numbers)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "success": true,
+  "token": "jwt-token",
+  "user": {
+    "id": 1,
+    "username": "PlayerName",
+    "minecraft_username": "PlayerName",
+    "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "role": "user"
+  }
+}
+```
+
+**Errors**:
+- `400` - Invalid or expired code, weak password
+- `500` - Server error
+
+---
+
+### Minecraft Mod Login
+
+Login from Minecraft mod after account is created on website (called by mod/plugin).
+
+**Endpoint**: `POST /api/registration/login`
+
+**Headers**: 
+- `X-API-Key: <registration-api-key>`
+
+**Request Body**:
+```json
+{
+  "minecraft_uuid": "string (UUID format)",
+  "password": "string (plain text password)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "success": true,
+  "token": "jwt-token",
+  "user": {
+    "id": 1,
+    "username": "PlayerName",
+    "minecraft_username": "PlayerName",
+    "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "role": "user",
+    "donation_rank_id": "patron"
+  }
+}
+```
+
+**Errors**:
+- `400` - Missing parameters or invalid UUID format
+- `401` - Invalid credentials, missing/invalid API key, or account not found
+- `500` - Server error
+
+**Notes**:
+- Password should be sent as plain text (encrypted via HTTPS)
+- Token expires after 7 days
+- Use this endpoint for `/login <password>` command in Minecraft mod
+
+---
+
+### Check Registration Code
+
+Validate if a registration code is still valid.
+
+**Endpoint**: `GET /api/registration/check-code/:code`
+
+**Response**: `200 OK`
+```json
+{
+  "valid": true,
+  "minecraft_username": "PlayerName",
+  "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "expires_at": "2025-01-15T10:40:00.000Z",
+  "time_remaining": 450
+}
+```
+
+**Errors**:
+- `400` - Invalid code format
+- `500` - Server error
+
+---
+
+### Registration Statistics
+
+Get registration system statistics.
+
+**Endpoint**: `GET /api/registration/stats`
+
+**Response**: `200 OK`
+```json
+{
+  "total_codes": 150,
+  "used_codes": 120,
+  "active_codes": 5,
+  "registered_users": 120
+}
+```
+
+---
+
 ## Servers
 
 ### List Servers
