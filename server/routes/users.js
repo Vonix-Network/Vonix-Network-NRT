@@ -262,15 +262,80 @@ router.delete('/:id', authenticateToken, isAdmin, (req, res) => {
     }
 
     const db = getDatabase();
-    const stmt = db.prepare('DELETE FROM users WHERE id = ?');
-    const result = stmt.run(targetUserId);
-
-    if (result.changes === 0) {
+    
+    // Check if user exists first
+    const userExists = db.prepare('SELECT id, username FROM users WHERE id = ?').get(targetUserId);
+    if (!userExists) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ message: 'User deleted successfully' });
+    // Use a transaction to ensure data integrity
+    const deleteTransaction = db.transaction(() => {
+      // Delete related records that might not have proper CASCADE constraints
+      // Order matters - delete child records first, then parent records
+      
+      // 1. Delete user-specific data that might not cascade properly
+      try {
+        // Delete registration codes (these should have ON DELETE SET NULL but let's be safe)
+        db.prepare('UPDATE registration_codes SET user_id = NULL WHERE user_id = ?').run(targetUserId);
+        
+        // Delete donation transactions (these should cascade but let's handle manually)
+        db.prepare('DELETE FROM donation_transactions WHERE user_id = ?').run(targetUserId);
+        
+        // Clear donation rank history
+        db.prepare('DELETE FROM donation_rank_history WHERE user_id = ?').run(targetUserId);
+        
+        // Clear any donation rank references granted by this user
+        db.prepare('UPDATE users SET donation_rank_granted_by = NULL WHERE donation_rank_granted_by = ?').run(targetUserId);
+        
+        // Clear any forum moderation references
+        db.prepare('UPDATE forum_posts SET edited_by = NULL WHERE edited_by = ?').run(targetUserId);
+        db.prepare('UPDATE forum_posts SET deleted_by = NULL WHERE deleted_by = ?').run(targetUserId);
+        
+        // Clear moderation log references
+        db.prepare('UPDATE forum_moderation_log SET resolved_by = NULL WHERE resolved_by = ?').run(targetUserId);
+        
+        // Clear any other potential foreign key references that might not cascade
+        db.prepare('UPDATE donations SET user_id = NULL WHERE user_id = ?').run(targetUserId);
+        
+        console.log(`🧹 Cleaned up related records for user ${targetUserId} (${userExists.username})`);
+      } catch (cleanupError) {
+        console.warn(`⚠️ Warning during cleanup for user ${targetUserId}:`, cleanupError.message);
+        // Continue with deletion even if some cleanup fails
+      }
+      
+      // 2. Finally delete the user (remaining cascades should handle the rest)
+      const result = db.prepare('DELETE FROM users WHERE id = ?').run(targetUserId);
+      
+      if (result.changes === 0) {
+        throw new Error('User deletion failed - no changes made');
+      }
+      
+      console.log(`✅ Successfully deleted user ${targetUserId} (${userExists.username})`);
+      return result;
+    });
+
+    // Execute the transaction
+    deleteTransaction();
+
+    res.json({ 
+      message: 'User deleted successfully',
+      deletedUser: {
+        id: targetUserId,
+        username: userExists.username
+      }
+    });
   } catch (error) {
+    console.error(`❌ Error deleting user ${req.params.id}:`, error);
+    
+    // Provide more specific error messages
+    if (error.message.includes('FOREIGN KEY constraint')) {
+      return res.status(400).json({ 
+        error: 'Cannot delete user due to existing references. Please contact support.',
+        details: 'This user has data that prevents deletion. Manual cleanup may be required.'
+      });
+    }
+    
     handleRouteError(error, res, 'Failed to delete user');
   }
 });
