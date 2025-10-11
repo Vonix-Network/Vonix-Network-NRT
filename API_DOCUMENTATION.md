@@ -181,6 +181,151 @@ Get authenticated user information.
 
 ---
 
+## Minecraft Integration
+
+### Generate Registration Code
+
+Generate a registration code for Minecraft users.
+
+**Endpoint**: `POST /api/registration/generate-code`
+
+**Headers**: 
+```
+X-API-Key: your-registration-api-key
+Content-Type: application/json
+```
+
+**Request Body**:
+```json
+{
+  "minecraft_username": "string (3-16 chars, alphanumeric)",
+  "minecraft_uuid": "string (valid UUID format)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "code": "A1B2C3",
+  "expires_in": 600,
+  "minecraft_username": "PlayerName"
+}
+```
+
+**Errors**:
+- `400` - Invalid username/UUID format or user already registered
+- `401` - Missing or invalid API key
+- `500` - Server error
+
+---
+
+### Register with Code
+
+Complete registration using a generated code.
+
+**Endpoint**: `POST /api/registration/register`
+
+**Request Body**:
+```json
+{
+  "code": "string (6 chars)",
+  "password": "string (min 6 chars, must contain letters and numbers)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "success": true,
+  "token": "jwt-token",
+  "user": {
+    "id": 1,
+    "username": "PlayerName",
+    "minecraft_username": "PlayerName",
+    "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "role": "user"
+  }
+}
+```
+
+**Errors**:
+- `400` - Invalid or expired code, weak password
+- `500` - Server error
+
+---
+
+### Minecraft Login
+
+Authenticate Minecraft users directly with their password.
+
+**Endpoint**: `POST /api/registration/minecraft-login`
+
+**Headers**: 
+```
+X-API-Key: your-registration-api-key
+Content-Type: application/json
+```
+
+**Request Body**:
+```json
+{
+  "minecraft_username": "string (current Minecraft username)",
+  "minecraft_uuid": "string (Minecraft UUID)",
+  "password": "string (account password)"
+}
+```
+
+**Response**: `200 OK`
+```json
+{
+  "success": true,
+  "message": "Welcome back, PlayerName!",
+  "token": "jwt-token",
+  "user": {
+    "id": 1,
+    "username": "PlayerName",
+    "minecraft_username": "PlayerName", 
+    "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "role": "user",
+    "total_donated": 0,
+    "donation_rank_id": null,
+    "donation_rank_expires_at": null
+  }
+}
+```
+
+**Errors**:
+- `400` - Missing fields or invalid format
+- `401` - Account not found or invalid password
+- `403` - Invalid API key
+- `500` - Server error
+
+**Notes**:
+- Users must register first using `/vonixregister` command and website registration
+- The endpoint automatically updates the Minecraft username if it has changed
+- Returns a JWT token that can be used for authenticated API requests
+
+---
+
+### Check Registration Code
+
+Validate a registration code without using it.
+
+**Endpoint**: `GET /api/registration/check-code/:code`
+
+**Response**: `200 OK`
+```json
+{
+  "valid": true,
+  "minecraft_username": "PlayerName",
+  "minecraft_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "expires_at": "2025-01-15T11:00:00.000Z",
+  "time_remaining": 450
+}
+```
+
+---
+
 ## Servers
 
 ### List Servers
