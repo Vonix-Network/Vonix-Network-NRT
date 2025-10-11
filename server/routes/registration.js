@@ -44,6 +44,25 @@ function isValidMinecraftUsername(username) {
          /^[a-zA-Z0-9_]+$/.test(username);
 }
 
+/**
+ * Encrypt password using bcrypt with consistent settings
+ * @param {string} password - Plain text password
+ * @returns {string} Hashed password
+ */
+function encryptPassword(password) {
+  return bcrypt.hashSync(password, BCRYPT_ROUNDS);
+}
+
+/**
+ * Verify encrypted password against stored hash
+ * @param {string} password - Plain text password
+ * @param {string} hash - Stored password hash
+ * @returns {boolean} True if password matches
+ */
+function verifyPassword(password, hash) {
+  return bcrypt.compareSync(password, hash);
+}
+
 // Generate registration code (called by Minecraft mod)
 // Protected by API key to prevent abuse
 router.post('/generate-code', validateRegistrationApiKey, (req, res) => {
@@ -176,7 +195,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = bcrypt.hashSync(password, BCRYPT_ROUNDS);
+    const hashedPassword = encryptPassword(password);
     
     // Create user
     const insertStmt = db.prepare(`
@@ -234,6 +253,153 @@ router.post('/register', async (req, res) => {
     console.error('Error during registration:', error);
     res.status(500).json({ 
       error: 'Registration failed. Please try again.' 
+    });
+  } finally {
+    
+  }
+});
+
+// Minecraft mod login endpoint - accepts pre-encrypted password
+// Protected by API key for security
+router.post('/login', validateRegistrationApiKey, (req, res) => {
+  const { minecraft_username, minecraft_uuid, encrypted_password } = req.body;
+
+  // Validate input
+  if (!minecraft_username || !minecraft_uuid || !encrypted_password) {
+    return res.status(400).json({ 
+      error: 'Minecraft username, UUID, and encrypted password required' 
+    });
+  }
+
+  if (!isValidMinecraftUsername(minecraft_username)) {
+    return res.status(400).json({ 
+      error: 'Invalid Minecraft username format' 
+    });
+  }
+
+  if (!isValidMinecraftUUID(minecraft_uuid)) {
+    return res.status(400).json({ 
+      error: 'Invalid Minecraft UUID format' 
+    });
+  }
+
+  const db = getDatabase();
+
+  try {
+    // Find user by Minecraft credentials
+    const user = db.prepare(`
+      SELECT id, username, password, role, minecraft_username, minecraft_uuid, 
+             total_donated, donation_rank_id, donation_rank_expires_at, must_change_password
+      FROM users 
+      WHERE minecraft_username = ? AND minecraft_uuid = ?
+    `).get(minecraft_username, minecraft_uuid);
+
+    if (!user) {
+      console.log(`❌ Minecraft login: User not found for ${minecraft_username} (${minecraft_uuid})`);
+      return res.status(401).json({ 
+        error: 'Invalid Minecraft credentials' 
+      });
+    }
+
+    console.log(`✅ Minecraft login: User found ${user.username} (${user.minecraft_uuid})`);
+
+    // Verify the encrypted password matches the stored hash
+    const validPassword = verifyPassword(encrypted_password, user.password);
+    if (!validPassword) {
+      console.log(`❌ Minecraft login: Invalid password for ${minecraft_username}`);
+      return res.status(401).json({ 
+        error: 'Invalid password' 
+      });
+    }
+
+    console.log(`✅ Minecraft login: Password valid for ${minecraft_username}`);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        minecraft_uuid: user.minecraft_uuid
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Add donation rank information (same as regular login)
+    let donationRank = null;
+    if (user.donation_rank_id) {
+      const DONATION_RANKS = {
+        SUPPORTER: { 
+          id: 'supporter', 
+          name: 'Supporter', 
+          minAmount: 5, 
+          color: '#10b981',
+          textColor: '#ffffff',
+          icon: '🌟',
+          badge: 'SUP',
+          glow: false
+        },
+        PATRON: { 
+          id: 'patron', 
+          name: 'Patron', 
+          minAmount: 10, 
+          color: '#3b82f6',
+          textColor: '#ffffff',
+          icon: '💎',
+          badge: 'PAT',
+          glow: true
+        },
+        CHAMPION: { 
+          id: 'champion', 
+          name: 'Champion', 
+          minAmount: 15, 
+          color: '#8b5cf6',
+          textColor: '#ffffff',
+          icon: '👑',
+          badge: 'CHA',
+          glow: true
+        },
+        LEGEND: { 
+          id: 'legend', 
+          name: 'Legend', 
+          minAmount: 20, 
+          color: '#f59e0b',
+          textColor: '#000000',
+          icon: '🏆',
+          badge: 'LEG',
+          glow: true
+        }
+      };
+      
+      const rank = DONATION_RANKS[user.donation_rank_id.toUpperCase()];
+      if (rank) {
+        donationRank = rank;
+      }
+    }
+
+    console.log(`✅ Minecraft login successful for: ${minecraft_username}`);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        mustChangePassword: user.must_change_password === 1,
+        minecraft_username: user.minecraft_username,
+        minecraft_uuid: user.minecraft_uuid,
+        total_donated: user.total_donated || 0,
+        donation_rank_id: user.donation_rank_id || null,
+        donation_rank_expires_at: user.donation_rank_expires_at || null,
+        donation_rank: donationRank
+      }
+    });
+  } catch (error) {
+    console.error('Error during Minecraft login:', error);
+    res.status(500).json({ 
+      error: 'Login failed. Please try again.' 
     });
   } finally {
     
